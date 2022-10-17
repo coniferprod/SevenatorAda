@@ -1,17 +1,18 @@
 package body Helpers is
 
-    procedure Write_File is
-        package Byte_IO is
-            new Ada.Sequential_IO (Byte);
+    procedure Write_File(File_Name: String; Contents: Byte_Vectors.Vector) is
         use Byte_IO;
 
         F : Byte_IO.File_Type;
-        File_Name : constant String := "allbytes.bin";
+        -- File_Name : constant String := "allbytes.bin";
     begin
 
         Create (F, Out_File, File_Name);
-        Write (F, 16#F0#);
-        Write (F, 16#F7#);
+
+        for B of Contents loop
+            Write (F, B);
+        end loop;
+
         Close (F);
 
     end Write_File;

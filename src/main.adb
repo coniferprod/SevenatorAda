@@ -17,9 +17,9 @@ begin
         IO.Put_Line (Item => CLI.Argument (Number => i));
     end loop;
 
-    Helpers.Write_File;
+    EG := New_Envelope ((99, 99, 99, 99), (99, 99, 99, 0));
 
-    EG := Envelope ((99, 99, 99, 99), (99, 99, 99, 0));
+    Helpers.Write_File("eg.bin", Get_Envelope_Data(EG));
 
     KLS := (
         Breakpoint => 60 - 21,

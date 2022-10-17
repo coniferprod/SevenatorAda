@@ -1,11 +1,6 @@
+with Helpers;
+
 package DX7 is
-
-    --type Voice is private;
-    --type Operator is private;
-    --type Keyboard_Level_Scaling is private;
-    --type Scaling_Curve is private;
-
---private
 
     type Coarse_Type is range 0 .. 31;
     type Detune_Type is range -7 .. 7;
@@ -32,11 +27,13 @@ package DX7 is
 
     Lin_Neg_Curve : constant Scaling_Curve_Type := (Curve => Linear, Positive => False);
     Lin_Pos_Curve : constant Scaling_Curve_Type := (Curve => Linear, Positive => True);
+    Exp_Neg_Curve : constant Scaling_Curve_Type := (Curve => Exponential, Positive => False);
+    Exp_Pos_Curve : constant Scaling_Curve_Type := (Curve => Exponential, Positive => True);
 
     type MIDI_Note_Type is range 0 .. 127;
 
     type Keyboard_Level_Scaling_Type is record
-        Breakpoint: Integer;  -- TODO: make a type for this (MIDI note / key)
+        Breakpoint: MIDI_Note_Type;
         Left_Depth: Depth_Type;
         Right_Depth: Depth_Type;
         Left_Curve: Scaling_Curve_Type;
@@ -93,9 +90,12 @@ package DX7 is
         LFO: LFO_Type;
     end record;
 
-    function Envelope(Rates: Rate_Array; Levels: Level_Array) return Envelope_Type;
-    function Envelope_Rate(Envelope: Envelope_Type; N: Rate_Index) return Rate_Type;
-    function Envelope_Level(Envelope: Envelope_Type; N: Level_Index) return Level_Type;
+    function New_Envelope(Rates: Rate_Array; Levels: Level_Array) return Envelope_Type;
+    function Get_Envelope_Rate(Envelope: Envelope_Type; N: Rate_Index) return Rate_Type;
+    procedure Set_Envelope_Rate(Envelope: in out Envelope_Type; N: Rate_Index; V: Rate_Type);
+    function Get_Envelope_Level(Envelope: Envelope_Type; N: Level_Index) return Level_Type;
+    procedure Set_Envelope_Level(Envelope: in out Envelope_Type; N: Level_Index; V: Level_Type);
+    function Get_Envelope_Data(Envelope: Envelope_Type) return Helpers.Byte_Vectors.Vector;
 
 private
     type Envelope_Type is record
