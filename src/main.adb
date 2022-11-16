@@ -19,8 +19,6 @@ begin
 
     EG := New_Envelope ((99, 99, 99, 99), (99, 99, 99, 0));
 
-    Helpers.Write_File("eg.bin", Get_Envelope_Data(EG));
-
     KLS := (
         Breakpoint => 60 - 21,
         Left_Depth => 0,
@@ -43,5 +41,7 @@ begin
     );
 
     V.Operators := (Op1, Op1, Op1, Op1, Op1, Op1);
+
+    Helpers.Write_File("voice.bin", Get_Voice_Data(V));
 
 end Main;
