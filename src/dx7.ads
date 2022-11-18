@@ -19,15 +19,15 @@ package DX7 is
     type Rate_Array is array (Rate_Index) of Rate_Type;
 
     type Envelope_Type is record
-        Rates: Rate_Array;
-        Levels: Level_Array;
+        Rates : Rate_Array;
+        Levels : Level_Array;
     end record;
 
     type Curve_Style_Type is (Linear, Exponential);
 
     type Scaling_Curve_Type is record
-        Curve: Curve_Style_Type := Linear;
-        Positive: Boolean := False;
+        Curve : Curve_Style_Type := Linear;
+        Positive : Boolean := False;
     end record;
 
     Lin_Neg_Curve : constant Scaling_Curve_Type := (Curve => Linear, Positive => False);
@@ -38,26 +38,26 @@ package DX7 is
     type MIDI_Note_Type is range 0 .. 127;
 
     type Keyboard_Level_Scaling_Type is record
-        Breakpoint: MIDI_Note_Type;
-        Left_Depth: Depth_Type;
-        Right_Depth: Depth_Type;
-        Left_Curve: Scaling_Curve_Type;
-        Right_Curve: Scaling_Curve_Type;
+        Breakpoint : MIDI_Note_Type;
+        Left_Depth : Depth_Type;
+        Right_Depth : Depth_Type;
+        Left_Curve : Scaling_Curve_Type;
+        Right_Curve : Scaling_Curve_Type;
     end record;
 
     type Operator_Mode is (Ratio, Fixed);
 
     type Operator_Type is record
         EG : Envelope_Type;
-        Kbd_Level_Scaling: Keyboard_Level_Scaling_Type;
-        Kbd_Rate_Scaling: Depth_Type;
-        Amp_Mod_Sens: Integer;  -- TODO: Make a type for this (0 .. 3)
-        Key_Vel_Sens: Depth_Type;
-        Output_Level: Level_Type;
-        Mode: Operator_Mode;
-        Coarse: Coarse_Type;
-        Fine: Level_Type;
-        Detune: Detune_Type;
+        Kbd_Level_Scaling : Keyboard_Level_Scaling_Type;
+        Kbd_Rate_Scaling : Depth_Type;
+        Amp_Mod_Sens : Integer;  -- TODO: Make a type for this (0 .. 3)
+        Key_Vel_Sens : Depth_Type;
+        Output_Level : Level_Type;
+        Mode : Operator_Mode;
+        Coarse : Coarse_Type;
+        Fine : Level_Type;
+        Detune : Detune_Type;
     end record;
 
     type Operator_Index is range 1 .. 6;
@@ -77,36 +77,35 @@ package DX7 is
     );
 
     type LFO_Type is record
-        Speed: Level_Type;
-        LFO_Delay: Level_Type;
-        PMD: Level_Type;
-        AMD: Level_Type;
-        Sync: Boolean;
-        Wave: LFO_Waveform_Type;
-        Pitch_Mod_Sens: Depth_Type;
+        Speed : Level_Type;
+        LFO_Delay : Level_Type;
+        PMD : Level_Type;
+        AMD : Level_Type;
+        Sync : Boolean;
+        Wave : LFO_Waveform_Type;
+        Pitch_Mod_Sens : Depth_Type;
     end record;
 
     type Voice_Type is record
-        Name: Voice_Name_Type;
-        Operators: Operator_Array;
-        Pitch_Envelope: Envelope_Type;
-        Algorithm: Algorithm_Type;
-        Feedback: Depth_Type;
-        Osc_Sync: Boolean;
-        LFO: LFO_Type;
+        Name : Voice_Name_Type;
+        Operators : Operator_Array;
+        Pitch_Envelope : Envelope_Type;
+        Algorithm : Algorithm_Type;
+        Feedback : Depth_Type;
+        Osc_Sync : Boolean;
+        LFO : LFO_Type;
     end record;
 
-    function New_Envelope (Rates: Rate_Array; Levels: Level_Array) return Envelope_Type;
-    function Get_Envelope_Rate (Envelope: Envelope_Type; N: Rate_Index) return Rate_Type;
-    procedure Set_Envelope_Rate (Envelope: in out Envelope_Type; N: Rate_Index; V: Rate_Type);
-    function Get_Envelope_Level (Envelope: Envelope_Type; N: Level_Index) return Level_Type;
-    procedure Set_Envelope_Level (Envelope: in out Envelope_Type; N: Level_Index; V: Level_Type);
-    function Get_Envelope_Data (Envelope: Envelope_Type) return Helpers.Byte_Vectors.Vector;
+    function New_Envelope (Rates : Rate_Array; Levels : Level_Array) return Envelope_Type;
+    function Get_Envelope_Rate (Envelope : Envelope_Type; N : Rate_Index) return Rate_Type;
+    procedure Set_Envelope_Rate (Envelope : in out Envelope_Type; N : Rate_Index; V : Rate_Type);
+    function Get_Envelope_Level (Envelope : Envelope_Type; N : Level_Index) return Level_Type;
+    procedure Set_Envelope_Level (Envelope : in out Envelope_Type; N : Level_Index; V : Level_Type);
 
-    function Get_Operator_Data (Operator: Operator_Type) return Helpers.Byte_Vectors.Vector;
-
-    function Get_Voice_Data (Voice: Voice_Type) return Helpers.Byte_Vectors.Vector;
-
+    -- Use overloading by argument to define Get_Data for each type as required
+    function Get_Data (Envelope : Envelope_Type) return Helpers.Byte_Vectors.Vector;
+    function Get_Data (Operator : Operator_Type) return Helpers.Byte_Vectors.Vector;
+    function Get_Data (Voice : Voice_Type) return Helpers.Byte_Vectors.Vector;
 private
 
 end DX7;

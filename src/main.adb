@@ -42,6 +42,6 @@ begin
 
     V.Operators := (Op1, Op1, Op1, Op1, Op1, Op1);
 
-    Helpers.Write_File("voice.bin", Get_Voice_Data(V));
+    Helpers.Write_File ("voice.bin", Get_Data (V));
 
 end Main;
