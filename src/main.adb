@@ -11,6 +11,8 @@ procedure Main is
     KLS : Keyboard_Level_Scaling_Type;
     V : Voice_Type;
     Op1 : Operator_Type;
+    Lfo : LFO_Type;
+    Cartridge : Cartridge_Type;
 
 begin
     for i in 1 .. CLI.Argument_Count loop
@@ -40,8 +42,30 @@ begin
         Detune => 0
     );
 
-    V.Operators := (Op1, Op1, Op1, Op1, Op1, Op1);
+    Lfo := (
+        Speed => 0,
+        LFO_Delay => 0,
+        PMD => 0,
+        AMD => 0,
+        Sync => True,
+        Wave => Triangle,
+        Pitch_Mod_Sens => 0
+    );
 
-    Helpers.Write_File ("voice.bin", Get_Data (V));
+    V := (
+        Name => "INIT VOICE",
+        Operators => (Op1, Op1, Op1, Op1, Op1, Op1),
+        Pitch_Envelope => EG,
+        Algorithm => 1,
+        Feedback => 0,
+        Osc_Sync => False,
+        LFO => Lfo
+    );
+
+    for i in Voice_Index loop
+        Cartridge.Voices (i) := V;
+    end loop;
+
+    Helpers.Write_File ("cartridge.bin", Get_Data (Cartridge));
 
 end Main;

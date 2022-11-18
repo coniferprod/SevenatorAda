@@ -96,6 +96,13 @@ package DX7 is
         LFO : LFO_Type;
     end record;
 
+    type Voice_Index is range 1 .. 32;
+    type Voice_Array is array (Voice_Index) of Voice_Type;
+
+    type Cartridge_Type is record
+        Voices : Voice_Array;
+    end record;
+
     function New_Envelope (Rates : Rate_Array; Levels : Level_Array) return Envelope_Type;
     function Get_Envelope_Rate (Envelope : Envelope_Type; N : Rate_Index) return Rate_Type;
     procedure Set_Envelope_Rate (Envelope : in out Envelope_Type; N : Rate_Index; V : Rate_Type);
@@ -106,6 +113,9 @@ package DX7 is
     function Get_Data (Envelope : Envelope_Type) return Helpers.Byte_Vectors.Vector;
     function Get_Data (Operator : Operator_Type) return Helpers.Byte_Vectors.Vector;
     function Get_Data (Voice : Voice_Type) return Helpers.Byte_Vectors.Vector;
+    function Get_Data (Cartridge : Cartridge_Type) return Helpers.Byte_Vectors.Vector;
+
 private
+    function Pack (Voice_Data : Helpers.Byte_Vectors.Vector) return Helpers.Byte_Vectors.Vector;
 
 end DX7;

@@ -55,9 +55,31 @@ package body DX7 is
     function Get_Data (Voice : Voice_Type) return Helpers.Byte_Vectors.Vector is
         BV : Byte_Vectors.Vector;
     begin
-        for Op in Operator_Index loop
-            BV.Append (Get_Data (Voice.Operators (Op)));
+        for op in Operator_Index loop
+            BV.Append (Get_Data (Voice.Operators (op)));
         end loop;
+        return BV;
+    end Get_Data;
+
+    function Pack (Voice_Data : Helpers.Byte_Vectors.Vector) return Helpers.Byte_Vectors.Vector is
+        BV : Byte_Vectors.Vector;
+    begin
+        BV := Voice_Data;
+        -- TODO: Actually pack the voice data
+        return BV;
+    end Pack;
+
+    function Get_Data (Cartridge : Cartridge_Type) return Helpers.Byte_Vectors.Vector is
+        BV : Byte_Vectors.Vector;
+        Voice_Data : Byte_Vectors.Vector;
+        Packed_Voice_Data : Byte_Vectors.Vector;
+    begin
+        for i in Voice_Index loop
+            Voice_Data := Get_Data (Cartridge.Voices (i));
+            Packed_Voice_Data := Pack (Voice_Data);
+            BV.Append (Packed_Voice_Data);
+        end loop;
+        -- TODO: Add checksum
         return BV;
     end Get_Data;
 
