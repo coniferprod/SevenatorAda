@@ -13,6 +13,10 @@ procedure Main is
     Op1 : Operator_Type;
     Lfo : LFO_Type;
     Cartridge : Cartridge_Type;
+    Manufacturer : Manufacturer_Type (Kind => Standard_Kind);
+    Message : Message_Type;
+    Payload : Helpers.Byte_Vectors.Vector;
+    Channel : MIDI_Channel_Type := 1;
 
 begin
     for i in 1 .. CLI.Argument_Count loop
@@ -66,6 +70,22 @@ begin
         Cartridge.Voices (i) := V;
     end loop;
 
-    Helpers.Write_File ("cartridge.bin", Get_Data (Cartridge));
+    Manufacturer := (
+        Standard_Kind,
+        Standard_Identifier => Helpers.Byte (16#43#)  -- identifier for Yamaha
+    );
+
+    Payload.Append (Helpers.Byte (Channel - 1));
+    Payload.Append (Helpers.Byte (16#09#));  -- format = 9 (32 voices)
+    Payload.Append (Helpers.Byte (16#20#));  -- byte count (MSB)
+    Payload.Append (Helpers.Byte (16#00#));  -- byte count (LSB)
+    Payload.Append (Get_Data (Cartridge));
+    Payload.Append (Helpers.Byte (0));  -- TODO: compute checksum for cartridge
+
+    Message := (
+        Manufacturer,
+        Payload
+    );
+    Helpers.Write_File ("cartridge.bin", Get_Data (Message));
 
 end Main;
