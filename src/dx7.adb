@@ -29,8 +29,8 @@ package body DX7 is
         Envelope.Levels (N) := V;
     end Set_Envelope_Level;
 
-    function Get_Data (Envelope : Envelope_Type) return Helpers.Byte_Vectors.Vector is
-        BV : Byte_Vectors.Vector;
+    function Get_Data (Envelope : Envelope_Type) return Byte_Vector is
+        BV : Byte_Vector;
     begin
         BV.Append (Byte (Envelope.Rates (1)));
         BV.Append (Byte (Envelope.Rates (2)));
@@ -45,15 +45,15 @@ package body DX7 is
         return BV;
     end Get_Data;
 
-    function Get_Data (Operator : Operator_Type) return Helpers.Byte_Vectors.Vector is
-        BV : Byte_Vectors.Vector;
+    function Get_Data (Operator : Operator_Type) return Byte_Vector is
+        BV : Byte_Vector;
     begin
         BV.Append (Get_Data (Operator.EG));
         return BV;
     end Get_Data;
 
-    function Get_Data (Voice : Voice_Type) return Helpers.Byte_Vectors.Vector is
-        BV : Byte_Vectors.Vector;
+    function Get_Data (Voice : Voice_Type) return Byte_Vector is
+        BV : Byte_Vector;
     begin
         for op in Operator_Index loop
             BV.Append (Get_Data (Voice.Operators (op)));
@@ -61,18 +61,18 @@ package body DX7 is
         return BV;
     end Get_Data;
 
-    function Pack (Voice_Data : Helpers.Byte_Vectors.Vector) return Helpers.Byte_Vectors.Vector is
-        BV : Byte_Vectors.Vector;
+    function Pack (Voice_Data : Byte_Vector) return Byte_Vector is
+        BV : Byte_Vector;
     begin
         BV := Voice_Data;
         -- TODO: Actually pack the voice data
         return BV;
     end Pack;
 
-    function Get_Data (Cartridge : Cartridge_Type) return Helpers.Byte_Vectors.Vector is
-        BV : Byte_Vectors.Vector;
-        Voice_Data : Byte_Vectors.Vector;
-        Packed_Voice_Data : Byte_Vectors.Vector;
+    function Get_Data (Cartridge : Cartridge_Type) return Byte_Vector is
+        BV : Byte_Vector;
+        Voice_Data : Byte_Vector;
+        Packed_Voice_Data : Byte_Vector;
     begin
         for i in Voice_Index loop
             Voice_Data := Get_Data (Cartridge.Voices (i));
@@ -83,8 +83,8 @@ package body DX7 is
         return BV;
     end Get_Data;
 
-    function Get_Data (Manufacturer : Manufacturer_Type) return Helpers.Byte_Vectors.Vector is
-        BV : Byte_Vectors.Vector;
+    function Get_Data (Manufacturer : Manufacturer_Type) return Byte_Vector is
+        BV : Byte_Vector;
     begin
         case Manufacturer.Kind is
             when Development_Kind =>
@@ -99,8 +99,8 @@ package body DX7 is
         return BV;
     end Get_Data;
 
-    function Get_Data (Message : Message_Type) return Helpers.Byte_Vectors.Vector is
-        BV : Byte_Vectors.Vector;
+    function Get_Data (Message : Message_Type) return Byte_Vector is
+        BV : Byte_Vector;
     begin
         BV.Append (Byte (16#F0#));
         BV.Append (Get_Data (Message.Manufacturer));

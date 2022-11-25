@@ -1,6 +1,6 @@
 with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
-with Helpers;
+with Helpers; use Helpers;
 
 package DX7 is
 
@@ -106,7 +106,7 @@ package DX7 is
         Voices : Voice_Array;
     end record;
 
-    type Byte_Triplet is array (1 .. 3) of Helpers.Byte;
+    type Byte_Triplet is array (1 .. 3) of Byte;
 
     -- Use a variant record to describe the manufacturer
     -- in a MIDI System Exclusive Message.
@@ -114,15 +114,15 @@ package DX7 is
     type Manufacturer_Type (Kind : Manufacturer_Kind := Development_Kind) is
         record
             case Kind is
-                when Development_Kind => Development_Identifier : Helpers.Byte;
-                when Standard_Kind => Standard_Identifier : Helpers.Byte;
+                when Development_Kind => Development_Identifier : Byte;
+                when Standard_Kind => Standard_Identifier : Byte;
                 when Extended_Kind => Extended_Identifier : Byte_Triplet;
             end case;
         end record;
 
     type Message_Type is record
         Manufacturer : Manufacturer_Type;
-        Payload : Helpers.Byte_Vectors.Vector;
+        Payload : Byte_Vector;
     end record;
 
     function New_Envelope (Rates : Rate_Array; Levels : Level_Array) return Envelope_Type;
@@ -132,14 +132,14 @@ package DX7 is
     procedure Set_Envelope_Level (Envelope : in out Envelope_Type; N : Level_Index; V : Level_Type);
 
     -- Use overloading by argument to define Get_Data for each type as required
-    function Get_Data (Envelope : Envelope_Type) return Helpers.Byte_Vectors.Vector;
-    function Get_Data (Operator : Operator_Type) return Helpers.Byte_Vectors.Vector;
-    function Get_Data (Voice : Voice_Type) return Helpers.Byte_Vectors.Vector;
-    function Get_Data (Cartridge : Cartridge_Type) return Helpers.Byte_Vectors.Vector;
-    function Get_Data (Manufacturer : Manufacturer_Type) return Helpers.Byte_Vectors.Vector;
-    function Get_Data (Message : Message_Type) return Helpers.Byte_Vectors.Vector;
+    function Get_Data (Envelope : Envelope_Type) return Byte_Vector;
+    function Get_Data (Operator : Operator_Type) return Byte_Vector;
+    function Get_Data (Voice : Voice_Type) return Byte_Vector;
+    function Get_Data (Cartridge : Cartridge_Type) return Byte_Vector;
+    function Get_Data (Manufacturer : Manufacturer_Type) return Byte_Vector;
+    function Get_Data (Message : Message_Type) return Byte_Vector;
 
 private
-    function Pack (Voice_Data : Helpers.Byte_Vectors.Vector) return Helpers.Byte_Vectors.Vector;
+    function Pack (Voice_Data : Byte_Vector) return Byte_Vector;
 
 end DX7;
