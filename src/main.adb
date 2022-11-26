@@ -1,4 +1,5 @@
 with Ada.Text_IO;
+with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 with Ada.Command_Line;
 with Helpers; use Helpers;
 with DX7; use DX7;
@@ -18,11 +19,27 @@ procedure Main is
     Payload : Byte_Vector;
     Channel : MIDI_Channel_Type := 1;
     Data : Byte_Vector;
+    In_Data : Byte_Array_Access;
+    Out_Data : Byte_Vector;
 
 begin
     for i in 1 .. CLI.Argument_Count loop
         IO.Put_Line (Item => CLI.Argument (Number => i));
     end loop;
+
+    In_Data := Read_File ("cartridge.bin");
+    -- Do something with the data
+    Put(In_Data'Length);
+
+    for I in In_Data'Range loop
+        Out_Data.Append (In_Data (I));
+    end loop;
+
+    Delete (In_Data);
+
+    IO.Put_Line(Hex_Dump(Out_Data));
+
+    IO.Put_Line("Generating new cartridge...");
 
     EG := New_Envelope ((99, 99, 99, 99), (99, 99, 99, 0));
 
@@ -90,6 +107,6 @@ begin
     Data := Get_Data (Message);
     Helpers.Write_File ("cartridge.bin", Data);
 
-    IO.Put_Line(Helpers.Hex_Dump(Data));
+    IO.Put_Line(Hex_Dump(Data));
 
 end Main;
