@@ -27,17 +27,17 @@ begin
         IO.Put_Line (Item => CLI.Argument (Number => i));
     end loop;
 
-    In_Data := Read_File ("cartridge.bin");
+    --In_Data := Read_File ("cartridge.bin");
     -- Do something with the data
-    Put(In_Data'Length);
+    --Put(In_Data'Length);
 
-    for I in In_Data'Range loop
-        Out_Data.Append (In_Data (I));
-    end loop;
+    --for I in In_Data'Range loop
+    --    Out_Data.Append (In_Data (I));
+    --end loop;
 
-    Delete (In_Data);
+    --Delete (In_Data);
 
-    IO.Put_Line(Hex_Dump(Out_Data));
+    --IO.Put_Line(Hex_Dump(Out_Data));
 
     IO.Put_Line("Generating new cartridge...");
 
@@ -55,7 +55,7 @@ begin
         EG => EG,
         Kbd_Level_Scaling => KLS,
         Kbd_Rate_Scaling => 0,
-        Amp_Mod_Sens => 0,
+        AMS => 0,
         Key_Vel_Sens => 0,
         Output_Level => 0,
         Mode => Ratio,
@@ -81,7 +81,8 @@ begin
         Algorithm => 1,
         Feedback => 0,
         Osc_Sync => False,
-        LFO => Lfo
+        LFO => Lfo,
+        Transpose => 0
     );
 
     for i in Voice_Index loop

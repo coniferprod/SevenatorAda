@@ -50,11 +50,13 @@ package DX7 is
 
     type Operator_Mode is (Ratio, Fixed);
 
+    type AMS_Type is range 0 .. 3;
+
     type Operator_Type is record
         EG : Envelope_Type;
         Kbd_Level_Scaling : Keyboard_Level_Scaling_Type;
         Kbd_Rate_Scaling : Depth_Type;
-        Amp_Mod_Sens : Integer;  -- TODO: Make a type for this (0 .. 3)
+        AMS : AMS_Type;
         Key_Vel_Sens : Depth_Type;
         Output_Level : Level_Type;
         Mode : Operator_Mode;
@@ -68,6 +70,8 @@ package DX7 is
 
     Voice_Name_Length : constant Integer := 10;
     subtype Voice_Name_Type is String (1 .. Voice_Name_Length);
+
+    type Transpose_Type is range -2 .. 2;
 
     -- Enumeration type for LFO waveforms
     type LFO_Waveform_Type is (
@@ -90,13 +94,14 @@ package DX7 is
     end record;
 
     type Voice_Type is record
-        Name : Voice_Name_Type;
         Operators : Operator_Array;
         Pitch_Envelope : Envelope_Type;
         Algorithm : Algorithm_Type;
         Feedback : Depth_Type;
         Osc_Sync : Boolean;
         LFO : LFO_Type;
+        Transpose: Transpose_Type;
+        Name : Voice_Name_Type;
     end record;
 
     type Voice_Index is range 1 .. 32;
@@ -134,12 +139,15 @@ package DX7 is
     -- Use overloading by argument to define Get_Data for each type as required
     function Get_Data (Envelope : Envelope_Type) return Byte_Vector;
     function Get_Data (Operator : Operator_Type) return Byte_Vector;
+    function Get_Packed_Data (Operator : Operator_Type) return Byte_Vector;
     function Get_Data (Voice : Voice_Type) return Byte_Vector;
+    function Get_Packed_Data (Voice : Voice_Type) return Byte_Vector;
     function Get_Data (Cartridge : Cartridge_Type) return Byte_Vector;
     function Get_Data (Manufacturer : Manufacturer_Type) return Byte_Vector;
     function Get_Data (Message : Message_Type) return Byte_Vector;
-
-private
-    function Pack (Voice_Data : Byte_Vector) return Byte_Vector;
+    function Get_Data (LFO : LFO_Type) return Byte_Vector;
+    function Get_Packed_Data (LFO : LFO_Type) return Byte_Vector;
+    function Get_Data (KLS: Keyboard_Level_Scaling_Type) return Byte_Vector;
+    function Get_Packed_Data (KLS: Keyboard_Level_Scaling_Type) return Byte_Vector;
 
 end DX7;
