@@ -1,29 +1,18 @@
 with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Helpers; use Helpers;
+with DX7.Envelopes; use DX7.Envelopes;
 
 package DX7 is
+    -- The definitions are based on the example set by AdaCore's "Introduction to Ada",
+    -- section "Strongly typed language":
+    -- https://learn.adacore.com/courses/intro-to-ada/chapters/strongly_typed_language.html#integers
 
     type Coarse_Type is range 0 .. 31;
     type Detune_Type is range -7 .. 7;
 
     type Algorithm_Type is range 1 .. 32;
     type Depth_Type is range 0 .. 7;
-
-    -- Define type for level. Also define an array index
-    -- for an array of level values, to be used in an envelope.
-    type Level_Type is range 0 .. 99;
-    type Level_Index is range 1 .. 4;
-    type Level_Array is array (Level_Index) of Level_Type;
-
-    type Rate_Type is range 0 .. 99;
-    type Rate_Index is range 1 .. 4;
-    type Rate_Array is array (Rate_Index) of Rate_Type;
-
-    type Envelope_Type is record
-        Rates : Rate_Array;
-        Levels : Level_Array;
-    end record;
 
     type Curve_Style_Type is (Linear, Exponential);
 
@@ -130,14 +119,7 @@ package DX7 is
         Payload : Byte_Vector;
     end record;
 
-    function New_Envelope (Rates : Rate_Array; Levels : Level_Array) return Envelope_Type;
-    function Get_Envelope_Rate (Envelope : Envelope_Type; N : Rate_Index) return Rate_Type;
-    procedure Set_Envelope_Rate (Envelope : in out Envelope_Type; N : Rate_Index; V : Rate_Type);
-    function Get_Envelope_Level (Envelope : Envelope_Type; N : Level_Index) return Level_Type;
-    procedure Set_Envelope_Level (Envelope : in out Envelope_Type; N : Level_Index; V : Level_Type);
-
     -- Use overloading by argument to define Get_Data for each type as required
-    function Get_Data (Envelope : Envelope_Type) return Byte_Vector;
     function Get_Data (Operator : Operator_Type) return Byte_Vector;
     function Get_Packed_Data (Operator : Operator_Type) return Byte_Vector;
     function Get_Data (Voice : Voice_Type) return Byte_Vector;

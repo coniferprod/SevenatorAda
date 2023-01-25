@@ -3,6 +3,7 @@ with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 with Ada.Command_Line;
 with Helpers; use Helpers;
 with DX7; use DX7;
+with DX7.Envelopes; use DX7.Envelopes;
 
 procedure Main is
     package IO renames Ada.Text_IO;
