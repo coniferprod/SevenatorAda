@@ -1,5 +1,6 @@
 with Helpers; use Helpers;
 
+-- Child package of DX7
 package DX7.Envelopes is
 
     -- Define type for level. Also define an array index

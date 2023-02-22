@@ -1,10 +1,13 @@
 with Ada.Text_IO;
 with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 with Ada.Command_Line;
-with Ada.Directories;
+with Ada.Directories; use Ada.Directories;
 with Helpers; use Helpers;
 with DX7; use DX7;
 with DX7.Envelopes; use DX7.Envelopes;
+with DX7.Operators; use DX7.Operators;
+with DX7.Voices; use DX7.Voices;
+with DX7.Cartridges; use DX7.Cartridges;
 
 procedure Main is
     package IO renames Ada.Text_IO;
@@ -42,18 +45,18 @@ begin
     --IO.Put_Line(Hex_Dump(Out_Data));
 
     declare
-        File_Name : String := CLI.Argument (1);
-        File_Size : Ada.Directories.File_Size := Ada.Directories.Size (File_Name);
-        File_Data : Byte_Array (0 .. Integer (File_Size) - 1);
+        Name : String := CLI.Argument (1);
+        Size : Ada.Directories.File_Size := Ada.Directories.Size (Name);
+        Data : Byte_Array (0 .. Size - 1);
 
     begin
-        Ada.Integer_Text_IO.Put (Integer (File_Size));
+        Ada.Integer_Text_IO.Put (Integer (Size));
         Ada.Text_IO.New_Line;
 
-        Read_All_Bytes (File_Name, File_Data);
+        Read_All_Bytes (Name, Data);
 
-        for I in File_Data'Range loop
-            Ada.Text_IO.Put (Hex (File_Data (I)));
+        for I in Data'Range loop
+            Ada.Text_IO.Put (Hex (Data (I)));
             Ada.Text_IO.Put (" ");
         end loop;
     end;

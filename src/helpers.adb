@@ -48,7 +48,7 @@ package body Helpers is
 
         Input_File : SIO.File_Type;
         Input_Stream : SIO.Stream_Access;
-        Index : Integer := 0;
+        Index : File_Size := 0;
         B : Byte;
     begin
         SIO.Open (Input_File, SIO.In_File, Name);
