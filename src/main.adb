@@ -1,6 +1,7 @@
 with Ada.Text_IO;
 with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 with Ada.Command_Line;
+with Ada.Directories;
 with Helpers; use Helpers;
 with DX7; use DX7;
 with DX7.Envelopes; use DX7.Envelopes;
@@ -39,6 +40,24 @@ begin
     --Delete (In_Data);
 
     --IO.Put_Line(Hex_Dump(Out_Data));
+
+    declare
+        File_Name : String := CLI.Argument (1);
+        File_Size : Ada.Directories.File_Size := Ada.Directories.Size (File_Name);
+        File_Data : Byte_Array (0 .. Integer (File_Size) - 1);
+
+    begin
+        Ada.Integer_Text_IO.Put (Integer (File_Size));
+        Ada.Text_IO.New_Line;
+
+        Read_All_Bytes (File_Name, File_Data);
+
+        for I in File_Data'Range loop
+            Ada.Text_IO.Put (Hex (File_Data (I)));
+            Ada.Text_IO.Put (" ");
+        end loop;
+    end;
+
 
     IO.Put_Line("Generating new cartridge...");
 

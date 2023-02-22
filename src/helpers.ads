@@ -4,12 +4,12 @@ with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Unchecked_Deallocation;
 with Ada.Directories; use Ada.Directories;
-with Interfaces; use Interfaces;
+with Interfaces;
 
 package Helpers is
 
     --type Byte is mod 2**8;
-    type Byte is new Unsigned_8;
+    type Byte is new Interfaces.Unsigned_8;
     type Byte_Array is array (File_Size range <>) of Byte;
     type Byte_Array_Access is access Byte_Array;
 
@@ -27,6 +27,8 @@ package Helpers is
 
     function Read_File(File_Name: String) return Byte_Array_Access;
     procedure Write_File(File_Name: String; Contents: Byte_Vector);
+
+    procedure Read_All_Bytes (Name : String; Buffer : out Byte_Array);
 
     function Hex (B : Byte) return String;
     function Hex_Dump (Data : Byte_Vector) return String;

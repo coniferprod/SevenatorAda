@@ -43,6 +43,26 @@ package body Helpers is
         Close (F);
     end Write_File;
 
+    procedure Read_All_Bytes (Name : String; Buffer : out Byte_Array) is
+        package SIO renames Ada.Streams.Stream_IO;
+
+        Input_File : SIO.File_Type;
+        Input_Stream : SIO.Stream_Access;
+        Index : Integer := 0;
+        B : Byte;
+    begin
+        SIO.Open (Input_File, SIO.In_File, Name);
+
+        Input_Stream := SIO.Stream (Input_File);
+        while not SIO.End_Of_File (Input_File) loop
+            Byte'Read (Input_Stream, B);
+            Buffer (Index) := B;
+            Index := Index + 1;
+        end loop;
+
+        SIO.Close (Input_File);
+    end Read_All_Bytes;
+
     -- Influenced by: https://ada.tips/using-adasequential_io-to-create-simple-hexdump-utility.html
     function Hex (B : Byte) return String is
         Hex_Chars : constant array (Byte range 0 .. 15) of Character :=
