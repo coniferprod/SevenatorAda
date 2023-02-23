@@ -13,13 +13,12 @@ procedure Main is
     package IO renames Ada.Text_IO;
     package CLI renames Ada.Command_Line;
 
-    EG : Envelope_Type;
     KLS : Keyboard_Level_Scaling_Type;
     V : Voice_Type;
     Op1 : Operator_Type;
-    Lfo : LFO_Type;
     Cartridge : Cartridge_Type;
-    Manufacturer : Manufacturer_Type (Kind => Standard_Kind);
+
+    Manufacturer : Manufacturer_Type;
     Message : Message_Type;
     Payload : Byte_Vector;
     Channel : MIDI_Channel_Type := 1;
@@ -61,22 +60,37 @@ begin
         end loop;
     end;
 
-
+    -- Try to create a random envelope
+    declare
+        Random_EG : Envelope_Type := Random_Envelope;
+    begin
+        IO.New_Line;
+        IO.Put_Line ("Random EG:");
+        for R in Random_EG.Rates'Range loop
+            IO.Put (Random_EG.Rates (R)'Image);
+            IO.Put (" ");
+        end loop;
+        for L in Random_EG.Levels'Range loop
+            IO.Put (Random_EG.Levels (L)'Image);
+            IO.Put (" ");
+        end loop;
+        IO.New_Line;
+    end;
+    
     IO.Put_Line("Generating new cartridge...");
 
-    EG := New_Envelope ((99, 99, 99, 99), (99, 99, 99, 0));
-
-    KLS := (
-        Breakpoint => 60 - 21,
-        Left_Depth => 0,
-        Right_Depth => 0,
-        Left_Curve => Lin_Neg_Curve,
-        Right_Curve => Lin_Neg_Curve
-    );
-
     Op1 := (
-        EG => EG,
-        Kbd_Level_Scaling => KLS,
+        EG => (
+            Rates => (99, 99, 99, 99), 
+            Levels => (99, 99, 99, 0)
+        ),
+        Kbd_Level_Scaling => (
+            Breakpoint => 60 - 21,
+            Left_Depth => 0,
+            Right_Depth => 0,
+            Left_Curve => Lin_Neg_Curve,
+            Right_Curve => Lin_Neg_Curve
+        ),
         Kbd_Rate_Scaling => 0,
         AMS => 0,
         Key_Vel_Sens => 0,
@@ -87,24 +101,25 @@ begin
         Detune => 0
     );
 
-    Lfo := (
-        Speed => 0,
-        LFO_Delay => 0,
-        PMD => 0,
-        AMD => 0,
-        Sync => True,
-        Wave => Triangle,
-        Pitch_Mod_Sens => 0
-    );
-
     V := (
         Name => "INIT VOICE",
         Operators => (Op1, Op1, Op1, Op1, Op1, Op1),
-        Pitch_Envelope => EG,
+        Pitch_Envelope => (
+            Rates => (99, 99, 99, 99), 
+            Levels => (99, 99, 99, 0)
+        ),
         Algorithm => 1,
         Feedback => 0,
         Osc_Sync => False,
-        LFO => Lfo,
+        LFO => (
+            Speed => 0,
+            LFO_Delay => 0,
+            PMD => 0,
+            AMD => 0,
+            Sync => True,
+            Wave => Triangle,
+            Pitch_Mod_Sens => 0
+        ),
         Transpose => 0
     );
 
@@ -118,7 +133,7 @@ begin
     );
 
     Payload.Append (Byte (Channel - 1));
-    Payload.Append (Byte (16#09#));  -- format = 9 (32 voices)
+    Payload.Append (Byte (9));       -- format = 9 (32 voices)
     Payload.Append (Byte (16#20#));  -- byte count (MSB)
     Payload.Append (Byte (16#00#));  -- byte count (LSB)
     Payload.Append (Get_Data (Cartridge));
@@ -131,6 +146,6 @@ begin
     Data := Get_Data (Message);
     Helpers.Write_File ("cartridge.bin", Data);
 
-    IO.Put_Line(Hex_Dump(Data));
+    -- IO.Put_Line(Hex_Dump(Data));
 
 end Main;

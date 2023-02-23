@@ -2,6 +2,10 @@ with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Helpers; use Helpers;
 
+-- The various parts of the data model are split into 
+-- child packages, since: "If your root pkg needs the 
+-- child in its spec then you have a design problem." (Jeffrey R. Carter)
+
 package DX7 is
     -- The definitions are based on the example set by AdaCore's "Introduction to Ada",
     -- section "Strongly typed language":

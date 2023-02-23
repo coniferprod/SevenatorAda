@@ -18,12 +18,8 @@ package DX7.Envelopes is
         Levels : Level_Array;
     end record;
 
-    function New_Envelope (Rates : Rate_Array; Levels : Level_Array) return Envelope_Type;
-    function Get_Envelope_Rate (Envelope : Envelope_Type; N : Rate_Index) return Rate_Type;
-    procedure Set_Envelope_Rate (Envelope : in out Envelope_Type; N : Rate_Index; V : Rate_Type);
-    function Get_Envelope_Level (Envelope : Envelope_Type; N : Level_Index) return Level_Type;
-    procedure Set_Envelope_Level (Envelope : in out Envelope_Type; N : Level_Index; V : Level_Type);
-
     function Get_Data (Envelope : Envelope_Type) return Byte_Vector;
+
+    function Random_Envelope return Envelope_Type;
 
 end DX7.Envelopes;

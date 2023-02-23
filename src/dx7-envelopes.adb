@@ -1,34 +1,12 @@
 with Helpers; use Helpers;
+with Ada.Numerics.Discrete_Random;
 
 package body DX7.Envelopes is
 
-    function New_Envelope (Rates : Rate_Array; Levels : Level_Array) return Envelope_Type is
-        E : Envelope_Type := (Rates, Levels);
-    begin
-        -- TODO: Need to validate?
-        return E;
-    end New_Envelope;
-
-    function Get_Envelope_Rate (Envelope : Envelope_Type; N : Rate_Index) return Rate_Type is
-    begin
-        return Envelope.Rates (N);
-    end Get_Envelope_Rate;
-
-    procedure Set_Envelope_Rate (Envelope : in out Envelope_Type; N : Rate_Index; V : Rate_Type) is
-    begin
-        Envelope.Rates (N) := V;
-    end Set_Envelope_Rate;
-
-    function Get_Envelope_Level (Envelope : Envelope_Type; N : Level_Index) return Level_Type is
-    begin
-        return Envelope.Levels (N);
-    end Get_Envelope_Level;
-
-    procedure Set_Envelope_Level (Envelope : in out Envelope_Type; N : Level_Index; V : Level_Type) is
-    begin
-        Envelope.Levels (N) := V;
-    end Set_Envelope_Level;
-
+    -- Make new packages for random rate and level
+    package Rand_Rate is new Ada.Numerics.Discrete_Random(Rate_Type);
+    package Rand_Level is new Ada.Numerics.Discrete_Random(Level_Type);
+    
     function Get_Data (Envelope : Envelope_Type) return Byte_Vector is
         BV : Byte_Vector;
     begin
@@ -44,5 +22,25 @@ package body DX7.Envelopes is
 
         return BV;
     end Get_Data;
+
+    function Random_Envelope return Envelope_Type is
+        Envelope : Envelope_Type;
+        Rate_Gen : Rand_Rate.Generator;
+        Level_Gen : Rand_Level.Generator;
+    begin
+        Rand_Rate.Reset (Rate_Gen);
+        Envelope.Rates (1) := Rand_Rate.Random (Rate_Gen);
+        Envelope.Rates (2) := Rand_Rate.Random (Rate_Gen);
+        Envelope.Rates (3) := Rand_Rate.Random (Rate_Gen);
+        Envelope.Rates (4) := Rand_Rate.Random (Rate_Gen);
+
+        Rand_Level.Reset (Level_Gen);
+        Envelope.Levels (1) := Rand_Level.Random (Level_Gen);
+        Envelope.Levels (2) := Rand_Level.Random (Level_Gen);
+        Envelope.Levels (3) := Rand_Level.Random (Level_Gen);
+        Envelope.Levels (4) := Rand_Level.Random (Level_Gen);
+
+        return Envelope;
+    end Random_Envelope;
 
 end DX7.Envelopes;
