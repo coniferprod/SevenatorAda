@@ -25,7 +25,6 @@ package DX7.Voices is
         AMD : Level_Type;
         Sync : Boolean;
         Wave : LFO_Waveform_Type;
-        Pitch_Modulation_Sensitivity : Depth_Type;
     end record;
 
     type Voice_Type is record
@@ -35,6 +34,7 @@ package DX7.Voices is
         Feedback : Depth_Type;
         Oscillator_Sync : Boolean;
         LFO : LFO_Type;
+        Pitch_Modulation_Sensitivity : Depth_Type;
         Transpose: Transpose_Type;
         Name : Voice_Name_Type;
     end record;
@@ -162,8 +162,8 @@ package DX7.Voices is
                 ),    
                 Keyboard_Level_Scaling => (
                     Breakpoint => 60 - 21, 
-                    Left_Depth => 50,
-                    Right_Depth => 0,
+                    Left_Depth => 54,
+                    Right_Depth => 50,
                     Left_Curve => Exponential_Negative_Curve,
                     Right_Curve => Exponential_Negative_Curve
                 ),
@@ -190,9 +190,9 @@ package DX7.Voices is
             PMD => 5,
             AMD => 0,
             Sync => False,
-            Wave => Sine,
-            Pitch_Modulation_Sensitivity => 3
+            Wave => Sine
         ),
+        Pitch_Modulation_Sensitivity => 3,
         Transpose => 0,
         Name => "BRASS   1 "
     );

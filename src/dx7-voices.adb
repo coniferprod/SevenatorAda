@@ -8,8 +8,10 @@ package body DX7.Voices is
         BV.Append(Byte(LFO.PMD));
         BV.Append(Byte(LFO.AMD));
         BV.Append(Byte(if LFO.Sync = True then 1 else 0));
-        BV.Append(Byte(LFO_Waveform_Type'Pos(LFO.Wave)));  -- convert enum value to Byte (first enum is pos zero)
-        BV.Append(Byte(LFO.Pitch_Modulation_Sensitivity));
+
+        -- Convert enum value to Byte (first enum is pos zero)
+        BV.Append(Byte(LFO_Waveform_Type'Pos(LFO.Wave)));
+
         return BV;
     end Get_Data;
 
@@ -22,7 +24,17 @@ package body DX7.Voices is
         BV.Append(Byte(LFO.PMD));
         BV.Append(Byte(LFO.AMD));
 
+        Byte116 := (if LFO.Sync then 1 else 0);
+
+        -- Waveform type starts at bit 1
+        Byte116 := Byte116 
+            or Shift_Left(Byte(LFO_Waveform_Type'Pos(LFO.Wave)), 1);
         -- TODO: How to set a bit range?
+        -- b116.replaceBits(1...3, with: Byte(LFO.Wave))
+
+        -- NOTE: In the packed format, this byte contains also the
+        -- pitch modulation sensitivity, which applies to all operators.
+        -- The corresponding bits need to be set later.
 
         BV.Append(Byte116);
         return BV;
@@ -71,6 +83,8 @@ package body DX7.Voices is
         BV.Append(Byte111);
 
         BV.Append(Get_Packed_Data(Voice.LFO));
+
+        -- TODO: Handle the pitch mod sens value
 
         -- Adjust -2..+2 to 0...48 for SysEx
         BV.Append(Byte((Voice.Transpose + 2) * 12));

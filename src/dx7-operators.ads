@@ -10,6 +10,8 @@ package DX7.Operators is
 
     type Curve_Style_Type is (Linear, Exponential);
 
+    type Scaling_Depth_Type is range 0 .. 99;
+
     type Scaling_Curve_Type is record
         Curve : Curve_Style_Type := Linear;
         Positive : Boolean := False;
@@ -25,8 +27,8 @@ package DX7.Operators is
 
     type Keyboard_Level_Scaling_Type is record
         Breakpoint : MIDI_Note_Type;
-        Left_Depth : Depth_Type;
-        Right_Depth : Depth_Type;
+        Left_Depth : Scaling_Depth_Type;
+        Right_Depth : Scaling_Depth_Type;
         Left_Curve : Scaling_Curve_Type;
         Right_Curve : Scaling_Curve_Type;
     end record;
@@ -38,7 +40,7 @@ package DX7.Operators is
     type Operator_Type is record
         EG : Envelope_Type;
         Keyboard_Level_Scaling : Keyboard_Level_Scaling_Type;
-        Keyboard_Rate_Scaling : Depth_Type;
+        Keyboard_Rate_Scaling : Scaling_Depth_Type;
         AMS : AMS_Type;
         Keyboard_Velocity_Sensitivity : Depth_Type;
         Output_Level : Level_Type;
