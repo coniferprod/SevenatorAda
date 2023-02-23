@@ -48,4 +48,153 @@ package DX7.Voices is
     function Get_Data (LFO : LFO_Type) return Byte_Vector;
     function Get_Packed_Data (LFO : LFO_Type) return Byte_Vector;
 
+    Brass1 : constant Voice_Type := (
+        Operators => (
+            ( --OP1
+                EG => (
+                    Rates => (72, 76, 99, 71),
+                    Levels => (99, 88, 96, 0)
+                ),
+                Kbd_Level_Scaling => (
+                    Breakpoint => 60 - 21, 
+                    Left_Depth => 0,
+                    Right_Depth => 14,
+                    Left_Curve => Lin_Pos_Curve,
+                    Right_Curve => Lin_Pos_Curve
+                ),
+                Kbd_Rate_Scaling => 0,
+                AMS => 0,
+                Key_Vel_Sens => 0,
+                Output_Level => 98,
+                Mode => Ratio,
+                Coarse => 1,
+                Fine => 0,
+                Detune => 7
+            ),
+            ( --OP2
+                EG => (
+                    Rates => (62, 51, 29, 71),
+                    Levels => (82, 95, 96, 0)
+                ),
+                Kbd_Level_Scaling => (
+                    Breakpoint => 48 - 21, 
+                    Left_Depth => 0,
+                    Right_Depth => 7,
+                    Left_Curve => Lin_Pos_Curve,
+                    Right_Curve => Exp_Neg_Curve
+                ),
+                Kbd_Rate_Scaling => 0,
+                AMS => 0,
+                Key_Vel_Sens => 0,
+                Output_Level => 86,
+                Mode => Ratio,
+                Coarse => 0,
+                Fine => 0,
+                Detune => 7
+            ),
+            ( --OP3
+                EG => (
+                    Rates => (77, 76, 82, 71),
+                    Levels => (99, 98, 98, 0)
+                ),
+                Kbd_Level_Scaling => (
+                    Breakpoint => 48 - 21, 
+                    Left_Depth => 0,
+                    Right_Depth => 7,
+                    Left_Curve => Lin_Pos_Curve,
+                    Right_Curve => Exp_Neg_Curve
+                ),
+                Kbd_Rate_Scaling => 0,
+                AMS => 0,
+                Key_Vel_Sens => 2,
+                Output_Level => 86,
+                Mode => Ratio,
+                Coarse => 0,
+                Fine => 0,
+                Detune => -2
+            ),
+            ( --OP4
+                EG => (
+                    Rates => (77, 36, 41, 71),
+                    Levels => (99, 98, 98, 0)
+                ),
+                Kbd_Level_Scaling => (
+                    Breakpoint => 48 - 21, 
+                    Left_Depth => 0,
+                    Right_Depth => 7,
+                    Left_Curve => Lin_Pos_Curve,
+                    Right_Curve => Exp_Neg_Curve
+                ),
+                Kbd_Rate_Scaling => 0,
+                AMS => 0,
+                Key_Vel_Sens => 2,
+                Output_Level => 86,
+                Mode => Ratio,
+                Coarse => 0,
+                Fine => 0,
+                Detune => 1
+            ),
+            ( --OP5
+                EG => (
+                    Rates => (77, 36, 41, 71),
+                    Levels => (99, 98, 98, 0)
+                ),
+                Kbd_Level_Scaling => (
+                    Breakpoint => 48 - 21, 
+                    Left_Depth => 0,
+                    Right_Depth => 7,
+                    Left_Curve => Lin_Pos_Curve,
+                    Right_Curve => Exp_Neg_Curve
+                ),
+                Kbd_Rate_Scaling => 0,
+                AMS => 0,
+                Key_Vel_Sens => 2,
+                Output_Level => 98,
+                Mode => Ratio,
+                Coarse => 0,
+                Fine => 0,
+                Detune => 1
+            ),
+            ( --OP6
+                EG => (
+                    Rates => (49, 99, 28, 68),
+                    Levels => (98, 98, 91, 0)
+                ),    
+                Kbd_Level_Scaling => (
+                    Breakpoint => 60 - 21, 
+                    Left_Depth => 50,
+                    Right_Depth => 7,
+                    Left_Curve => Exp_Neg_Curve,
+                    Right_Curve => Exp_Neg_Curve
+                ),
+                Kbd_Rate_Scaling => 4,
+                AMS => 0,
+                Key_Vel_Sens => 2,
+                Output_Level => 98,
+                Mode => Ratio,
+                Coarse => 0,
+                Fine => 0,
+                Detune => 1
+            )
+        ),
+        Pitch_Envelope => (
+            Rates => (84, 95, 95, 60),
+            Levels => (50, 50, 50, 50)
+        ),
+        Algorithm => 22,
+        Feedback => 7,
+        Osc_Sync => True,
+        LFO => (
+            Speed => 37,
+            LFO_Delay => 0,
+            PMD => 5,
+            AMD => 0,
+            Sync => False,
+            Wave => Sine,
+            Pitch_Mod_Sens => 3
+        ),
+        Transpose => 0,
+        Name => "BRASS   1 "
+    );
+
 end DX7.Voices;
