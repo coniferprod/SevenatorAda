@@ -6,7 +6,6 @@ package body DX7.Cartridges is
         for i in Voice_Index loop
             BV.Append(Get_Packed_Data(Cartridge.Voices(i)));
         end loop;
-        -- TODO: Add checksum
         return BV;
     end Get_Data;
 

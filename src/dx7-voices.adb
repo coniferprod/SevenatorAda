@@ -45,7 +45,7 @@ package body DX7.Voices is
 
         for i in 1 .. Voice_Name_Length loop
             Ch := Voice.Name(i);
-            BV.Append(Character'Pos(Ch)); -- this seems to work OK
+            BV.Append(Character'Pos(Ch));
         end loop;
 
         return BV;
@@ -63,16 +63,18 @@ package body DX7.Voices is
         BV.Append(Get_Data(Voice.Pitch_Envelope));
         BV.Append(Byte(Voice.Algorithm));
 
-        Byte111 := Byte(Voice.Feedback) or Shift_Left(Byte(if Voice.Osc_Sync = True then 1 else 0), 3);
+        Byte111 := Byte(Voice.Feedback) 
+            or Shift_Left(Byte(if Voice.Osc_Sync = True then 1 else 0), 3);
         BV.Append(Byte111);
 
         BV.Append(Get_Packed_Data(Voice.LFO));
 
-        BV.Append(Byte((Voice.Transpose + 2) * 12));  -- adjust -2..+2 to 0...48 for SysEx
+        -- Adjust -2..+2 to 0...48 for SysEx
+        BV.Append(Byte((Voice.Transpose + 2) * 12));
 
         for i in 1 .. Voice_Name_Length loop
             Ch := Voice.Name(i);
-            BV.Append(Character'Pos(Ch)); -- this seems to work OK
+            BV.Append(Character'Pos(Ch));
         end loop;
 
         return BV;

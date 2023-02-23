@@ -2,7 +2,7 @@ with DX7.Envelopes; use DX7.Envelopes;
 
 package DX7.Operators is
 
-type Coarse_Type is range 0 .. 31;
+    type Coarse_Type is range 0 .. 31;
     type Detune_Type is range -7 .. 7;
 
     type Algorithm_Type is range 1 .. 32;

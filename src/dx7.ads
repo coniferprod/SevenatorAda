@@ -3,12 +3,12 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Helpers; use Helpers;
 
 -- The various parts of the data model are split into 
--- child packages, since: "If your root pkg needs the 
--- child in its spec then you have a design problem." (Jeffrey R. Carter)
+-- child packages. "If your root pkg needs the child
+-- in its spec then you have a design problem." (Jeffrey R. Carter)
 
 package DX7 is
-    -- The definitions are based on the example set by AdaCore's "Introduction to Ada",
-    -- section "Strongly typed language":
+    -- The definitions are based on the example set by 
+    -- AdaCore's "Introduction to Ada", section "Strongly typed language":
     -- https://learn.adacore.com/courses/intro-to-ada/chapters/strongly_typed_language.html#integers
 
     type Byte_Triplet is array (1 .. 3) of Byte;
@@ -35,5 +35,5 @@ package DX7 is
     function Get_Data (Message : Message_Type) return Byte_Vector;
 
     function Checksum (Data : Byte_Vector) return Byte;
-    
+
 end DX7;

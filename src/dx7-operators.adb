@@ -41,8 +41,9 @@ package body DX7.Operators is
             when Linear => (if KLS.Right_Curve.Positive then 3 else 0),
             when Exponential => (if KLS.Right_Curve.Positive then 2 else 1));
 
-        -- Byte is a modular type (see Helpers), so bitwise operators are defined
-        SC := Byte(LeftSC) or (Shift_Left(Byte(RightSC), 2));  -- Shift_Left is from the Interfaces package
+        -- Byte is a modular type (see Helpers), so bitwise operators are defined.
+        -- Shift_Left is from the Interfaces package.
+        SC := Byte(LeftSC) or (Shift_Left(Byte(RightSC), 2));
 
         BV.Append(SC);
 

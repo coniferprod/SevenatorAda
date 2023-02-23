@@ -8,7 +8,6 @@ with Interfaces;
 
 package Helpers is
 
-    --type Byte is mod 2**8;
     type Byte is new Interfaces.Unsigned_8;
     type Byte_Array is array (File_Size range <>) of Byte;
     type Byte_Array_Access is access Byte_Array;
