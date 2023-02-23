@@ -32,12 +32,13 @@ package body DX7.Voices is
         Ch: Character;
         BV : Byte_Vector;
     begin
-        for op in Operator_Index loop
+        -- Note: the operators appear in reverse order: OP6, OP5 etc.
+        for op in reverse Operator_Index loop
             BV.Append (Get_Data (Voice.Operators (op)));
         end loop;
 
         BV.Append(Get_Data(Voice.Pitch_Envelope));
-        BV.Append(Byte(Voice.Algorithm));
+        BV.Append(Byte(Voice.Algorithm - 1)); -- adjust to 0...31 for SysEx
         BV.Append(Byte(Voice.Feedback));
         BV.Append(Byte(if Voice.Osc_Sync = True then 1 else 0));
         BV.Append(Get_Data(Voice.LFO));
@@ -56,12 +57,14 @@ package body DX7.Voices is
         BV : Byte_Vector;
         Byte111: Byte;
     begin
-        for op in Operator_Index loop
+        -- Note: the operators appear in reverse order: OP6, OP5 etc.
+        for op in reverse Operator_Index loop
             BV.Append (Get_Packed_Data (Voice.Operators (op)));
         end loop;
 
         BV.Append(Get_Data(Voice.Pitch_Envelope));
-        BV.Append(Byte(Voice.Algorithm));
+        
+        BV.Append(Byte(Voice.Algorithm - 1)); -- adjust to 0...31 for SysEx
 
         Byte111 := Byte(Voice.Feedback) 
             or Shift_Left(Byte(if Voice.Osc_Sync = True then 1 else 0), 3);
