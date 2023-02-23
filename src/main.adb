@@ -13,10 +13,11 @@ procedure Main is
     package IO renames Ada.Text_IO;
     package CLI renames Ada.Command_Line;
 
-    KLS : Keyboard_Level_Scaling_Type;
     V : Voice_Type;
     Op1 : Operator_Type;
     Cartridge : Cartridge_Type;
+    Cartridge_Data : Byte_Vector;
+    Cartridge_Checksum : Byte;
 
     Manufacturer : Manufacturer_Type;
     Message : Message_Type;
@@ -136,8 +137,12 @@ begin
     Payload.Append (Byte (9));       -- format = 9 (32 voices)
     Payload.Append (Byte (16#20#));  -- byte count (MSB)
     Payload.Append (Byte (16#00#));  -- byte count (LSB)
-    Payload.Append (Get_Data (Cartridge));
-    Payload.Append (Byte (0));  -- TODO: compute checksum for cartridge
+
+    Cartridge_Data := Get_Data (Cartridge);
+    Payload.Append (Cartridge_Data);
+
+    Cartridge_Checksum := Checksum (Cartridge_Data);
+    Payload.Append (Cartridge_Checksum);
 
     Message := (
         Manufacturer,

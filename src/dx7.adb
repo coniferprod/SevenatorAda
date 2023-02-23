@@ -33,4 +33,19 @@ package body DX7 is
         return BV;
     end Get_Data;
 
+    function Checksum (Data : Byte_Vector) return Byte is
+        Sum : Byte := 0;
+        Result : Byte;
+    begin
+        for B of Data loop
+            Sum := Sum + B;
+        end loop;
+
+        Result := Sum and 16#FF#;
+        Result := not Result;
+        Result := Result and 16#7F#;
+        Result := Result + 1;
+        return Result;
+    end Checksum;
+
 end DX7;
