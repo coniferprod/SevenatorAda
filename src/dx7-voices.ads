@@ -25,7 +25,7 @@ package DX7.Voices is
         AMD : Level_Type;
         Sync : Boolean;
         Wave : LFO_Waveform_Type;
-        Pitch_Mod_Sens : Depth_Type;
+        Pitch_Modulation_Sensitivity : Depth_Type;
     end record;
 
     type Voice_Type is record
@@ -33,7 +33,7 @@ package DX7.Voices is
         Pitch_Envelope : Envelope_Type;
         Algorithm : Algorithm_Type;
         Feedback : Depth_Type;
-        Osc_Sync : Boolean;
+        Oscillator_Sync : Boolean;
         LFO : LFO_Type;
         Transpose: Transpose_Type;
         Name : Voice_Name_Type;
@@ -55,16 +55,16 @@ package DX7.Voices is
                     Rates => (72, 76, 99, 71),
                     Levels => (99, 88, 96, 0)
                 ),
-                Kbd_Level_Scaling => (
+                Keyboard_Level_Scaling => (
                     Breakpoint => 60 - 21, 
                     Left_Depth => 0,
-                    Right_Depth => 14,
-                    Left_Curve => Lin_Pos_Curve,
-                    Right_Curve => Lin_Pos_Curve
+                    Right_Depth => 0,
+                    Left_Curve => Linear_Positive_Curve,
+                    Right_Curve => Linear_Positive_Curve
                 ),
-                Kbd_Rate_Scaling => 0,
+                Keyboard_Rate_Scaling => 0,
                 AMS => 0,
-                Key_Vel_Sens => 0,
+                Keyboard_Velocity_Sensitivity => 0,
                 Output_Level => 98,
                 Mode => Ratio,
                 Coarse => 1,
@@ -76,16 +76,16 @@ package DX7.Voices is
                     Rates => (62, 51, 29, 71),
                     Levels => (82, 95, 96, 0)
                 ),
-                Kbd_Level_Scaling => (
+                Keyboard_Level_Scaling => (
                     Breakpoint => 48 - 21, 
                     Left_Depth => 0,
-                    Right_Depth => 7,
-                    Left_Curve => Lin_Pos_Curve,
-                    Right_Curve => Exp_Neg_Curve
+                    Right_Depth => 0,
+                    Left_Curve => Linear_Positive_Curve,
+                    Right_Curve => Exponential_Negative_Curve
                 ),
-                Kbd_Rate_Scaling => 0,
+                Keyboard_Rate_Scaling => 0,
                 AMS => 0,
-                Key_Vel_Sens => 0,
+                Keyboard_Velocity_Sensitivity => 0,
                 Output_Level => 86,
                 Mode => Ratio,
                 Coarse => 0,
@@ -97,16 +97,16 @@ package DX7.Voices is
                     Rates => (77, 76, 82, 71),
                     Levels => (99, 98, 98, 0)
                 ),
-                Kbd_Level_Scaling => (
+                Keyboard_Level_Scaling => (
                     Breakpoint => 48 - 21, 
                     Left_Depth => 0,
-                    Right_Depth => 7,
-                    Left_Curve => Lin_Pos_Curve,
-                    Right_Curve => Exp_Neg_Curve
+                    Right_Depth => 0,
+                    Left_Curve => Linear_Positive_Curve,
+                    Right_Curve => Exponential_Negative_Curve
                 ),
-                Kbd_Rate_Scaling => 0,
+                Keyboard_Rate_Scaling => 0,
                 AMS => 0,
-                Key_Vel_Sens => 2,
+                Keyboard_Velocity_Sensitivity => 2,
                 Output_Level => 86,
                 Mode => Ratio,
                 Coarse => 0,
@@ -118,16 +118,16 @@ package DX7.Voices is
                     Rates => (77, 36, 41, 71),
                     Levels => (99, 98, 98, 0)
                 ),
-                Kbd_Level_Scaling => (
+                Keyboard_Level_Scaling => (
                     Breakpoint => 48 - 21, 
                     Left_Depth => 0,
-                    Right_Depth => 7,
-                    Left_Curve => Lin_Pos_Curve,
-                    Right_Curve => Exp_Neg_Curve
+                    Right_Depth => 0,
+                    Left_Curve => Linear_Positive_Curve,
+                    Right_Curve => Exponential_Negative_Curve
                 ),
-                Kbd_Rate_Scaling => 0,
+                Keyboard_Rate_Scaling => 0,
                 AMS => 0,
-                Key_Vel_Sens => 2,
+                Keyboard_Velocity_Sensitivity => 2,
                 Output_Level => 86,
                 Mode => Ratio,
                 Coarse => 0,
@@ -139,16 +139,16 @@ package DX7.Voices is
                     Rates => (77, 36, 41, 71),
                     Levels => (99, 98, 98, 0)
                 ),
-                Kbd_Level_Scaling => (
+                Keyboard_Level_Scaling => (
                     Breakpoint => 48 - 21, 
                     Left_Depth => 0,
-                    Right_Depth => 7,
-                    Left_Curve => Lin_Pos_Curve,
-                    Right_Curve => Exp_Neg_Curve
+                    Right_Depth => 0,
+                    Left_Curve => Linear_Positive_Curve,
+                    Right_Curve => Exponential_Negative_Curve
                 ),
-                Kbd_Rate_Scaling => 0,
+                Keyboard_Rate_Scaling => 0,
                 AMS => 0,
-                Key_Vel_Sens => 2,
+                Keyboard_Velocity_Sensitivity => 2,
                 Output_Level => 98,
                 Mode => Ratio,
                 Coarse => 0,
@@ -160,16 +160,16 @@ package DX7.Voices is
                     Rates => (49, 99, 28, 68),
                     Levels => (98, 98, 91, 0)
                 ),    
-                Kbd_Level_Scaling => (
+                Keyboard_Level_Scaling => (
                     Breakpoint => 60 - 21, 
                     Left_Depth => 50,
-                    Right_Depth => 7,
-                    Left_Curve => Exp_Neg_Curve,
-                    Right_Curve => Exp_Neg_Curve
+                    Right_Depth => 0,
+                    Left_Curve => Exponential_Negative_Curve,
+                    Right_Curve => Exponential_Negative_Curve
                 ),
-                Kbd_Rate_Scaling => 4,
+                Keyboard_Rate_Scaling => 4,
                 AMS => 0,
-                Key_Vel_Sens => 2,
+                Keyboard_Velocity_Sensitivity => 2,
                 Output_Level => 98,
                 Mode => Ratio,
                 Coarse => 0,
@@ -183,7 +183,7 @@ package DX7.Voices is
         ),
         Algorithm => 22,
         Feedback => 7,
-        Osc_Sync => True,
+        Oscillator_Sync => True,
         LFO => (
             Speed => 37,
             LFO_Delay => 0,
@@ -191,7 +191,7 @@ package DX7.Voices is
             AMD => 0,
             Sync => False,
             Wave => Sine,
-            Pitch_Mod_Sens => 3
+            Pitch_Modulation_Sensitivity => 3
         ),
         Transpose => 0,
         Name => "BRASS   1 "

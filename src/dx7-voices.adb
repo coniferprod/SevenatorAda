@@ -9,7 +9,7 @@ package body DX7.Voices is
         BV.Append(Byte(LFO.AMD));
         BV.Append(Byte(if LFO.Sync = True then 1 else 0));
         BV.Append(Byte(LFO_Waveform_Type'Pos(LFO.Wave)));  -- convert enum value to Byte (first enum is pos zero)
-        BV.Append(Byte(LFO.Pitch_Mod_Sens));
+        BV.Append(Byte(LFO.Pitch_Modulation_Sensitivity));
         return BV;
     end Get_Data;
 
@@ -40,7 +40,7 @@ package body DX7.Voices is
         BV.Append(Get_Data(Voice.Pitch_Envelope));
         BV.Append(Byte(Voice.Algorithm - 1)); -- adjust to 0...31 for SysEx
         BV.Append(Byte(Voice.Feedback));
-        BV.Append(Byte(if Voice.Osc_Sync = True then 1 else 0));
+        BV.Append(Byte(if Voice.Oscillator_Sync = True then 1 else 0));
         BV.Append(Get_Data(Voice.LFO));
         BV.Append(Byte((Voice.Transpose + 2) * 12));  -- adjust -2..+2 to 0...48 for SysEx
 
@@ -63,11 +63,11 @@ package body DX7.Voices is
         end loop;
 
         BV.Append(Get_Data(Voice.Pitch_Envelope));
-        
+
         BV.Append(Byte(Voice.Algorithm - 1)); -- adjust to 0...31 for SysEx
 
         Byte111 := Byte(Voice.Feedback) 
-            or Shift_Left(Byte(if Voice.Osc_Sync = True then 1 else 0), 3);
+            or Shift_Left(Byte(if Voice.Oscillator_Sync then 1 else 0), 3);
         BV.Append(Byte111);
 
         BV.Append(Get_Packed_Data(Voice.LFO));

@@ -54,10 +54,10 @@ package body DX7.Operators is
         BV : Byte_Vector;
     begin
         BV.Append(Get_Data(Operator.EG));
-        BV.Append(Get_Data(Operator.Kbd_Level_Scaling));
-        BV.Append(Byte(Operator.Kbd_Rate_Scaling));
+        BV.Append(Get_Data(Operator.Keyboard_Level_Scaling));
+        BV.Append(Byte(Operator.Keyboard_Rate_Scaling));
         BV.Append(Byte(Operator.AMS));
-        BV.Append(Byte(Operator.Key_Vel_Sens));
+        BV.Append(Byte(Operator.Keyboard_Velocity_Sensitivity));
         BV.Append(Byte(Operator.Output_Level));
         BV.Append(Byte(Operator_Mode'Pos(Operator.Mode)));
         BV.Append(Byte(Operator.Coarse));
@@ -74,20 +74,22 @@ package body DX7.Operators is
         Byte15: Byte;
     begin
         BV.Append(Get_Data(Operator.EG)); -- normal and packed are the same
-        BV.Append(Get_Packed_Data(Operator.Kbd_Level_Scaling));
+        BV.Append(Get_Packed_Data(Operator.Keyboard_Level_Scaling));
 
         Detune_Byte := Byte(Operator.Detune + 7); -- adjust to 0...14 for SysEx
         BV.Append(Detune_Byte);
 
-        Byte12 := Byte(Operator.Kbd_Rate_Scaling) or Shift_Left(Detune_Byte, 3);
+        Byte12 := Byte(Operator.Keyboard_Rate_Scaling) or Shift_Left(Detune_Byte, 3);
         BV.Append(Byte12);
 
-        Byte13 := Byte(Operator.AMS) or Shift_Left(Byte(Operator.Key_Vel_Sens), 2);
+        Byte13 := Byte(Operator.AMS) 
+            or Shift_Left(Byte(Operator.Keyboard_Velocity_Sensitivity), 2);
         BV.Append(Byte13);
 
         BV.Append(Byte(Operator.Output_Level));
 
-        Byte15 := Byte(Operator_Mode'Pos(Operator.Mode)) or Shift_Left(Byte(Operator.Coarse), 1);
+        Byte15 := Byte(Operator_Mode'Pos(Operator.Mode)) 
+            or Shift_Left(Byte(Operator.Coarse), 1);
         BV.Append(Byte15);
 
         BV.Append(Byte(Operator.Fine));

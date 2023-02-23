@@ -13,8 +13,6 @@ procedure Main is
     package IO renames Ada.Text_IO;
     package CLI renames Ada.Command_Line;
 
-    V : Voice_Type;
-    Op1 : Operator_Type;
     Cartridge : Cartridge_Type;
     Cartridge_Data : Byte_Vector;
     Cartridge_Checksum : Byte;
@@ -80,52 +78,8 @@ begin
     
     IO.Put_Line("Generating new cartridge...");
 
-    Op1 := (
-        EG => (
-            Rates => (99, 99, 99, 99), 
-            Levels => (99, 99, 99, 0)
-        ),
-        Kbd_Level_Scaling => (
-            Breakpoint => 60 - 21,
-            Left_Depth => 0,
-            Right_Depth => 0,
-            Left_Curve => Lin_Neg_Curve,
-            Right_Curve => Lin_Neg_Curve
-        ),
-        Kbd_Rate_Scaling => 0,
-        AMS => 0,
-        Key_Vel_Sens => 0,
-        Output_Level => 0,
-        Mode => Ratio,
-        Coarse => 1,
-        Fine => 0,
-        Detune => 0
-    );
-
-    V := (
-        Name => "INIT VOICE",
-        Operators => (Op1, Op1, Op1, Op1, Op1, Op1),
-        Pitch_Envelope => (
-            Rates => (99, 99, 99, 99), 
-            Levels => (99, 99, 99, 0)
-        ),
-        Algorithm => 1,
-        Feedback => 0,
-        Osc_Sync => False,
-        LFO => (
-            Speed => 0,
-            LFO_Delay => 0,
-            PMD => 0,
-            AMD => 0,
-            Sync => True,
-            Wave => Triangle,
-            Pitch_Mod_Sens => 0
-        ),
-        Transpose => 0
-    );
-
     for i in Voice_Index loop
-        Cartridge.Voices (i) := V;
+        Cartridge.Voices (i) := Brass1;
     end loop;
 
     Manufacturer := (

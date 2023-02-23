@@ -15,10 +15,10 @@ package DX7.Operators is
         Positive : Boolean := False;
     end record;
 
-    Lin_Neg_Curve : constant Scaling_Curve_Type := (Curve => Linear, Positive => False);
-    Lin_Pos_Curve : constant Scaling_Curve_Type := (Curve => Linear, Positive => True);
-    Exp_Neg_Curve : constant Scaling_Curve_Type := (Curve => Exponential, Positive => False);
-    Exp_Pos_Curve : constant Scaling_Curve_Type := (Curve => Exponential, Positive => True);
+    Linear_Negative_Curve : constant Scaling_Curve_Type := (Curve => Linear, Positive => False);
+    Linear_Positive_Curve : constant Scaling_Curve_Type := (Curve => Linear, Positive => True);
+    Exponential_Negative_Curve : constant Scaling_Curve_Type := (Curve => Exponential, Positive => False);
+    Exponential_Positive_Curve : constant Scaling_Curve_Type := (Curve => Exponential, Positive => True);
 
     type MIDI_Note_Type is range 0 .. 127;
     type MIDI_Channel_Type is range 1 .. 16;
@@ -37,10 +37,10 @@ package DX7.Operators is
 
     type Operator_Type is record
         EG : Envelope_Type;
-        Kbd_Level_Scaling : Keyboard_Level_Scaling_Type;
-        Kbd_Rate_Scaling : Depth_Type;
+        Keyboard_Level_Scaling : Keyboard_Level_Scaling_Type;
+        Keyboard_Rate_Scaling : Depth_Type;
         AMS : AMS_Type;
-        Key_Vel_Sens : Depth_Type;
+        Keyboard_Velocity_Sensitivity : Depth_Type;
         Output_Level : Level_Type;
         Mode : Operator_Mode;
         Coarse : Coarse_Type;
