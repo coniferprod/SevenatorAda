@@ -1,100 +1,124 @@
 package body DX7.Voices is
 
-    function Get_Data (LFO : LFO_Type) return Byte_Vector is
-        BV : Byte_Vector;
+    -- Gets the LFO data as bytes for MIDI System Exclusive.
+    -- The normal format is used for individual voice data.
+    function Get_Data (LFO : LFO_Type) return LFO_Data_Type is
     begin
-        BV.Append(Byte(LFO.Speed));
-        BV.Append(Byte(LFO.LFO_Delay));
-        BV.Append(Byte(LFO.PMD));
-        BV.Append(Byte(LFO.AMD));
-        BV.Append(Byte(if LFO.Sync = True then 1 else 0));
-
-        -- Convert enum value to Byte (first enum is pos zero)
-        BV.Append(Byte(LFO_Waveform_Type'Pos(LFO.Wave)));
-
-        return BV;
+        return (Byte (LFO.Speed),
+                Byte (LFO.LFO_Delay),
+                Byte (LFO.PMD),
+                Byte (LFO.AMD),
+                Byte (if LFO.Sync = True then 1 else 0),
+                -- Convert enum value to Byte (first enum is pos zero)
+                Byte (LFO_Waveform_Type'Pos (LFO.Wave)),
+                Byte (LFO.Pitch_Modulation_Sensitivity)
+        );
     end Get_Data;
 
-    function Get_Packed_Data (LFO : LFO_Type) return Byte_Vector is
-        BV : Byte_Vector;
-        Byte116: Byte;
+    -- Gets the LFO data as packed bytes for MIDI System Exclusive.
+    -- The packed format is used when voice data is inside cartridge data.
+    function Get_Packed_Data (LFO : LFO_Type) return LFO_Packed_Data_Type is
     begin
-        BV.Append(Byte(LFO.Speed));
-        BV.Append(Byte(LFO.LFO_Delay));
-        BV.Append(Byte(LFO.PMD));
-        BV.Append(Byte(LFO.AMD));
+        return (Byte (LFO.Speed),
+                Byte (LFO.LFO_Delay),
+                Byte (LFO.PMD),
+                Byte (LFO.AMD),
 
-        Byte116 := (if LFO.Sync then 1 else 0);
-
-        -- Waveform type starts at bit 1
-        Byte116 := Byte116 
-            or Shift_Left(Byte(LFO_Waveform_Type'Pos(LFO.Wave)), 1);
+                -- Waveform type starts at bit 1
+                Byte (if LFO.Sync = True then 1 else 0)
+                    or Shift_Left (Byte (LFO_Waveform_Type'Pos (LFO.Wave)), 1));
         -- TODO: How to set a bit range?
         -- b116.replaceBits(1...3, with: Byte(LFO.Wave))
-
-        -- NOTE: In the packed format, this byte contains also the
-        -- pitch modulation sensitivity, which applies to all operators.
-        -- The corresponding bits need to be set later.
-
-        BV.Append(Byte116);
-        return BV;
     end Get_Packed_Data;
 
-    function Get_Data (Voice : Voice_Type) return Byte_Vector is
+    -- Gets the voice data bytes for MIDI System Exclusive.
+    -- The normal format is used for individual voices.
+    function Get_Data (Voice : Voice_Type) return Voice_Data_Type is
         Ch: Character;
-        BV : Byte_Vector;
+        Data : Voice_Data_Type;
+        Offset : Integer;
     begin
+        Offset := 1;
         -- Note: the operators appear in reverse order: OP6, OP5 etc.
-        for op in reverse Operator_Index loop
-            BV.Append (Get_Data (Voice.Operators (op)));
+        for Op in reverse Operator_Index loop
+            for B of Get_Data (Voice.Operators (Op)) loop
+                Data (Offset) := B;
+                Offset := Offset + 1;
+            end loop;
         end loop;
 
-        BV.Append(Get_Data(Voice.Pitch_Envelope));
-        BV.Append(Byte(Voice.Algorithm - 1)); -- adjust to 0...31 for SysEx
-        BV.Append(Byte(Voice.Feedback));
-        BV.Append(Byte(if Voice.Oscillator_Sync = True then 1 else 0));
-        BV.Append(Get_Data(Voice.LFO));
-        BV.Append(Byte((Voice.Transpose + 2) * 12));  -- adjust -2..+2 to 0...48 for SysEx
-
-        for i in 1 .. Voice_Name_Length loop
-            Ch := Voice.Name(i);
-            BV.Append(Character'Pos(Ch));
+        for B of Get_Data (Voice.Pitch_Envelope) loop
+            Data (Offset) := B;
+            Offset := Offset + 1;
         end loop;
 
-        return BV;
-    end Get_Data;
+        Data (Offset) := Byte (Voice.Algorithm - 1); -- adjust to 0...31 for SysEx
+        Data (Offset + 1) := Byte (Voice.Feedback);
+        Data (Offset + 2) := Byte (if Voice.Oscillator_Sync = True then 1 else 0);
 
-    function Get_Packed_Data (Voice : Voice_Type) return Byte_Vector is
-        Ch: Character;
-        BV : Byte_Vector;
-        Byte111: Byte;
-    begin
-        -- Note: the operators appear in reverse order: OP6, OP5 etc.
-        for op in reverse Operator_Index loop
-            BV.Append (Get_Packed_Data (Voice.Operators (op)));
+        Offset := 2;
+        for B of Get_Data (Voice.LFO) loop
+            Data (Offset) := B;
+            Offset := Offset + 1;
         end loop;
-
-        BV.Append(Get_Data(Voice.Pitch_Envelope));
-
-        BV.Append(Byte(Voice.Algorithm - 1)); -- adjust to 0...31 for SysEx
-
-        Byte111 := Byte(Voice.Feedback) 
-            or Shift_Left(Byte(if Voice.Oscillator_Sync then 1 else 0), 3);
-        BV.Append(Byte111);
-
-        BV.Append(Get_Packed_Data(Voice.LFO));
-
-        -- TODO: Handle the pitch mod sens value
 
         -- Adjust -2..+2 to 0...48 for SysEx
-        BV.Append(Byte((Voice.Transpose + 2) * 12));
+        Data (Offset) := Byte ((Voice.Transpose + 2) * 12);
+        Offset := Offset + 1;
 
-        for i in 1 .. Voice_Name_Length loop
-            Ch := Voice.Name(i);
-            BV.Append(Character'Pos(Ch));
+        for I in 1 .. Voice_Name_Length loop
+            Ch := Voice.Name (I);
+            Data (Offset) := Character'Pos (Ch);
+            Offset := Offset + 1;
         end loop;
 
-        return BV;
+        return Data;
+    end Get_Data;
+
+    -- Gets the voice data bytes in packed format for MIDI System Exclusive.
+    -- The packed format is used when voice data is embedded in cartridge data.
+    function Get_Packed_Data (Voice : Voice_Type) return Voice_Packed_Data_Type is
+        Ch: Character;
+        Byte_111: Byte;
+        LFO_Data : LFO_Packed_Data_Type;
+        Data : Voice_Packed_Data_Type;
+        Offset : Integer;
+    begin
+        Offset := 1;
+        -- Note: the operators appear in reverse order: OP6, OP5 etc.
+        for Op in reverse Operator_Index loop
+            for B of Get_Packed_Data (Voice.Operators (Op)) loop
+                Data (Offset) := B;
+                Offset := Offset + 1;
+            end loop;
+        end loop;
+
+        for B of Get_Data (Voice.Pitch_Envelope) loop
+            Data (Offset) := B;
+            Offset := Offset + 1;
+        end loop;
+
+        Data (Offset) := Byte (Voice.Algorithm - 1); -- adjust to 0...31 for SysEx
+        Offset := Offset + 1;
+
+        Byte_111 := Byte (Voice.Feedback) 
+            or Shift_Left (Byte (if Voice.Oscillator_Sync then 1 else 0), 3);
+        Data (Offset) := Byte_111;
+        Offset := Offset + 1;
+
+        LFO_Data := Get_Packed_Data (Voice.LFO);
+
+        -- Adjust -2..+2 to 0...48 for SysEx
+        Data (Offset) := Byte ((Voice.Transpose + 2) * 12);
+        Offset := Offset + 1;
+
+        for I in 1 .. Voice_Name_Length loop
+            Ch := Voice.Name (I);
+            Data (Offset) := Character'Pos (Ch);
+            Offset := Offset + 1;
+        end loop;
+
+        return Data;
     end Get_Packed_Data;
 
 end DX7.Voices;

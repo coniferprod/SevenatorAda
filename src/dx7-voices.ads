@@ -2,6 +2,11 @@ with DX7.Envelopes; use DX7.Envelopes;
 with DX7.Operators; use DX7.Operators;
 
 package DX7.Voices is
+    Voice_Data_Length: constant Integer := 155;
+    subtype Voice_Data_Type is Data_Type (1 .. Voice_Data_Length);
+
+    Voice_Packed_Data_Length: constant Integer := 128;
+    subtype Voice_Packed_Data_Type is Data_Type (1 .. Voice_Packed_Data_Length);
 
     Voice_Name_Length : constant Integer := 10;
     subtype Voice_Name_Type is String (1 .. Voice_Name_Length);
@@ -25,8 +30,15 @@ package DX7.Voices is
         AMD : Level_Type;
         Sync : Boolean;
         Wave : LFO_Waveform_Type;
+        Pitch_Modulation_Sensitivity : Depth_Type;
     end record;
 
+    LFO_Data_Length : constant Integer := 7;
+    subtype LFO_Data_Type is Data_Type (1 .. LFO_Data_Length);
+
+    LFO_Packed_Data_Length : constant Integer := 5;
+    subtype LFO_Packed_Data_Type is Data_Type (1 .. LFO_Packed_Data_Length);
+    
     type Voice_Type is record
         Operators : Operator_Array;
         Pitch_Envelope : Envelope_Type;
@@ -34,7 +46,6 @@ package DX7.Voices is
         Feedback : Depth_Type;
         Oscillator_Sync : Boolean;
         LFO : LFO_Type;
-        Pitch_Modulation_Sensitivity : Depth_Type;
         Transpose: Transpose_Type;
         Name : Voice_Name_Type;
     end record;
@@ -42,11 +53,11 @@ package DX7.Voices is
     type Voice_Index is range 1 .. 32;
     type Voice_Array is array (Voice_Index) of Voice_Type;
 
-    function Get_Data (Voice : Voice_Type) return Byte_Vector;
-    function Get_Packed_Data (Voice : Voice_Type) return Byte_Vector;
+    function Get_Data (Voice : Voice_Type) return Voice_Data_Type;
+    function Get_Packed_Data (Voice : Voice_Type) return Voice_Packed_Data_Type;
 
-    function Get_Data (LFO : LFO_Type) return Byte_Vector;
-    function Get_Packed_Data (LFO : LFO_Type) return Byte_Vector;
+    function Get_Data (LFO : LFO_Type) return LFO_Data_Type;
+    function Get_Packed_Data (LFO : LFO_Type) return LFO_Packed_Data_Type;
 
     Brass1 : constant Voice_Type := (
         Operators => (
@@ -190,9 +201,9 @@ package DX7.Voices is
             PMD => 5,
             AMD => 0,
             Sync => False,
-            Wave => Sine
+            Wave => Sine,
+            Pitch_Modulation_Sensitivity => 3
         ),
-        Pitch_Modulation_Sensitivity => 3,
         Transpose => 0,
         Name => "BRASS   1 "
     );

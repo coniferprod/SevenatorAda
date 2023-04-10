@@ -1,13 +1,16 @@
 package body DX7.Cartridges is
 
-    function Get_Data (Cartridge : Cartridge_Type) return Byte_Vector is
-        BV : Byte_Vector;
+    -- Gets the cartridge data as bytes for MIDI System Exclusive.
+    procedure Get_Data (Cartridge : in Cartridge_Type; Data : out Cartridge_Data_Type) is
+        Offset : Integer;
     begin
-        for i in Voice_Index loop
-            BV.Append(Get_Packed_Data(Cartridge.Voices(i)));
+        Offset := 1;
+        for I in Voice_Index loop
+            for B of Get_Packed_Data (Cartridge.Voices (I)) loop
+                Data (Offset) := B;
+                Offset := Offset + 1;
+            end loop; 
         end loop;
-        return BV;
     end Get_Data;
-
 
 end DX7.Cartridges;

@@ -17,10 +17,14 @@ package DX7.Operators is
         Positive : Boolean := False;
     end record;
 
-    Linear_Negative_Curve : constant Scaling_Curve_Type := (Curve => Linear, Positive => False);
-    Linear_Positive_Curve : constant Scaling_Curve_Type := (Curve => Linear, Positive => True);
-    Exponential_Negative_Curve : constant Scaling_Curve_Type := (Curve => Exponential, Positive => False);
-    Exponential_Positive_Curve : constant Scaling_Curve_Type := (Curve => Exponential, Positive => True);
+    Linear_Negative_Curve : constant Scaling_Curve_Type 
+        := (Curve => Linear, Positive => False);
+    Linear_Positive_Curve : constant Scaling_Curve_Type 
+        := (Curve => Linear, Positive => True);
+    Exponential_Negative_Curve : constant Scaling_Curve_Type 
+        := (Curve => Exponential, Positive => False);
+    Exponential_Positive_Curve : constant Scaling_Curve_Type 
+        := (Curve => Exponential, Positive => True);
 
     type MIDI_Note_Type is range 0 .. 127;
     type MIDI_Channel_Type is range 1 .. 16;
@@ -32,6 +36,14 @@ package DX7.Operators is
         Left_Curve : Scaling_Curve_Type;
         Right_Curve : Scaling_Curve_Type;
     end record;
+
+    Keyboard_Level_Scaling_Data_Length : constant Integer := 5;
+    subtype Keyboard_Level_Scaling_Data_Type is 
+        Data_Type (1 .. Keyboard_Level_Scaling_Data_Length);
+
+    Keyboard_Level_Scaling_Packed_Data_Length : constant Integer := 4;
+    subtype Keyboard_Level_Scaling_Packed_Data_Type is 
+        Data_Type (1 .. Keyboard_Level_Scaling_Packed_Data_Length);
 
     type Operator_Mode is (Ratio, Fixed);
 
@@ -53,9 +65,20 @@ package DX7.Operators is
     type Operator_Index is range 1 .. 6;
     type Operator_Array is array (Operator_Index) of Operator_Type;
 
-    function Get_Data (Operator : Operator_Type) return Byte_Vector;
-    function Get_Packed_Data (Operator : Operator_Type) return Byte_Vector;
-    function Get_Data (KLS: Keyboard_Level_Scaling_Type) return Byte_Vector;
-    function Get_Packed_Data (KLS: Keyboard_Level_Scaling_Type) return Byte_Vector;
+    Operator_Data_Length : constant Integer := 21;
+    subtype Operator_Data_Type is Data_Type (1 .. Operator_Data_Length);
+
+    Operator_Packed_Data_Length : constant Integer := 17;
+    subtype Operator_Packed_Data_Type is Data_Type (1 .. Operator_Packed_Data_Length);
+
+    function Get_Data (Operator : Operator_Type) 
+        return Operator_Data_Type;
+    function Get_Packed_Data (Operator : Operator_Type) 
+        return Operator_Packed_Data_Type;
+
+    function Get_Data (KLS : Keyboard_Level_Scaling_Type) 
+        return Keyboard_Level_Scaling_Data_Type;
+    function Get_Packed_Data (KLS : Keyboard_Level_Scaling_Type) 
+        return Keyboard_Level_Scaling_Packed_Data_Type;
 
 end DX7.Operators;

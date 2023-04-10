@@ -1,6 +1,6 @@
 with Helpers; use Helpers;
 
--- Child package of DX7
+-- Child package of DX7 for envelope generator definitions
 package DX7.Envelopes is
 
     -- Define type for level. Also define an array index
@@ -9,16 +9,22 @@ package DX7.Envelopes is
     type Level_Index is range 1 .. 4;
     type Level_Array is array (Level_Index) of Level_Type;
 
+    -- Similarly to rate, define an range, an array type and array index.
     type Rate_Type is range 0 .. 99;
     type Rate_Index is range 1 .. 4;
     type Rate_Array is array (Rate_Index) of Rate_Type;
 
+    -- An envelope is represented by rates and levels.
     type Envelope_Type is record
         Rates : Rate_Array;
         Levels : Level_Array;
     end record;
 
-    function Get_Data (Envelope : Envelope_Type) return Byte_Vector;
+    Envelope_Data_Length: constant Integer := 8; -- SysEx data length
+
+    subtype Envelope_Data_Type is Data_Type (1 .. Envelope_Data_Length);
+
+    function Get_Data (Envelope : Envelope_Type) return Envelope_Data_Type;
 
     function Random_Envelope return Envelope_Type;
 

@@ -1,100 +1,120 @@
+with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+
 package body DX7.Operators is
 
-    function Get_Data (KLS: Keyboard_Level_Scaling_Type) return Byte_Vector is
-        BV : Byte_Vector;
-        LeftSC : Byte;
-        RightSC : Byte;
+    function Get_Data (KLS: Keyboard_Level_Scaling_Type) 
+        return Keyboard_Level_Scaling_Data_Type is
     begin
-        BV.Append(Byte(KLS.Breakpoint));
-        BV.Append(Byte(KLS.Left_Depth));
-        BV.Append(Byte(KLS.Right_Depth));
-
-        LeftSC := (case KLS.Left_Curve.Curve is
-            when Linear => (if KLS.Left_Curve.Positive then 3 else 0),
-            when Exponential => (if KLS.Left_Curve.Positive then 2 else 1));
-
-        RightSC := (case KLS.Right_Curve.Curve is
-            when Linear => (if KLS.Right_Curve.Positive then 3 else 0),
-            when Exponential => (if KLS.Right_Curve.Positive then 2 else 1));
-
-        BV.Append(Byte(LeftSC));
-        BV.Append(Byte(RightSC));
-
-        return BV;
+        return (Byte (KLS.Breakpoint),
+                Byte (KLS.Left_Depth),
+                Byte (KLS.Right_Depth),
+                Byte (case KLS.Left_Curve.Curve is
+                      when Linear => (if KLS.Left_Curve.Positive then 3 else 0),
+                      when Exponential => (if KLS.Left_Curve.Positive then 2 else 1)),
+                Byte (case KLS.Right_Curve.Curve is
+                      when Linear => (if KLS.Right_Curve.Positive then 3 else 0),
+                      when Exponential => (if KLS.Right_Curve.Positive then 2 else 1)));
     end Get_Data;
 
-    function Get_Packed_Data (KLS: Keyboard_Level_Scaling_Type) return Byte_Vector is
-        BV : Byte_Vector;
-        LeftSC : Byte;
-        RightSC : Byte;
-        SC : Byte;
+    function Get_Packed_Data (KLS: Keyboard_Level_Scaling_Type) 
+        return Keyboard_Level_Scaling_Packed_Data_Type is
+        Data : Keyboard_Level_Scaling_Packed_Data_Type;
+        Offset : Integer;
     begin
-        BV.Append(Byte(KLS.Breakpoint));
-        BV.Append(Byte(KLS.Left_Depth));
-        BV.Append(Byte(KLS.Right_Depth));
+        Offset := 1;
+        Data (1) := Byte (KLS.Breakpoint);
+        Data (2) := Byte (KLS.Left_Depth);
+        Data (3) := Byte (KLS.Right_Depth);
 
-        LeftSC := (case KLS.Left_Curve.Curve is
-            when Linear => (if KLS.Left_Curve.Positive then 3 else 0),
-            when Exponential => (if KLS.Left_Curve.Positive then 2 else 1));
+        declare
+            LeftSC, RightSC, SC : Byte;
+        begin
+            LeftSC := (case KLS.Left_Curve.Curve is
+                when Linear => (if KLS.Left_Curve.Positive then 3 else 0),
+                when Exponential => (if KLS.Left_Curve.Positive then 2 else 1));
 
-        RightSC := (case KLS.Right_Curve.Curve is
-            when Linear => (if KLS.Right_Curve.Positive then 3 else 0),
-            when Exponential => (if KLS.Right_Curve.Positive then 2 else 1));
+            RightSC := (case KLS.Right_Curve.Curve is
+                when Linear => (if KLS.Right_Curve.Positive then 3 else 0),
+                when Exponential => (if KLS.Right_Curve.Positive then 2 else 1));
 
-        -- Byte is a modular type (see Helpers), so bitwise operators are defined.
-        -- Shift_Left is from the Interfaces package.
-        SC := Byte(LeftSC) or (Shift_Left(Byte(RightSC), 2));
+            -- Byte is a modular type (see Helpers), so bitwise operators are defined.
+            -- Shift_Left is from the Interfaces package.
+            SC := Byte(LeftSC) or (Shift_Left(Byte(RightSC), 2));
 
-        BV.Append(SC);
+            Data (4) := SC;
+        end;
 
-        return BV;
+        return Data;
     end Get_Packed_Data;
 
-    function Get_Data (Operator : Operator_Type) return Byte_Vector is
-        BV : Byte_Vector;
+    function Get_Data (Operator : Operator_Type) return Operator_Data_Type is
+        Data : Operator_Data_Type;
+        Offset : Integer;
     begin
-        BV.Append(Get_Data(Operator.EG));
-        BV.Append(Get_Data(Operator.Keyboard_Level_Scaling));
-        BV.Append(Byte(Operator.Keyboard_Rate_Scaling));
-        BV.Append(Byte(Operator.AMS));
-        BV.Append(Byte(Operator.Keyboard_Velocity_Sensitivity));
-        BV.Append(Byte(Operator.Output_Level));
-        BV.Append(Byte(Operator_Mode'Pos(Operator.Mode)));
-        BV.Append(Byte(Operator.Coarse));
-        BV.Append(Byte(Operator.Fine));
-        BV.Append(Byte(Operator.Detune + 7)); -- adjust to 0...14 for SysEx
-        return BV;
+        Offset := 1;
+        for EG_Byte of Get_Data (Operator.EG) loop
+            Data (Offset) := EG_Byte;
+            Offset := Offset + 1;
+        end loop;
+
+        for KLS_Byte of Get_Data (Operator.Keyboard_Level_Scaling) loop
+            Data (Offset) := KLS_Byte;
+            Offset := Offset + 1; 
+        end loop;
+
+        Data (Offset) := Byte (Operator.Keyboard_Rate_Scaling); 
+        Data (Offset + 1) := Byte (Operator.AMS);
+        Data (Offset + 2) := Byte (Operator.Keyboard_Velocity_Sensitivity);
+        Data (Offset + 3) := Byte (Operator.Output_Level);
+        Data (Offset + 4) := Byte (Operator_Mode'Pos (Operator.Mode));
+        Data (Offset + 5) := Byte (Operator.Coarse);
+        Data (Offset + 6) := Byte (Operator.Fine);
+        Data (Offset + 7) := Byte (Operator.Detune + 7); -- adjust to 0...14 for SysEx
+        
+        return Data;
     end Get_Data;
 
-    function Get_Packed_Data (Operator : Operator_Type) return Byte_Vector is
-        BV : Byte_Vector;
+    function Get_Packed_Data (Operator : Operator_Type) 
+        return Operator_Packed_Data_Type is
         Detune_Byte: Byte;
         Byte12: Byte;
         Byte13: Byte;
         Byte15: Byte;
+        Data : Operator_Packed_Data_Type;
+        Offset : Integer;
     begin
-        BV.Append(Get_Data(Operator.EG)); -- normal and packed are the same
-        BV.Append(Get_Packed_Data(Operator.Keyboard_Level_Scaling));
+        -- Normal and packed EG data are the same
+        Offset := 1;
+        for EG_Byte of Get_Data (Operator.EG) loop
+            Data (Offset) := EG_Byte;
+            Offset := Offset + 1;
+        end loop;
 
-        Detune_Byte := Byte(Operator.Detune + 7); -- adjust to 0...14 for SysEx
-        BV.Append(Detune_Byte);
+        -- Using packed data for keyboard level scaling
+        for KLS_Byte of Get_Packed_Data (Operator.Keyboard_Level_Scaling) loop
+            Data (Offset) := KLS_Byte;
+            Offset := Offset + 1; 
+        end loop;
 
-        Byte12 := Byte(Operator.Keyboard_Rate_Scaling) or Shift_Left(Detune_Byte, 3);
-        BV.Append(Byte12);
+        Detune_Byte := Byte (Operator.Detune + 7); -- adjust to 0...14 for SysEx
+
+        Byte12 := Byte (Operator.Keyboard_Rate_Scaling) or Shift_Left (Detune_Byte, 3);
+        Data (Offset) := Byte12;
 
         Byte13 := Byte(Operator.AMS) 
             or Shift_Left(Byte(Operator.Keyboard_Velocity_Sensitivity), 2);
-        BV.Append(Byte13);
+        Data (Offset + 1) := Byte13;
 
-        BV.Append(Byte(Operator.Output_Level));
+        Data (Offset + 2) := Byte (Operator.Output_Level);
 
         Byte15 := Byte(Operator_Mode'Pos(Operator.Mode)) 
             or Shift_Left(Byte(Operator.Coarse), 1);
-        BV.Append(Byte15);
+        Data (Offset + 3) := Byte15;
 
-        BV.Append(Byte(Operator.Fine));
+        Data (Offset + 4) := Byte (Operator.Fine);
 
-        return BV;
+        return Data;
     end Get_Packed_Data;
 
 end DX7.Operators;

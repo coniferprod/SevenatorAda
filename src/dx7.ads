@@ -34,6 +34,4 @@ package DX7 is
     function Get_Data (Manufacturer : Manufacturer_Type) return Byte_Vector;
     function Get_Data (Message : Message_Type) return Byte_Vector;
 
-    function Checksum (Data : Byte_Vector) return Byte;
-
 end DX7;

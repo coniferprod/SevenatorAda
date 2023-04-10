@@ -7,20 +7,18 @@ package body DX7.Envelopes is
     package Rand_Rate is new Ada.Numerics.Discrete_Random(Rate_Type);
     package Rand_Level is new Ada.Numerics.Discrete_Random(Level_Type);
     
-    function Get_Data (Envelope : Envelope_Type) return Byte_Vector is
-        BV : Byte_Vector;
+    function Get_Data (Envelope : Envelope_Type) return Envelope_Data_Type is
+        Data : Envelope_Data_Type;
     begin
-        BV.Append (Byte (Envelope.Rates (1)));
-        BV.Append (Byte (Envelope.Rates (2)));
-        BV.Append (Byte (Envelope.Rates (3)));
-        BV.Append (Byte (Envelope.Rates (4)));
+        for I in Rate_Index loop
+            Data(Integer (I)) := Byte (Envelope.Rates (I));
+        end loop;
 
-        BV.Append (Byte (Envelope.Levels (1)));
-        BV.Append (Byte (Envelope.Levels (2)));
-        BV.Append (Byte (Envelope.Levels (3)));
-        BV.Append (Byte (Envelope.Levels (4)));
+        for I in Level_Index loop
+            Data(Integer (I) + Integer (Rate_Index'Last)) := Byte (Envelope.Levels (I));
+        end loop;
 
-        return BV;
+        return Data;
     end Get_Data;
 
     function Random_Envelope return Envelope_Type is

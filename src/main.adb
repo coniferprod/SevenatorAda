@@ -1,4 +1,4 @@
-with Ada.Text_IO;
+with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 with Ada.Command_Line;
 with Ada.Directories; use Ada.Directories;
@@ -13,53 +13,44 @@ procedure Main is
     package IO renames Ada.Text_IO;
     package CLI renames Ada.Command_Line;
 
-    Cartridge : Cartridge_Type;
-    Cartridge_Data : Byte_Vector;
-    Cartridge_Checksum : Byte;
-
     Manufacturer : Manufacturer_Type;
     Message : Message_Type;
     Payload : Byte_Vector;
-    Channel : MIDI_Channel_Type := 1;
+    Channel : MIDI_Channel_Type := 1;  -- MIDI channel number
     Data : Byte_Vector;
-    In_Data : Byte_Array_Access;
     Out_Data : Byte_Vector;
 
 begin
-    for i in 1 .. CLI.Argument_Count loop
-        IO.Put_Line (Item => CLI.Argument (Number => i));
-    end loop;
-
-    --In_Data := Read_File ("cartridge.bin");
-    -- Do something with the data
-    --Put(In_Data'Length);
-
-    --for I in In_Data'Range loop
-    --    Out_Data.Append (In_Data (I));
+    --for i in 1 .. CLI.Argument_Count loop
+    --    IO.Put_Line (Item => CLI.Argument (Number => i));
     --end loop;
-
-    --Delete (In_Data);
-
-    --IO.Put_Line(Hex_Dump(Out_Data));
+    if CLI.Argument_Count < 1 then
+        Put_Line("No input file specified");
+        return;
+    end if;
 
     declare
         Name : String := CLI.Argument (1);
         Size : Ada.Directories.File_Size := Ada.Directories.Size (Name);
         Data : Byte_Array (0 .. Size - 1);
-
     begin
-        Ada.Integer_Text_IO.Put (Integer (Size));
-        Ada.Text_IO.New_Line;
+        Put ("Input file: ");
+        Put (Name);
+        New_Line;
+
+        Put ("Size (bytes): ");
+        Put (Integer (Size));
+        New_Line;
 
         Read_All_Bytes (Name, Data);
 
-        for I in Data'Range loop
-            Ada.Text_IO.Put (Hex (Data (I)));
-            Ada.Text_IO.Put (" ");
-        end loop;
+        --for I in Data'Range loop
+        --    Ada.Text_IO.Put (Hex (Data (I)));
+        --    Ada.Text_IO.Put (" ");
+        --end loop;
     end;
 
-    -- Try to create a random envelope
+    -- Make a random envelope
     declare
         Random_EG : Envelope_Type := Random_Envelope;
     begin
@@ -76,35 +67,72 @@ begin
         IO.New_Line;
     end;
     
-    IO.Put_Line("Generating new cartridge...");
-
-    for i in Voice_Index loop
-        Cartridge.Voices (i) := Brass1;
-    end loop;
-
     Manufacturer := (
         Standard_Kind,
-        Standard_Identifier => Helpers.Byte (16#43#)  -- identifier for Yamaha
+        Standard_Identifier => Byte (16#43#)  -- identifier for Yamaha
     );
 
+    Payload.Clear;
     Payload.Append (Byte (Channel - 1));
     Payload.Append (Byte (9));       -- format = 9 (32 voices)
     Payload.Append (Byte (16#20#));  -- byte count (MSB)
-    Payload.Append (Byte (16#00#));  -- byte count (LSB)
+    Payload.Append (Byte (16#00#));  -- byte count (LSB) (b=4096; 32 voices)
 
-    Cartridge_Data := Get_Data (Cartridge);
-    Payload.Append (Cartridge_Data);
+    declare
+        Cartridge : Cartridge_Type;
+        Cartridge_Data : Cartridge_Data_Type;
+        Cartridge_Checksum : Byte;
+    begin
+        IO.Put_Line("Generating new cartridge...");
 
-    Cartridge_Checksum := Checksum (Cartridge_Data);
-    Payload.Append (Cartridge_Checksum);
+        -- Just fill the cartridge with copies of the "BRASS1" voice
+        for I in Voice_Index loop
+            Cartridge.Voices (I) := Brass1;
+        end loop;
 
-    Message := (
-        Manufacturer,
-        Payload
-    );
+        Get_Data (Cartridge, Cartridge_Data);
+        IO.Put ("Cartridge data length = ");
+        IO.Put_Line (Cartridge_Data'Length'Image);
+        for B of Cartridge_Data loop
+            Payload.Append (B);
+        end loop;
+
+        Cartridge_Checksum := Checksum (Cartridge_Data);
+        Payload.Append (Cartridge_Checksum);
+    end;
+
+    IO.Put_Line (Hex_Dump (Payload));
+
+    Message := (Manufacturer, Payload);
     Data := Get_Data (Message);
     Helpers.Write_File ("cartridge.bin", Data);
 
-    -- IO.Put_Line(Hex_Dump(Data));
+    declare
+        Voice : Voice_Type;
+        Voice_Data : Voice_Data_Type;
+        Offset : Integer;
+    begin
+        IO.Put_Line("Generating new voice...");
+        Voice := Brass1;
+
+        Payload.Clear;
+        Payload.Append (Byte (Channel - 1));  -- adjust channel to 0...15
+        Payload.Append (Byte (0));            -- format = 0 (1 voice)
+        Payload.Append (Byte (16#01#));  -- byte count (MSB)
+        Payload.Append (Byte (16#1B#));  -- byte count (LSB) (b=155; 1 voice)
+
+        Voice_Data := Get_Data (Voice);
+        Offset := 1;
+        for B of Voice_Data loop
+            Payload.Append (B);
+            Offset := Offset + 1;
+        end loop;
+
+        Payload.Append (Checksum (Voice_Data));
+    end;        
+
+    Message := (Manufacturer, Payload);
+    Data := Get_Data (Message);
+    Helpers.Write_File ("voice.bin", Data);
 
 end Main;

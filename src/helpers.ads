@@ -19,6 +19,9 @@ package Helpers is
 
     subtype Byte_Vector is Helpers.Byte_Vectors.Vector;
 
+    -- Unconstrained array type for various patch data components
+    type Data_Type is array (Positive range <>) of Byte;
+
     package Byte_IO is
         new Ada.Sequential_IO (Byte);
 
@@ -32,4 +35,5 @@ package Helpers is
     function Hex (B : Byte) return String;
     function Hex_Dump (Data : Byte_Vector) return String;
 
+    function Checksum (Data : Data_Type) return Byte;
 end Helpers;
