@@ -99,4 +99,34 @@ package body Helpers is
         return Result;
     end Checksum;
 
+    type Note_Index is range 0 .. 11;
+    type Note_Names_Type is array (Note_Index) of Note_Name;
+
+    Note_Names : constant Note_Names_Type :=
+        (To_Unbounded_String ("C"),
+        To_Unbounded_String ("C#"),
+        To_Unbounded_String ("D"),
+        To_Unbounded_String ("D#"),
+        To_Unbounded_String ("E"),
+        To_Unbounded_String ("F"),
+        To_Unbounded_String ("F#"),
+        To_Unbounded_String ("G"),
+        To_Unbounded_String ("G#"),
+        To_Unbounded_String ("A"),
+        To_Unbounded_String ("A#"),
+        To_Unbounded_String ("B"));
+
+    function Get_Note_Name (Note_Number : MIDI_Note_Type;
+                            Naming : Octave_Naming_Type)
+                            return Note_Name is
+        Octave_Offset : constant Integer := 
+            (case Naming is
+             when Roland => -1,
+             when Yamaha => -2);
+        Octave : constant Integer := 
+            Integer ((Note_Number / 12)) + Octave_Offset;
+    begin
+        return Note_Names (Note_Index (Note_Number mod 12)) & Octave'Image;
+    end Get_Note_Name;
+
 end Helpers;

@@ -67,7 +67,7 @@ package DX7.Voices is
                     Levels => (99, 88, 96, 0)
                 ),
                 Keyboard_Level_Scaling => (
-                    Breakpoint => 60 - 21, 
+                    Breakpoint => 60,  -- Yamaha note C3 
                     Left_Depth => 0,
                     Right_Depth => 0,
                     Left_Curve => Linear_Positive_Curve,
@@ -88,7 +88,7 @@ package DX7.Voices is
                     Levels => (82, 95, 96, 0)
                 ),
                 Keyboard_Level_Scaling => (
-                    Breakpoint => 48 - 21, 
+                    Breakpoint => 48, -- Yamaha note C2 
                     Left_Depth => 0,
                     Right_Depth => 0,
                     Left_Curve => Linear_Positive_Curve,
@@ -109,7 +109,7 @@ package DX7.Voices is
                     Levels => (99, 98, 98, 0)
                 ),
                 Keyboard_Level_Scaling => (
-                    Breakpoint => 48 - 21, 
+                    Breakpoint => 48, -- Yamaha note C2 
                     Left_Depth => 0,
                     Right_Depth => 0,
                     Left_Curve => Linear_Positive_Curve,
@@ -130,7 +130,7 @@ package DX7.Voices is
                     Levels => (99, 98, 98, 0)
                 ),
                 Keyboard_Level_Scaling => (
-                    Breakpoint => 48 - 21, 
+                    Breakpoint => 48, -- Yamaha note C2 
                     Left_Depth => 0,
                     Right_Depth => 0,
                     Left_Curve => Linear_Positive_Curve,
@@ -151,7 +151,7 @@ package DX7.Voices is
                     Levels => (99, 98, 98, 0)
                 ),
                 Keyboard_Level_Scaling => (
-                    Breakpoint => 48 - 21, 
+                    Breakpoint => 48, -- Yamaha note C2 
                     Left_Depth => 0,
                     Right_Depth => 0,
                     Left_Curve => Linear_Positive_Curve,
@@ -172,7 +172,7 @@ package DX7.Voices is
                     Levels => (98, 98, 91, 0)
                 ),    
                 Keyboard_Level_Scaling => (
-                    Breakpoint => 60 - 21, 
+                    Breakpoint => 60, -- Yamaha note C3 
                     Left_Depth => 54,
                     Right_Depth => 50,
                     Left_Curve => Exponential_Negative_Curve,

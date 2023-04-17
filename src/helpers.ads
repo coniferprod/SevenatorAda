@@ -36,4 +36,14 @@ package Helpers is
     function Hex_Dump (Data : Byte_Vector) return String;
 
     function Checksum (Data : Data_Type) return Byte;
+
+    type MIDI_Note_Type is range 0 .. 127;
+    type MIDI_Channel_Type is range 1 .. 16;
+    type Octave_Naming_Type is (Roland, Yamaha);
+    subtype Note_Name is Unbounded_String;
+
+    function Get_Note_Name (Note_Number : MIDI_Note_Type;
+                            Naming : Octave_Naming_Type)
+                            return Note_Name;
+
 end Helpers;

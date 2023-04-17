@@ -26,11 +26,14 @@ package DX7.Operators is
     Exponential_Positive_Curve : constant Scaling_Curve_Type 
         := (Curve => Exponential, Positive => True);
 
-    type MIDI_Note_Type is range 0 .. 127;
-    type MIDI_Channel_Type is range 1 .. 16;
+    -- Breakpoint is a key from A-1 to C8, with C3 = 0x27 (39) in SysEx.
+    -- It can be expressed as a subtype of MIDI_Note_Type.
+    -- In Yamaha notation, A-1 is 21, while C8 is 120.
+    -- The SysEx value needs a conversion: +/- 21, which is +/- (60 - 39).
+    subtype Breakpoint_Type is MIDI_Note_Type range 21 .. 120;
 
     type Keyboard_Level_Scaling_Type is record
-        Breakpoint : MIDI_Note_Type;
+        Breakpoint : Breakpoint_Type;
         Left_Depth : Scaling_Depth_Type;
         Right_Depth : Scaling_Depth_Type;
         Left_Curve : Scaling_Curve_Type;
@@ -81,4 +84,10 @@ package DX7.Operators is
     function Get_Packed_Data (KLS : Keyboard_Level_Scaling_Type) 
         return Keyboard_Level_Scaling_Packed_Data_Type;
 
+    -- Converts a SysEx MIDI data byte to a breakpoint
+    function Get_Breakpoint (Data : Byte) return Breakpoint_Type;
+
+    -- Converts a breakpoint to SysEx MIDI data byte
+    function Get_Data (Breakpoint : Breakpoint_Type) return Byte;
+    
 end DX7.Operators;

@@ -6,7 +6,7 @@ package body DX7.Operators is
     function Get_Data (KLS: Keyboard_Level_Scaling_Type) 
         return Keyboard_Level_Scaling_Data_Type is
     begin
-        return (Byte (KLS.Breakpoint),
+        return (Get_Data (KLS.Breakpoint),
                 Byte (KLS.Left_Depth),
                 Byte (KLS.Right_Depth),
                 Byte (case KLS.Left_Curve.Curve is
@@ -116,5 +116,17 @@ package body DX7.Operators is
 
         return Data;
     end Get_Packed_Data;
+
+    function Get_Breakpoint (Data : Byte) return Breakpoint_Type is
+    begin
+        -- We get a byte 0 .. 99, which needs to be adjusted
+        -- to the breakpoint MIDI note range 21 .. 120.
+        return Breakpoint_Type (Data + 21);
+    end Get_Breakpoint;
+
+    function Get_Data (Breakpoint : Breakpoint_Type) return Byte is
+    begin
+        return Byte (Breakpoint - 21);
+    end Get_Data;
 
 end DX7.Operators;
