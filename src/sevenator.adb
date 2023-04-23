@@ -9,7 +9,7 @@ with DX7.Operators; use DX7.Operators;
 with DX7.Voices; use DX7.Voices;
 with DX7.Cartridges; use DX7.Cartridges;
 
-procedure Main is
+procedure Sevenator is
     package IO renames Ada.Text_IO;
     package CLI renames Ada.Command_Line;
 
@@ -135,4 +135,4 @@ begin
     Data := Get_Data (Message);
     Helpers.Write_File ("voice.bin", Data);
 
-end Main;
+end Sevenator;
