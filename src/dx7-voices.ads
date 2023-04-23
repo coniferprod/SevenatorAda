@@ -2,13 +2,13 @@ with DX7.Envelopes; use DX7.Envelopes;
 with DX7.Operators; use DX7.Operators;
 
 package DX7.Voices is
-    Voice_Data_Length: constant Integer := 155;
+    Voice_Data_Length: constant := 155;
     subtype Voice_Data_Type is Data_Type (1 .. Voice_Data_Length);
 
-    Voice_Packed_Data_Length: constant Integer := 128;
+    Voice_Packed_Data_Length: constant := 128;
     subtype Voice_Packed_Data_Type is Data_Type (1 .. Voice_Packed_Data_Length);
 
-    Voice_Name_Length : constant Integer := 10;
+    Voice_Name_Length : constant := 10;
     subtype Voice_Name_Type is String (1 .. Voice_Name_Length);
 
     type Transpose_Type is range -2 .. 2;
@@ -33,10 +33,10 @@ package DX7.Voices is
         Pitch_Modulation_Sensitivity : Depth_Type;
     end record;
 
-    LFO_Data_Length : constant Integer := 7;
+    LFO_Data_Length : constant := 7;
     subtype LFO_Data_Type is Data_Type (1 .. LFO_Data_Length);
 
-    LFO_Packed_Data_Length : constant Integer := 5;
+    LFO_Packed_Data_Length : constant := 5;
     subtype LFO_Packed_Data_Type is Data_Type (1 .. LFO_Packed_Data_Length);
     
     type Voice_Type is record

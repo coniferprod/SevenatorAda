@@ -1,15 +1,11 @@
-with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
-with Ada.Directories; use Ada.Directories;
 with Ada.Streams.Stream_IO;
-with Ada.Direct_IO;
 
 package body Helpers is
-
     -- Adapted from https://stackoverflow.com/a/67644332
-    function Read_File(File_Name: String) return Byte_Array_Access is
+    function Read_File (File_Name : String) return Byte_Array_Access is
         package SIO renames Ada.Streams.Stream_IO;
 
-        Binary_File_Size : File_Size := Ada.Directories.Size (File_Name);
+        Binary_File_Size : constant File_Size := Ada.Directories.Size (File_Name);
         Binary_File_Data : Byte_Array_Access;
         S : SIO.Stream_Access;
         File : SIO.File_Type;
@@ -29,10 +25,10 @@ package body Helpers is
         return Binary_File_Data;
     end Read_File;
 
-    procedure Write_File(File_Name: String; Contents: Byte_Vector) is
+    procedure Write_File (File_Name: String; Contents: Byte_Vector) is
         use Byte_IO;
 
-        F : Byte_IO.File_Type;
+        F : File_Type;
     begin
         Create (F, Out_File, File_Name);
 
@@ -74,7 +70,8 @@ package body Helpers is
         return Hex_Chars (Half_Byte_2) & Hex_Chars (Half_Byte_1);
     end Hex;
 
-    function Hex_Dump(Data : Byte_Vector) return String is
+    -- Generates a hex dump of the byte vector as a string.
+    function Hex_Dump (Data : Byte_Vector) return String is
         Result : Unbounded_String := Null_Unbounded_String;
     begin
         for B of Data loop
@@ -119,12 +116,12 @@ package body Helpers is
     function Get_Note_Name (Note_Number : MIDI_Note_Type;
                             Naming : Octave_Naming_Type)
                             return Note_Name is
-        Octave_Offset : constant Integer := 
+        Octave_Offset : constant Integer :=
             (case Naming is
              when Roland => -1,
              when Yamaha => -2);
         Octave : constant Integer := 
-            Integer ((Note_Number / 12)) + Octave_Offset;
+            (Integer (Note_Number) / 12) + Octave_Offset;
     begin
         return Note_Names (Note_Index (Note_Number mod 12)) & Octave'Image;
     end Get_Note_Name;

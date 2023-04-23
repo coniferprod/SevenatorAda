@@ -43,7 +43,7 @@ package body DX7.Operators is
 
     function Get_Data (Operator : Operator_Type) return Operator_Data_Type is
         Data : Operator_Data_Type;
-        Offset : Integer;
+        Offset : Positive;
     begin
         Offset := 1;
         for EG_Byte of Get_Data (Operator.EG) loop
@@ -75,7 +75,7 @@ package body DX7.Operators is
         Byte13: Byte;
         Byte15: Byte;
         Data : Operator_Packed_Data_Type;
-        Offset : Integer;
+        Offset : Positive;
     begin
         -- Normal and packed EG data are the same
         Offset := 1;

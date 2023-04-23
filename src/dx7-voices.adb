@@ -36,7 +36,7 @@ package body DX7.Voices is
     function Get_Data (Voice : Voice_Type) return Voice_Data_Type is
         Ch: Character;
         Data : Voice_Data_Type;
-        Offset : Integer;
+        Offset : Positive;
     begin
         Offset := 1;
         -- Note: the operators appear in reverse order: OP6, OP5 etc.
@@ -82,7 +82,7 @@ package body DX7.Voices is
         Byte_111: Byte;
         LFO_Data : LFO_Packed_Data_Type;
         Data : Voice_Packed_Data_Type;
-        Offset : Integer;
+        Offset : Positive;
     begin
         Offset := 1;
         -- Note: the operators appear in reverse order: OP6, OP5 etc.

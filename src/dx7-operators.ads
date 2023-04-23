@@ -40,11 +40,13 @@ package DX7.Operators is
         Right_Curve : Scaling_Curve_Type;
     end record;
 
-    Keyboard_Level_Scaling_Data_Length : constant Integer := 5;
+    -- MIDI System Exclusive data for Keyboard Level Scaling (normal)
+    Keyboard_Level_Scaling_Data_Length : constant := 5;
     subtype Keyboard_Level_Scaling_Data_Type is 
         Data_Type (1 .. Keyboard_Level_Scaling_Data_Length);
 
-    Keyboard_Level_Scaling_Packed_Data_Length : constant Integer := 4;
+    -- MIDI System Exclusive data for Keyboard Level Scaling (packed)
+    Keyboard_Level_Scaling_Packed_Data_Length : constant := 4;
     subtype Keyboard_Level_Scaling_Packed_Data_Type is 
         Data_Type (1 .. Keyboard_Level_Scaling_Packed_Data_Length);
 
@@ -75,10 +77,10 @@ package DX7.Operators is
     -- The normal version is used in individual voices, while the
     -- packed version is used in cartridges.
 
-    Operator_Data_Length : constant Integer := 21;
+    Operator_Data_Length : constant := 21;
     subtype Operator_Data_Type is Data_Type (1 .. Operator_Data_Length);
 
-    Operator_Packed_Data_Length : constant Integer := 17;
+    Operator_Packed_Data_Length : constant := 17;
     subtype Operator_Packed_Data_Type is Data_Type (1 .. Operator_Packed_Data_Length);
 
     -- Gets the data for the normal voice version of

@@ -1,13 +1,12 @@
 -- Child package of DX7 for envelope generator definitions
 package DX7.Envelopes is
-
     -- Define type for level. Also define an array index
     -- for an array of level values, to be used in an envelope.
     type Level_Type is range 0 .. 99;
     type Level_Index is range 1 .. 4;
     type Level_Array is array (Level_Index) of Level_Type;
 
-    -- Similarly to rate, define an range, an array type and array index.
+    -- Similarly to rate, define range, array type and array index.
     type Rate_Type is range 0 .. 99;
     type Rate_Index is range 1 .. 4;
     type Rate_Array is array (Rate_Index) of Rate_Type;
@@ -18,7 +17,8 @@ package DX7.Envelopes is
         Levels : Level_Array;
     end record;
 
-    Envelope_Data_Length: constant Integer := 8; -- SysEx data length
+    -- MIDI System Exclusive data length of envelope
+    Envelope_Data_Length: constant := Rate_Array'Length + Level_Array'Length;
 
     subtype Envelope_Data_Type is Data_Type (1 .. Envelope_Data_Length);
 
