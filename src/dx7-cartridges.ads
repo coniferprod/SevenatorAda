@@ -5,7 +5,7 @@ package DX7.Cartridges is
         Voices : Voice_Array;
     end record;
 
-    Cartridge_Data_Length: constant Integer := 4096;
+    Cartridge_Data_Length: constant Positive := 4096;
     subtype Cartridge_Data_Type is Data_Type (1 .. Cartridge_Data_Length);
 
     -- Gets the cartridge data as bytes for MIDI System Exclusive.

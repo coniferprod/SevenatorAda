@@ -2,7 +2,7 @@ package body DX7.Cartridges is
 
     -- Gets the cartridge data as bytes for MIDI System Exclusive.
     procedure Get_Data (Cartridge : in Cartridge_Type; Data : out Cartridge_Data_Type) is
-        Offset : Integer;
+        Offset : Positive;
     begin
         Offset := 1;
         for I in Voice_Index loop

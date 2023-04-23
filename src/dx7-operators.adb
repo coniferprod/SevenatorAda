@@ -33,8 +33,6 @@ package body DX7.Operators is
                 when Linear => (if KLS.Right_Curve.Positive then 3 else 0),
                 when Exponential => (if KLS.Right_Curve.Positive then 2 else 1));
 
-            -- Byte is a modular type (see Helpers), so bitwise operators are defined.
-            -- Shift_Left is from the Interfaces package.
             SC := LeftSC or (Shift_Left(RightSC, 2));
 
             Data (4) := SC;
@@ -59,7 +57,7 @@ package body DX7.Operators is
         end loop;
 
         Data (Offset) := Byte (Operator.Keyboard_Rate_Scaling); 
-        Data (Offset + 1) := Byte (Operator.AMS);
+        Data (Offset + 1) := Byte (Operator.Amplitude_Modulation_Scaling);
         Data (Offset + 2) := Byte (Operator.Keyboard_Velocity_Sensitivity);
         Data (Offset + 3) := Byte (Operator.Output_Level);
         Data (Offset + 4) := Byte (Operator_Mode'Pos (Operator.Mode));
@@ -97,7 +95,7 @@ package body DX7.Operators is
         Byte12 := Byte (Operator.Keyboard_Rate_Scaling) or Shift_Left (Detune_Byte, 3);
         Data (Offset) := Byte12;
 
-        Byte13 := Byte(Operator.AMS) 
+        Byte13 := Byte(Operator.Amplitude_Modulation_Scaling) 
             or Shift_Left(Byte(Operator.Keyboard_Velocity_Sensitivity), 2);
         Data (Offset + 1) := Byte13;
 

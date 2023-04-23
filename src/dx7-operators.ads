@@ -50,13 +50,14 @@ package DX7.Operators is
 
     type Operator_Mode is (Ratio, Fixed);
 
-    type AMS_Type is range 0 .. 3;
+    type Amplitude_Modulation_Scaling_Type is range 0 .. 3;
 
+    -- Represents and operator with its parameters.
     type Operator_Type is record
         EG : Envelope_Type;
         Keyboard_Level_Scaling : Keyboard_Level_Scaling_Type;
         Keyboard_Rate_Scaling : Scaling_Depth_Type;
-        AMS : AMS_Type;
+        Amplitude_Modulation_Scaling : Amplitude_Modulation_Scaling_Type;
         Keyboard_Velocity_Sensitivity : Depth_Type;
         Output_Level : Level_Type;
         Mode : Operator_Mode;
@@ -65,8 +66,14 @@ package DX7.Operators is
         Detune : Detune_Type;
     end record;
 
+    -- The DX7 engine has six operators, OP1 ... OP6.
+    -- They are arranged in a voice as an array.
     type Operator_Index is range 1 .. 6;
     type Operator_Array is array (Operator_Index) of Operator_Type;
+
+    -- There are two variants of operator System Exclusive data.
+    -- The normal version is used in individual voices, while the
+    -- packed version is used in cartridges.
 
     Operator_Data_Length : constant Integer := 21;
     subtype Operator_Data_Type is Data_Type (1 .. Operator_Data_Length);
@@ -74,20 +81,30 @@ package DX7.Operators is
     Operator_Packed_Data_Length : constant Integer := 17;
     subtype Operator_Packed_Data_Type is Data_Type (1 .. Operator_Packed_Data_Length);
 
+    -- Gets the data for the normal voice version of
+    -- the operator for MIDI System Exclusive.
     function Get_Data (Operator : Operator_Type) 
         return Operator_Data_Type;
+
+    -- Gets the data for the packed cartridge version of
+    -- the operator for MIDI System Exclusive.
     function Get_Packed_Data (Operator : Operator_Type) 
         return Operator_Packed_Data_Type;
 
+    -- Gets the data for the normal voice version of
+    -- the keyboard level scaling definition.
     function Get_Data (KLS : Keyboard_Level_Scaling_Type) 
         return Keyboard_Level_Scaling_Data_Type;
+
+    -- Gets the data for the packed cartridge version of
+    -- the keyboard level scaling definition.
     function Get_Packed_Data (KLS : Keyboard_Level_Scaling_Type) 
         return Keyboard_Level_Scaling_Packed_Data_Type;
 
-    -- Converts a SysEx MIDI data byte to a breakpoint
+    -- Converts a SysEx MIDI data byte to a breakpoint.
     function Get_Breakpoint (Data : Byte) return Breakpoint_Type;
 
-    -- Converts a breakpoint to SysEx MIDI data byte
+    -- Converts a breakpoint to SysEx MIDI data byte.
     function Get_Data (Breakpoint : Breakpoint_Type) return Byte;
     
 end DX7.Operators;

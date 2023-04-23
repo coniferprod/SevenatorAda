@@ -74,7 +74,7 @@ package DX7.Voices is
                     Right_Curve => Linear_Positive_Curve
                 ),
                 Keyboard_Rate_Scaling => 0,
-                AMS => 0,
+                Amplitude_Modulation_Scaling => 0,
                 Keyboard_Velocity_Sensitivity => 0,
                 Output_Level => 98,
                 Mode => Ratio,
@@ -95,7 +95,7 @@ package DX7.Voices is
                     Right_Curve => Exponential_Negative_Curve
                 ),
                 Keyboard_Rate_Scaling => 0,
-                AMS => 0,
+                Amplitude_Modulation_Scaling => 0,
                 Keyboard_Velocity_Sensitivity => 0,
                 Output_Level => 86,
                 Mode => Ratio,
@@ -116,7 +116,7 @@ package DX7.Voices is
                     Right_Curve => Exponential_Negative_Curve
                 ),
                 Keyboard_Rate_Scaling => 0,
-                AMS => 0,
+                Amplitude_Modulation_Scaling => 0,
                 Keyboard_Velocity_Sensitivity => 2,
                 Output_Level => 86,
                 Mode => Ratio,
@@ -137,7 +137,7 @@ package DX7.Voices is
                     Right_Curve => Exponential_Negative_Curve
                 ),
                 Keyboard_Rate_Scaling => 0,
-                AMS => 0,
+                Amplitude_Modulation_Scaling => 0,
                 Keyboard_Velocity_Sensitivity => 2,
                 Output_Level => 86,
                 Mode => Ratio,
@@ -158,7 +158,7 @@ package DX7.Voices is
                     Right_Curve => Exponential_Negative_Curve
                 ),
                 Keyboard_Rate_Scaling => 0,
-                AMS => 0,
+                Amplitude_Modulation_Scaling => 0,
                 Keyboard_Velocity_Sensitivity => 2,
                 Output_Level => 98,
                 Mode => Ratio,
@@ -179,7 +179,7 @@ package DX7.Voices is
                     Right_Curve => Exponential_Negative_Curve
                 ),
                 Keyboard_Rate_Scaling => 4,
-                AMS => 0,
+                Amplitude_Modulation_Scaling => 0,
                 Keyboard_Velocity_Sensitivity => 2,
                 Output_Level => 98,
                 Mode => Ratio,
