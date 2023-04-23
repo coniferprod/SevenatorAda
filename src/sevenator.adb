@@ -16,9 +16,8 @@ procedure Sevenator is
     Manufacturer : Manufacturer_Type;
     Message : Message_Type;
     Payload : Byte_Vector;
-    Channel : MIDI_Channel_Type := 1;  -- MIDI channel number
+    Channel : constant MIDI_Channel_Type := 1;  -- MIDI channel number
     Data : Byte_Vector;
-    Out_Data : Byte_Vector;
 
 begin
     --for i in 1 .. CLI.Argument_Count loop
@@ -42,7 +41,7 @@ begin
         Put (Integer (Size));
         New_Line;
 
-        Read_All_Bytes (Name, Data);
+        Read_File (Name, Data);
 
         --for I in Data'Range loop
         --    Ada.Text_IO.Put (Hex (Data (I)));

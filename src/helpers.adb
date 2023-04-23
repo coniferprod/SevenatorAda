@@ -1,36 +1,12 @@
 with Ada.Streams.Stream_IO;
 
 package body Helpers is
-    -- Adapted from https://stackoverflow.com/a/67644332
-    function Read_File (File_Name : String) return Byte_Array_Access is
-        package SIO renames Ada.Streams.Stream_IO;
-
-        Binary_File_Size : constant File_Size := Ada.Directories.Size (File_Name);
-        Binary_File_Data : Byte_Array_Access;
-        S : SIO.Stream_Access;
-        File : SIO.File_Type;
-
-    begin
-        -- Allocate memory from the heap
-        Binary_File_Data := new Byte_Array (1 .. Binary_File_Size);
-
-        SIO.Open (File, SIO.In_File, File_Name);
-        S := SIO.Stream (File);
-
-        -- Read the entire file into the buffer
-        Byte_Array'Read (S, Binary_File_Data.all);
-
-        SIO.Close (File);
-
-        return Binary_File_Data;
-    end Read_File;
-
-    procedure Write_File (File_Name: String; Contents: Byte_Vector) is
+    procedure Write_File (Name : String; Contents : Byte_Vector) is
         use Byte_IO;
 
         F : File_Type;
     begin
-        Create (F, Out_File, File_Name);
+        Create (F, Out_File, Name);
 
         for B of Contents loop
             Write (F, B);
@@ -39,7 +15,7 @@ package body Helpers is
         Close (F);
     end Write_File;
 
-    procedure Read_All_Bytes (Name : String; Buffer : out Byte_Array) is
+    procedure Read_File (Name : String; Contents : out Byte_Array) is
         package SIO renames Ada.Streams.Stream_IO;
 
         Input_File : SIO.File_Type;
@@ -52,12 +28,12 @@ package body Helpers is
         Input_Stream := SIO.Stream (Input_File);
         while not SIO.End_Of_File (Input_File) loop
             Byte'Read (Input_Stream, B);
-            Buffer (Index) := B;
+            Contents (Index) := B;
             Index := Index + 1;
         end loop;
 
         SIO.Close (Input_File);
-    end Read_All_Bytes;
+    end Read_File;
 
     -- Influenced by: https://ada.tips/using-adasequential_io-to-create-simple-hexdump-utility.html
     function Hex (B : Byte) return String is

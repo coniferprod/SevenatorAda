@@ -29,10 +29,8 @@ package Helpers is
 
     procedure Delete is new Ada.Unchecked_Deallocation (Byte_Array, Byte_Array_Access);
 
-    function Read_File(File_Name: String) return Byte_Array_Access;
-    procedure Write_File(File_Name: String; Contents: Byte_Vector);
-
-    procedure Read_All_Bytes (Name : String; Buffer : out Byte_Array);
+    procedure Write_File(Name : String; Contents: Byte_Vector);
+    procedure Read_File (Name : String; Contents : out Byte_Array);
 
     function Hex (B : Byte) return String;
     function Hex_Dump (Data : Byte_Vector) return String;
