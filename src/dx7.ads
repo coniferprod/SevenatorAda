@@ -1,5 +1,3 @@
-with Ada.Strings; use Ada.Strings;
-with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Helpers; use Helpers;
 
 -- The various parts of the data model are split into 

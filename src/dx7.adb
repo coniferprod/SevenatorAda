@@ -1,8 +1,3 @@
-with Ada.Strings; use Ada.Strings;
-with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
-with Interfaces; use Interfaces;
-with Helpers; use Helpers;
-
 package body DX7 is
 
     function Get_Data (Manufacturer : Manufacturer_Type) return Byte_Vector is
@@ -10,7 +5,7 @@ package body DX7 is
     begin
         case Manufacturer.Kind is
             when Development_Kind =>
-                BV.Append (Helpers.Byte (16#7D#));
+                BV.Append (16#7D#);
             when Standard_Kind =>
                 BV.Append (Manufacturer.Standard_Identifier);
             when Extended_Kind =>

@@ -1,5 +1,3 @@
-with Helpers; use Helpers;
-
 -- Child package of DX7 for envelope generator definitions
 package DX7.Envelopes is
 

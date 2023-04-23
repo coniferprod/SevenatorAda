@@ -1,4 +1,3 @@
-with Helpers; use Helpers;
 with Ada.Numerics.Discrete_Random;
 
 package body DX7.Envelopes is

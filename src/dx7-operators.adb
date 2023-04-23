@@ -1,6 +1,3 @@
-with Ada.Text_IO; use Ada.Text_IO;
-with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
-
 package body DX7.Operators is
 
     function Get_Data (KLS: Keyboard_Level_Scaling_Type) 
@@ -20,9 +17,7 @@ package body DX7.Operators is
     function Get_Packed_Data (KLS: Keyboard_Level_Scaling_Type) 
         return Keyboard_Level_Scaling_Packed_Data_Type is
         Data : Keyboard_Level_Scaling_Packed_Data_Type;
-        Offset : Integer;
     begin
-        Offset := 1;
         Data (1) := Byte (KLS.Breakpoint);
         Data (2) := Byte (KLS.Left_Depth);
         Data (3) := Byte (KLS.Right_Depth);
@@ -40,7 +35,7 @@ package body DX7.Operators is
 
             -- Byte is a modular type (see Helpers), so bitwise operators are defined.
             -- Shift_Left is from the Interfaces package.
-            SC := Byte(LeftSC) or (Shift_Left(Byte(RightSC), 2));
+            SC := LeftSC or (Shift_Left(RightSC, 2));
 
             Data (4) := SC;
         end;
