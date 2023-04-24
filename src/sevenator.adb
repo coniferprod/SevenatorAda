@@ -22,6 +22,10 @@ procedure Sevenator is
     Channel : constant MIDI_Channel_Type := 1;  -- MIDI channel number
     Data : Byte_Vector;
 
+    -- DX7 patch file formats: 0 = one voice, 9 = cartridge of 32 voices
+    Voice_Format : constant Byte := 0;
+    Cartridge_Format : constant Byte := 9;
+
 begin
     -- Example of echoing the command line arguments:
     --for i in 1 .. CLI.Argument_Count loop
@@ -81,7 +85,7 @@ begin
             
             Payload.Clear;
             Payload.Append (Byte (Channel - 1));
-            Payload.Append (9);       -- format = 9 (32 voices)
+            Payload.Append (Cartridge_Format);       -- format = 9 (32 voices)
             Payload.Append (16#20#);  -- byte count (MSB)
             Payload.Append (16#00#);  -- byte count (LSB) (b=4096; 32 voices)
 
@@ -122,7 +126,7 @@ begin
 
                 Payload.Clear;
                 Payload.Append (Byte (Channel - 1));  -- adjust channel to 0...15
-                Payload.Append (0);            -- format = 0 (1 voice)
+                Payload.Append (Voice_Format);        -- format = 0 (1 voice)
                 Payload.Append (16#01#);  -- byte count (MSB)
                 Payload.Append (16#1B#);  -- byte count (LSB) (b=155; 1 voice)
 

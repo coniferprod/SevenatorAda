@@ -8,7 +8,7 @@ package body DX7.Voices is
                 Byte (LFO.LFO_Delay),
                 Byte (LFO.PMD),
                 Byte (LFO.AMD),
-                Byte (if LFO.Sync = True then 1 else 0),
+                (if LFO.Sync then 1 else 0),
                 -- Convert enum value to Byte (first enum is pos zero)
                 Byte (LFO_Waveform_Type'Pos (LFO.Wave)),
                 Byte (LFO.Pitch_Modulation_Sensitivity)
@@ -25,7 +25,7 @@ package body DX7.Voices is
                 Byte (LFO.AMD),
 
                 -- Waveform type starts at bit 1
-                Byte (if LFO.Sync = True then 1 else 0)
+                Byte (if LFO.Sync then 1 else 0)
                     or Shift_Left (Byte (LFO_Waveform_Type'Pos (LFO.Wave)), 1));
         -- TODO: How to set a bit range?
         -- b116.replaceBits(1...3, with: Byte(LFO.Wave))
@@ -54,7 +54,7 @@ package body DX7.Voices is
 
         Data (Offset) := Byte (Voice.Algorithm - 1); -- adjust to 0...31 for SysEx
         Data (Offset + 1) := Byte (Voice.Feedback);
-        Data (Offset + 2) := Byte (if Voice.Oscillator_Sync = True then 1 else 0);
+        Data (Offset + 2) := (if Voice.Oscillator_Sync = True then 1 else 0);
 
         Offset := 2;
         for B of Get_Data (Voice.LFO) loop

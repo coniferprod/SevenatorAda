@@ -6,10 +6,10 @@ package body DX7.Operators is
         return (Get_Data (KLS.Breakpoint),
                 Byte (KLS.Left_Depth),
                 Byte (KLS.Right_Depth),
-                Byte (case KLS.Left_Curve.Curve is
+                (case KLS.Left_Curve.Curve is
                       when Linear => (if KLS.Left_Curve.Positive then 3 else 0),
                       when Exponential => (if KLS.Left_Curve.Positive then 2 else 1)),
-                Byte (case KLS.Right_Curve.Curve is
+                (case KLS.Right_Curve.Curve is
                       when Linear => (if KLS.Right_Curve.Positive then 3 else 0),
                       when Exponential => (if KLS.Right_Curve.Positive then 2 else 1)));
     end Get_Data;
