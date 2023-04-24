@@ -1,2 +1,5 @@
 *.bin
+*.dat
+*.syx
 obj/
+.DS_Store
