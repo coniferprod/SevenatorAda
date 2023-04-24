@@ -5,10 +5,6 @@ with Helpers; use Helpers;
 -- in its spec then you have a design problem." (Jeffrey R. Carter)
 
 package DX7 is
-    -- The definitions are based on the example set by 
-    -- AdaCore's "Introduction to Ada", section "Strongly typed language":
-    -- https://learn.adacore.com/courses/intro-to-ada/chapters/strongly_typed_language.html#integers
-
     type Byte_Triplet is array (1 .. 3) of Byte;
 
     -- Use a variant record to describe the manufacturer
@@ -23,10 +19,15 @@ package DX7 is
             end case;
         end record;
 
+    -- MIDI System Exclusive message
     type Message_Type is record
         Manufacturer : Manufacturer_Type;
         Payload : Byte_Vector;
     end record;
+
+    System_Exclusive_Initiator : constant Byte := 16#F0#;
+    System_Exclusive_Terminator : constant Byte := 16#F7#;
+    Development_Identifier : constant Byte := 16#7D#;
 
     -- Use overloading by argument to define Get_Data for each type as required
     function Get_Data (Manufacturer : Manufacturer_Type) return Byte_Vector;

@@ -5,7 +5,7 @@ package body DX7 is
     begin
         case Manufacturer.Kind is
             when Development_Kind =>
-                BV.Append (16#7D#);
+                BV.Append (Development_Identifier);
             when Standard_Kind =>
                 BV.Append (Manufacturer.Standard_Identifier);
             when Extended_Kind =>
@@ -19,10 +19,10 @@ package body DX7 is
     function Get_Data (Message : Message_Type) return Byte_Vector is
         BV : Byte_Vector;
     begin
-        BV.Append (Byte (16#F0#));
+        BV.Append (System_Exclusive_Initiator);
         BV.Append (Get_Data (Message.Manufacturer));
         BV.Append (Message.Payload);
-        BV.Append (Byte (16#F7#));
+        BV.Append (System_Exclusive_Terminator);
         return BV;
     end Get_Data;
 
