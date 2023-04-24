@@ -27,6 +27,11 @@ procedure Sevenator is
     Cartridge_Format : constant Byte := 9;
 
 begin
+    -- Test random name generation
+    --for I in 1 .. 10 loop
+    --    Ada.Text_IO.Put_Line (Random_Voice_Name);
+    --end loop;
+
     -- Example of echoing the command line arguments:
     --for i in 1 .. CLI.Argument_Count loop
     --    IO.Put_Line (Item => CLI.Argument (Number => i));
@@ -99,6 +104,9 @@ begin
                 -- Just fill the cartridge with copies of the "BRASS1" voice
                 for I in Voice_Index loop
                     Cartridge.Voices (I) := Brass1;
+
+                    -- But change the name to a random one:
+                    Cartridge.Voices (I).Name := Random_Voice_Name;
                 end loop;
 
                 Get_Data (Cartridge, Cartridge_Data);

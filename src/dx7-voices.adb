@@ -1,4 +1,14 @@
+with Ada.Numerics.Discrete_Random;
+with Ada.Strings.Fixed; use Ada.Strings.Fixed;
+with Ada.Characters.Handling;
+
 package body DX7.Voices is
+
+    package Rand_Level is new Ada.Numerics.Discrete_Random (Level_Type);
+    package Rand_Depth is new Ada.Numerics.Discrete_Random (Depth_Type);
+    package Rand_Wave is new Ada.Numerics.Discrete_Random (LFO_Waveform_Type);
+    package Rand_Sync is new Ada.Numerics.Discrete_Random (Boolean);
+    package Rand_Alg is new Ada.Numerics.Discrete_Random (Algorithm_Type);
 
     -- Gets the LFO data as bytes for MIDI System Exclusive.
     -- The normal format is used for individual voice data.
@@ -120,5 +130,95 @@ package body DX7.Voices is
 
         return Data;
     end Get_Packed_Data;
+
+    function Random_LFO return LFO_Type is
+        LFO : LFO_Type;
+        Level_Gen : Rand_Level.Generator;
+        Depth_Gen : Rand_Depth.Generator;
+        Wave_Gen : Rand_Wave.Generator;
+        Sync_Gen : Rand_Sync.Generator;
+    begin
+        Rand_Level.Reset (Level_Gen);
+        Rand_Depth.Reset (Depth_Gen);
+        Rand_Wave.Reset (Wave_Gen);
+        Rand_Sync.Reset (Sync_Gen);
+
+        LFO.Speed := Rand_Level.Random (Level_Gen);
+        LFO.LFO_Delay := Rand_Level.Random (Level_Gen);
+        LFO.PMD := Rand_Level.Random (Level_Gen);
+        LFO.AMD := Rand_Level.Random (Level_Gen);
+        LFO.Sync := Rand_Sync.Random (Sync_Gen);
+        LFO.Wave := Rand_Wave.Random (Wave_Gen);
+        LFO.Pitch_Modulation_Sensitivity := Rand_Depth.Random (Depth_Gen);
+
+        return LFO;
+    end Random_LFO;
+
+    function Random_Voice return Voice_Type is
+        Voice : Voice_Type;
+        Alg_Gen : Rand_Alg.Generator;
+        Depth_Gen : Rand_Depth.Generator;
+        Sync_Gen : Rand_Sync.Generator;
+    begin
+        Rand_Alg.Reset (Alg_Gen);
+        Rand_Depth.Reset (Depth_Gen);
+        Rand_Sync.Reset (Sync_Gen);
+
+        --Operators : Operator_Array;
+        Voice.Pitch_Envelope := Random_Envelope;
+
+        Voice.Algorithm := Rand_Alg.Random (Alg_Gen);
+        Voice.Feedback := Rand_Depth.Random (Depth_Gen);
+        Voice.Oscillator_Sync := Rand_Sync.Random (Sync_Gen);
+        Voice.LFO := Random_LFO;
+        Voice.Transpose := 0; -- TODO: randomize
+        Voice.Name := "Random    ";
+
+        return Voice;
+    end Random_Voice;
+
+    function Random_Voice_Name return Voice_Name_Type is        
+        subtype Syllable_Type is String (1 .. 2);
+
+        type Vowel_Index is range 1 .. 5;
+        type Vowel_List is array (Vowel_Index) of Character;
+
+        type Consonant_Index is range 1 .. 14;
+        type Consonant_List is array (Consonant_Index) of Character;
+
+        package Rand_Vowel is new Ada.Numerics.Discrete_Random (Vowel_Index);
+        package Rand_Consonant is new Ada.Numerics.Discrete_Random (Consonant_Index);
+
+        Vowels : constant Vowel_List := ('a', 'i', 'u', 'e', 'o');
+        Consonants : constant Consonant_List := 
+            ('k', 's', 't', 'n', 'h', 'm',
+             'y', 'r', 'w', 'g', 'z', 'd', 'b', 'p');
+
+        Vowel_Gen : Rand_Vowel.Generator;
+        Consonant_Gen : Rand_Consonant.Generator;
+
+        function Random_Syllable return Syllable_Type is
+            Syllable : Syllable_Type;
+        begin
+            Rand_Vowel.Reset (Vowel_Gen);
+            Rand_Consonant.Reset (Consonant_Gen);
+
+            Syllable (1) := Ada.Characters.Handling.To_Upper (Consonants (Rand_Consonant.Random (Consonant_Gen)));
+            Syllable (2) := Ada.Characters.Handling.To_Upper (Vowels (Rand_Vowel.Random (Vowel_Gen)));
+
+            return Syllable;
+        end Random_Syllable;
+
+        Name : Voice_Name_Type;
+        Syllable_Start_Index : Positive := 1;
+    begin
+        Name := 5 * "  ";  -- initialize with empty "syllables"
+        for I in 1 .. 5 loop
+            Insert (Name, Syllable_Start_Index, Random_Syllable);
+            Syllable_Start_Index := Syllable_Start_Index + 2;
+        end loop;
+
+        return Name;
+    end Random_Voice_Name;
 
 end DX7.Voices;

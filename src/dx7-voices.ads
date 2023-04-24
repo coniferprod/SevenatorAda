@@ -59,6 +59,15 @@ package DX7.Voices is
     function Get_Data (LFO : LFO_Type) return LFO_Data_Type;
     function Get_Packed_Data (LFO : LFO_Type) return LFO_Packed_Data_Type;
 
+    -- Makes an LFO with random parameters.
+    function Random_LFO return LFO_Type;
+
+    -- Makes a voice with random parameters.
+    function Random_Voice return Voice_Type;
+
+    -- Makes a random voice name.
+    function Random_Voice_Name return Voice_Name_Type;
+    
     Brass1 : constant Voice_Type := (
         Operators => (
             ( --OP1
