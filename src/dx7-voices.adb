@@ -1,7 +1,9 @@
 with Ada.Numerics.Discrete_Random;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Ada.Characters.Handling;
-
+with Ada.Unchecked_Conversion;
+with System;
+        
 package body DX7.Voices is
 
     package Rand_Level is new Ada.Numerics.Discrete_Random (Level_Type);
@@ -88,11 +90,39 @@ package body DX7.Voices is
     -- Gets the voice data bytes in packed format for MIDI System Exclusive.
     -- The packed format is used when voice data is embedded in cartridge data.
     function Get_Packed_Data (Voice : Voice_Type) return Voice_Packed_Data_Type is
+        -- Use the Ada representation facilities to make a type that
+        -- packs several fields into one byte. For details, see
+        -- https://en.wikibooks.org/wiki/Ada_Programming/Attributes/%27Bit_Order
+
+        -- byte             bit #
+        --  #     6   5   4   3   2   1   0   param A       range  param B       range
+        -- 111    0   0   0 |OKS|    FB     | OSC KEY SYNC  0-1    FEEDBACK      0-7
+
+        type Byte111_Type is
+            record
+                Feedback : Depth_Type;
+                Oscillator_Sync : Boolean;
+            end record;
+
+        for Byte111_Type use
+            record
+                Feedback at 0 range 0 .. 2;
+                Oscillator_Sync at 0 range 3 .. 3;
+            end record;
+
+        for Byte111_Type'Size use 8;  -- one 8-bit byte, please
+
+        -- Make bit 0 the least significant
+        for Byte111_Type'Bit_Order use System.Low_Order_First; 
+
         Ch: Character;
-        Byte_111: Byte;
+        Byte111: Byte111_Type;
         LFO_Data : LFO_Packed_Data_Type;
         Data : Voice_Packed_Data_Type;
         Offset : Positive;
+
+        function Byte111_Type_To_Byte is new Ada.Unchecked_Conversion (Byte111_Type, Byte);
+
     begin
         Offset := 1;
         -- Note: the operators appear in reverse order: OP6, OP5 etc.
@@ -111,9 +141,8 @@ package body DX7.Voices is
         Data (Offset) := Byte (Voice.Algorithm - 1); -- adjust to 0...31 for SysEx
         Offset := Offset + 1;
 
-        Byte_111 := Byte (Voice.Feedback) 
-            or Shift_Left (Byte (if Voice.Oscillator_Sync then 1 else 0), 3);
-        Data (Offset) := Byte_111;
+        Byte111 := (Feedback => Voice.Feedback, Oscillator_Sync => Voice.Oscillator_Sync); 
+        Data (Offset) := Byte111_Type_To_Byte (Byte111);
         Offset := Offset + 1;
 
         LFO_Data := Get_Packed_Data (Voice.LFO);
