@@ -53,6 +53,7 @@ begin
             declare
                 Size : constant Ada.Directories.File_Size := Ada.Directories.Size (Name);
                 Data : Byte_Array (0 .. Size - 1);
+                Message : Message_Type;
             begin
                 Put ("Input file: ");
                 Put (Name);
@@ -68,6 +69,11 @@ begin
                     Ada.Text_IO.Put (Hex (Data (I)));
                     Ada.Text_IO.Put (" ");
                 end loop;
+
+                Parse_Message (Data, Message);
+
+
+
             end;
         elsif Command = "cartridge" then
             -- Make a random envelope
