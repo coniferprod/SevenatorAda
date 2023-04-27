@@ -9,7 +9,6 @@ with DX7.Voices; use DX7.Voices;
 with DX7.Cartridges; use DX7.Cartridges;
 
 procedure Sevenator is
-    package IO renames Ada.Text_IO;
     package CLI renames Ada.Command_Line;
 
     Manufacturer : constant Manufacturer_Type := 
@@ -29,12 +28,12 @@ procedure Sevenator is
 begin
     -- Test random name generation
     --for I in 1 .. 10 loop
-    --    Ada.Text_IO.Put_Line (Random_Voice_Name);
+    --    Put_Line (Random_Voice_Name);
     --end loop;
 
     -- Example of echoing the command line arguments:
     --for i in 1 .. CLI.Argument_Count loop
-    --    IO.Put_Line (Item => CLI.Argument (Number => i));
+    --    Put_Line (Item => CLI.Argument (Number => i));
     --end loop;
 
     if CLI.Argument_Count < 2 then
@@ -65,8 +64,8 @@ begin
                 Read_File (Name, Data);
 
                 for I in Data'Range loop
-                    Ada.Text_IO.Put (Hex (Data (I)));
-                    Ada.Text_IO.Put (" ");
+                    Put (Hex (Data (I)));
+                    Put (" ");
                 end loop;
             end;
         elsif Command = "cartridge" then
@@ -75,17 +74,17 @@ begin
                 Random_EG : Envelope_Type := Random_Envelope;
             begin
                 -- Test code to print envelope generator:
-                IO.New_Line;
-                IO.Put_Line ("Random EG:");
+                New_Line;
+                Put_Line ("Random EG:");
                 for R in Random_EG.Rates'Range loop
-                    IO.Put (Random_EG.Rates (R)'Image);
-                    IO.Put (" ");
+                    Put (Random_EG.Rates (R)'Image);
+                    Put (" ");
                 end loop;
                 for L in Random_EG.Levels'Range loop
-                    IO.Put (Random_EG.Levels (L)'Image);
-                    IO.Put (" ");
+                    Put (Random_EG.Levels (L)'Image);
+                    Put (" ");
                 end loop;
-                IO.New_Line;
+                New_Line;
             end;
             
             Payload.Clear;
@@ -99,7 +98,7 @@ begin
                 Cartridge_Data : Cartridge_Data_Type;
                 Cartridge_Checksum : Byte;
             begin
-                IO.Put_Line("Generating new cartridge...");
+                Put_Line("Generating new cartridge...");
 
                 -- Just fill the cartridge with copies of the "BRASS1" voice
                 for I in Voice_Index loop
@@ -110,8 +109,8 @@ begin
                 end loop;
 
                 Get_Data (Cartridge, Cartridge_Data);
-                IO.Put ("Cartridge data length = ");
-                IO.Put_Line (Cartridge_Data'Length'Image);
+                Put ("Cartridge data length = ");
+                Put_Line (Cartridge_Data'Length'Image);
                 for B of Cartridge_Data loop
                     Payload.Append (B);
                 end loop;
@@ -129,7 +128,7 @@ begin
                 Voice_Data : Voice_Data_Type;
                 Offset : Integer;
             begin
-                IO.Put_Line ("Generating new voice...");
+                Put_Line ("Generating new voice...");
                 Voice := Brass1;
 
                 Payload.Clear;
