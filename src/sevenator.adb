@@ -12,7 +12,7 @@ procedure Sevenator is
     package IO renames Ada.Text_IO;
     package CLI renames Ada.Command_Line;
 
-    Manufacturer : constant Manufacturer_Type := 
+    Manufacturer : constant Manufacturer_Type :=
         (Standard_Kind,
          Standard_Identifier => 16#43#  -- identifier for Yamaha
         );
@@ -87,7 +87,7 @@ begin
                 end loop;
                 IO.New_Line;
             end;
-            
+
             Payload.Clear;
             Payload.Append (Byte (Channel - 1));
             Payload.Append (Cartridge_Format);       -- format = 9 (32 voices)
@@ -146,7 +146,7 @@ begin
                 end loop;
 
                 Payload.Append (Checksum (Voice_Data));
-            end;        
+            end;
 
             Message := (Manufacturer, Payload);
             Data := Get_Data (Message);
