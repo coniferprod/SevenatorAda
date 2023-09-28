@@ -25,18 +25,16 @@ package body DX7.Envelopes is
         Rate_Gen : Rand_Rate.Generator;
         Level_Gen : Rand_Level.Generator;
     begin
-        Rand_Rate.Reset (Rate_Gen);
-        Envelope.Rates (1) := Rand_Rate.Random (Rate_Gen);
-        Envelope.Rates (2) := Rand_Rate.Random (Rate_Gen);
-        Envelope.Rates (3) := Rand_Rate.Random (Rate_Gen);
-        Envelope.Rates (4) := Rand_Rate.Random (Rate_Gen);
-
+        Rand_Rate.Reset (Rate_Gen);        
+        for I in Rate_Index loop
+            Envelope.Rates (I) := Rand_Rate.Random (Rate_Gen);
+        end loop;
+        
         Rand_Level.Reset (Level_Gen);
-        Envelope.Levels (1) := Rand_Level.Random (Level_Gen);
-        Envelope.Levels (2) := Rand_Level.Random (Level_Gen);
-        Envelope.Levels (3) := Rand_Level.Random (Level_Gen);
-        Envelope.Levels (4) := Rand_Level.Random (Level_Gen);
-
+        for I in Level_Index loop
+            Envelope.Levels (I) := Rand_Level.Random (Level_Gen);
+        end loop;
+        
         return Envelope;
     end Random_Envelope;
 
