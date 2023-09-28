@@ -23,14 +23,15 @@ package DX7.Voices is
         SampleAndHold
     );
 
+    -- LFO, with defaults from "The Complete DX7"
     type LFO_Type is record
-        Speed : Level_Type;
-        LFO_Delay : Level_Type;
-        PMD : Level_Type;
-        AMD : Level_Type;
-        Sync : Boolean;
-        Wave : LFO_Waveform_Type;
-        Pitch_Modulation_Sensitivity : Depth_Type;
+        Speed : Level_Type := 35;
+        LFO_Delay : Level_Type := 0;
+        PMD : Level_Type := 0;
+        AMD : Level_Type := 0;
+        Sync : Boolean := True;
+        Wave : LFO_Waveform_Type := Triangle;
+        Pitch_Modulation_Sensitivity : Depth_Type := 3;
     end record;
 
     LFO_Data_Length : constant := 7;
@@ -42,9 +43,9 @@ package DX7.Voices is
     type Voice_Type is record
         Operators : Operator_Array;
         Pitch_Envelope : Envelope_Type;
-        Algorithm : Algorithm_Type;
-        Feedback : Depth_Type;
-        Oscillator_Sync : Boolean;
+        Algorithm : Algorithm_Type := 1;
+        Feedback : Depth_Type := 0;
+        Oscillator_Sync : Boolean := True;
         LFO : LFO_Type;
         Transpose: Transpose_Type;
         Name : Voice_Name_Type;

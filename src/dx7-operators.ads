@@ -65,7 +65,7 @@ package DX7.Operators is
         Mode : Operator_Mode;
         Coarse : Coarse_Type;
         Fine : Level_Type;
-        Detune : Detune_Type;
+        Detune : Detune_Type := 0;
     end record;
 
     -- The DX7 engine has six operators, OP1 ... OP6.
