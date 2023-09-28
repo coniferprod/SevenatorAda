@@ -1,6 +1,6 @@
 with Helpers; use Helpers;
 
--- The various parts of the data model are split into 
+-- The various parts of the data model are split into
 -- child packages. "If your root pkg needs the child
 -- in its spec then you have a design problem." (Jeffrey R. Carter)
 
@@ -29,8 +29,11 @@ package DX7 is
     System_Exclusive_Terminator : constant Byte := 16#F7#;
     Development_Identifier : constant Byte := 16#7D#;
 
-    -- Use overloading by argument to define Get_Data for each type as required
+    -- Get the MIDI System Exclusive data for manufacturer or message.
+    -- Use overloading by argument to define Get_Data for each type as required.
     function Get_Data (Manufacturer : Manufacturer_Type) return Byte_Vector;
     function Get_Data (Message : Message_Type) return Byte_Vector;
+
+    procedure Parse_Message (Data : in Byte_Array; Message : out Message_Type);
 
 end DX7;

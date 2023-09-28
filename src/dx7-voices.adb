@@ -3,7 +3,7 @@ with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Ada.Characters.Handling;
 with Ada.Unchecked_Conversion;
 with System;
-        
+
 package body DX7.Voices is
 
     package Rand_Level is new Ada.Numerics.Discrete_Random (Level_Type);
@@ -113,7 +113,7 @@ package body DX7.Voices is
         for Byte111_Type'Size use 8;  -- one 8-bit byte, please
 
         -- Make bit 0 the least significant
-        for Byte111_Type'Bit_Order use System.Low_Order_First; 
+        for Byte111_Type'Bit_Order use System.Low_Order_First;
 
         Ch: Character;
         Byte111: Byte111_Type;
@@ -141,7 +141,7 @@ package body DX7.Voices is
         Data (Offset) := Byte (Voice.Algorithm - 1); -- adjust to 0...31 for SysEx
         Offset := Offset + 1;
 
-        Byte111 := (Feedback => Voice.Feedback, Oscillator_Sync => Voice.Oscillator_Sync); 
+        Byte111 := (Feedback => Voice.Feedback, Oscillator_Sync => Voice.Oscillator_Sync);
         Data (Offset) := Byte111_Type_To_Byte (Byte111);
         Offset := Offset + 1;
 
@@ -206,25 +206,30 @@ package body DX7.Voices is
         return Voice;
     end Random_Voice;
 
-    function Random_Voice_Name return Voice_Name_Type is        
+    function Random_Voice_Name return Voice_Name_Type is
         subtype Syllable_Type is String (1 .. 2);
 
-        type Vowel_Index is range 1 .. 5;
-        type Vowel_List is array (Vowel_Index) of Character;
-
-        type Consonant_Index is range 1 .. 14;
-        type Consonant_List is array (Consonant_Index) of Character;
-
-        package Rand_Vowel is new Ada.Numerics.Discrete_Random (Vowel_Index);
-        package Rand_Consonant is new Ada.Numerics.Discrete_Random (Consonant_Index);
-
-        Vowels : constant Vowel_List := ('a', 'i', 'u', 'e', 'o');
-        Consonants : constant Consonant_List := 
-            ('k', 's', 't', 'n', 'h', 'm',
+        type Consonant is ('k', 's', 't', 'n', 'h', 'm',
              'y', 'r', 'w', 'g', 'z', 'd', 'b', 'p');
+        type Vowel is ('a', 'i', 'u', 'e', 'o');
+
+        package Rand_Consonant is new Ada.Numerics.Discrete_Random (Consonant);
+        package Rand_Vowel is new Ada.Numerics.Discrete_Random (Vowel);
 
         Vowel_Gen : Rand_Vowel.Generator;
         Consonant_Gen : Rand_Consonant.Generator;
+
+        function To_Char (C : Consonant) return Character is
+        begin
+            -- The image of a character literal is enclosed in single quotes.
+            -- We just take the character from between them, at index 2.
+            return Consonant'Image (C) (2);
+        end To_Char;
+
+        function To_Char (V : Vowel) return Character is -- as above
+        begin
+            return Vowel'Image (V) (2);
+        end To_Char;
 
         function Random_Syllable return Syllable_Type is
             Syllable : Syllable_Type;
@@ -232,8 +237,13 @@ package body DX7.Voices is
             Rand_Vowel.Reset (Vowel_Gen);
             Rand_Consonant.Reset (Consonant_Gen);
 
-            Syllable (1) := Ada.Characters.Handling.To_Upper (Consonants (Rand_Consonant.Random (Consonant_Gen)));
-            Syllable (2) := Ada.Characters.Handling.To_Upper (Vowels (Rand_Vowel.Random (Vowel_Gen)));
+            -- Get random consonant and vowel as upper case characters.
+            Syllable (1) :=
+                Ada.Characters.Handling.To_Upper
+                    (To_Char (Rand_Consonant.Random (Consonant_Gen)));
+            Syllable (2) :=
+                Ada.Characters.Handling.To_Upper
+                    (To_Char (Rand_Vowel.Random (Vowel_Gen)));
 
             return Syllable;
         end Random_Syllable;
