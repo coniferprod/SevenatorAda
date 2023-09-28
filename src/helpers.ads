@@ -1,7 +1,5 @@
 with Ada.Sequential_IO;
 with Ada.Containers.Vectors;
-with Ada.Strings; use Ada.Strings;
-with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Unchecked_Deallocation;
 with Ada.Directories; use Ada.Directories;
 with Interfaces;
@@ -43,15 +41,9 @@ package Helpers is
     -- MIDI channel number
     type MIDI_Channel_Type is range 1 .. 16;
 
-    -- Naming type, affects what MIDI note 60 is called.
-    -- Roland calls is C4, while Yamaha calls it C3.
-    type Octave_Naming_Type is (Roland, Yamaha);
+    -- Name of MIDI note.
+    subtype Note_Name is String (1 .. 2);
 
-    -- Name of MIDI note. Using unbounded string because it 
-    -- needs to be variable length. 
-    subtype Note_Name is Unbounded_String;
-
-    function Get_Note_Name (Note_Number : MIDI_Note_Type;
-                            Naming : Octave_Naming_Type)
+    function Get_Note_Name (Note_Number : in MIDI_Note_Type)
                             return Note_Name;
 end Helpers;
