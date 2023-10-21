@@ -3,10 +3,12 @@ with DX7.Operators; use DX7.Operators;
 
 package DX7.Voices is
     Voice_Data_Length: constant := 155;
-    subtype Voice_Data_Type is Data_Type (1 .. Voice_Data_Length);
+
+    -- First voice data offset is 0 to match SysEx spec offsets
+    subtype Voice_Data_Type is Data_Type (0 .. Voice_Data_Length-1);
 
     Voice_Packed_Data_Length: constant := 128;
-    subtype Voice_Packed_Data_Type is Data_Type (1 .. Voice_Packed_Data_Length);
+    subtype Voice_Packed_Data_Type is Data_Type (0 .. Voice_Packed_Data_Length-1);
 
     Voice_Name_Length : constant := 10;
     subtype Voice_Name_Type is String (1 .. Voice_Name_Length);
@@ -23,14 +25,15 @@ package DX7.Voices is
         SampleAndHold
     );
 
+    -- LFO, with defaults from "The Complete DX7"
     type LFO_Type is record
-        Speed : Level_Type;
-        LFO_Delay : Level_Type;
-        PMD : Level_Type;
-        AMD : Level_Type;
-        Sync : Boolean;
-        Wave : LFO_Waveform_Type;
-        Pitch_Modulation_Sensitivity : Depth_Type;
+        Speed : Level_Type := 35;
+        LFO_Delay : Level_Type := 0;
+        PMD : Level_Type := 0;
+        AMD : Level_Type := 0;
+        Sync : Boolean := True;
+        Wave : LFO_Waveform_Type := Triangle;
+        Pitch_Modulation_Sensitivity : Depth_Type := 3;
     end record;
 
     LFO_Data_Length : constant := 7;
@@ -38,13 +41,13 @@ package DX7.Voices is
 
     LFO_Packed_Data_Length : constant := 5;
     subtype LFO_Packed_Data_Type is Data_Type (1 .. LFO_Packed_Data_Length);
-    
+
     type Voice_Type is record
         Operators : Operator_Array;
         Pitch_Envelope : Envelope_Type;
-        Algorithm : Algorithm_Type;
-        Feedback : Depth_Type;
-        Oscillator_Sync : Boolean;
+        Algorithm : Algorithm_Type := 1;
+        Feedback : Depth_Type := 0;
+        Oscillator_Sync : Boolean := True;
         LFO : LFO_Type;
         Transpose: Transpose_Type;
         Name : Voice_Name_Type;
@@ -67,7 +70,9 @@ package DX7.Voices is
 
     -- Makes a random voice name.
     function Random_Voice_Name return Voice_Name_Type;
-    
+
+    procedure Parse (Data : in Voice_Data_Type; Voice : out Voice_Type);
+
     Brass1 : constant Voice_Type := (
         Operators => (
             ( --OP1
@@ -76,7 +81,7 @@ package DX7.Voices is
                     Levels => (99, 88, 96, 0)
                 ),
                 Keyboard_Level_Scaling => (
-                    Breakpoint => 60,  -- Yamaha note C3 
+                    Breakpoint => 60,  -- Yamaha note C3
                     Left_Depth => 0,
                     Right_Depth => 0,
                     Left_Curve => Linear_Positive_Curve,
@@ -97,7 +102,7 @@ package DX7.Voices is
                     Levels => (82, 95, 96, 0)
                 ),
                 Keyboard_Level_Scaling => (
-                    Breakpoint => 48, -- Yamaha note C2 
+                    Breakpoint => 48, -- Yamaha note C2
                     Left_Depth => 0,
                     Right_Depth => 0,
                     Left_Curve => Linear_Positive_Curve,
@@ -118,7 +123,7 @@ package DX7.Voices is
                     Levels => (99, 98, 98, 0)
                 ),
                 Keyboard_Level_Scaling => (
-                    Breakpoint => 48, -- Yamaha note C2 
+                    Breakpoint => 48, -- Yamaha note C2
                     Left_Depth => 0,
                     Right_Depth => 0,
                     Left_Curve => Linear_Positive_Curve,
@@ -139,7 +144,7 @@ package DX7.Voices is
                     Levels => (99, 98, 98, 0)
                 ),
                 Keyboard_Level_Scaling => (
-                    Breakpoint => 48, -- Yamaha note C2 
+                    Breakpoint => 48, -- Yamaha note C2
                     Left_Depth => 0,
                     Right_Depth => 0,
                     Left_Curve => Linear_Positive_Curve,
@@ -160,7 +165,7 @@ package DX7.Voices is
                     Levels => (99, 98, 98, 0)
                 ),
                 Keyboard_Level_Scaling => (
-                    Breakpoint => 48, -- Yamaha note C2 
+                    Breakpoint => 48, -- Yamaha note C2
                     Left_Depth => 0,
                     Right_Depth => 0,
                     Left_Curve => Linear_Positive_Curve,
@@ -179,9 +184,9 @@ package DX7.Voices is
                 EG => (
                     Rates => (49, 99, 28, 68),
                     Levels => (98, 98, 91, 0)
-                ),    
+                ),
                 Keyboard_Level_Scaling => (
-                    Breakpoint => 60, -- Yamaha note C3 
+                    Breakpoint => 60, -- Yamaha note C3
                     Left_Depth => 54,
                     Right_Depth => 50,
                     Left_Curve => Exponential_Negative_Curve,

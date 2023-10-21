@@ -48,9 +48,9 @@ package body DX7.Voices is
     function Get_Data (Voice : Voice_Type) return Voice_Data_Type is
         Ch: Character;
         Data : Voice_Data_Type;
-        Offset : Positive;
+        Offset : Natural;
     begin
-        Offset := 1;
+        Offset := 0;
         -- Note: the operators appear in reverse order: OP6, OP5 etc.
         for Op in reverse Operator_Index loop
             for B of Get_Data (Voice.Operators (Op)) loop
@@ -119,12 +119,12 @@ package body DX7.Voices is
         Byte111: Byte111_Type;
         LFO_Data : LFO_Packed_Data_Type;
         Data : Voice_Packed_Data_Type;
-        Offset : Positive;
+        Offset : Natural;
 
         function Byte111_Type_To_Byte is new Ada.Unchecked_Conversion (Byte111_Type, Byte);
 
     begin
-        Offset := 1;
+        Offset := 0;
         -- Note: the operators appear in reverse order: OP6, OP5 etc.
         for Op in reverse Operator_Index loop
             for B of Get_Packed_Data (Voice.Operators (Op)) loop
@@ -259,5 +259,19 @@ package body DX7.Voices is
 
         return Name;
     end Random_Voice_Name;
+
+    procedure Parse (Data : in Voice_Data_Type; Voice : out Voice_Type) is
+        Ops : Operator_Array;
+        Op_Start, Op_End : Natural;
+    begin
+        Op_Start := 0;
+        for I in reverse Operator_Index loop
+            Op_End := Op_Start + Operator_Data_Length;
+            Parse (Data (Op_Start..Op_End), Ops (I));
+        end loop;
+
+        Voice.Operators := Ops;
+
+    end Parse;
 
 end DX7.Voices;

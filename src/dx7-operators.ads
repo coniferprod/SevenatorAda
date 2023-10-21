@@ -17,13 +17,13 @@ package DX7.Operators is
         Positive : Boolean := False;
     end record;
 
-    Linear_Negative_Curve : constant Scaling_Curve_Type 
+    Linear_Negative_Curve : constant Scaling_Curve_Type
         := (Curve => Linear, Positive => False);
-    Linear_Positive_Curve : constant Scaling_Curve_Type 
+    Linear_Positive_Curve : constant Scaling_Curve_Type
         := (Curve => Linear, Positive => True);
-    Exponential_Negative_Curve : constant Scaling_Curve_Type 
+    Exponential_Negative_Curve : constant Scaling_Curve_Type
         := (Curve => Exponential, Positive => False);
-    Exponential_Positive_Curve : constant Scaling_Curve_Type 
+    Exponential_Positive_Curve : constant Scaling_Curve_Type
         := (Curve => Exponential, Positive => True);
 
     -- Breakpoint is a key from A-1 to C8, with C3 = 0x27 (39) in SysEx.
@@ -42,12 +42,12 @@ package DX7.Operators is
 
     -- MIDI System Exclusive data for Keyboard Level Scaling (normal)
     Keyboard_Level_Scaling_Data_Length : constant := 5;
-    subtype Keyboard_Level_Scaling_Data_Type is 
+    subtype Keyboard_Level_Scaling_Data_Type is
         Data_Type (1 .. Keyboard_Level_Scaling_Data_Length);
 
     -- MIDI System Exclusive data for Keyboard Level Scaling (packed)
     Keyboard_Level_Scaling_Packed_Data_Length : constant := 4;
-    subtype Keyboard_Level_Scaling_Packed_Data_Type is 
+    subtype Keyboard_Level_Scaling_Packed_Data_Type is
         Data_Type (1 .. Keyboard_Level_Scaling_Packed_Data_Length);
 
     type Operator_Mode is (Ratio, Fixed);
@@ -65,7 +65,7 @@ package DX7.Operators is
         Mode : Operator_Mode;
         Coarse : Coarse_Type;
         Fine : Level_Type;
-        Detune : Detune_Type;
+        Detune : Detune_Type := 0;
     end record;
 
     -- The DX7 engine has six operators, OP1 ... OP6.
@@ -85,22 +85,22 @@ package DX7.Operators is
 
     -- Gets the data for the normal voice version of
     -- the operator for MIDI System Exclusive.
-    function Get_Data (Operator : Operator_Type) 
+    function Get_Data (Operator : Operator_Type)
         return Operator_Data_Type;
 
     -- Gets the data for the packed cartridge version of
     -- the operator for MIDI System Exclusive.
-    function Get_Packed_Data (Operator : Operator_Type) 
+    function Get_Packed_Data (Operator : Operator_Type)
         return Operator_Packed_Data_Type;
 
     -- Gets the data for the normal voice version of
     -- the keyboard level scaling definition.
-    function Get_Data (KLS : Keyboard_Level_Scaling_Type) 
+    function Get_Data (KLS : Keyboard_Level_Scaling_Type)
         return Keyboard_Level_Scaling_Data_Type;
 
     -- Gets the data for the packed cartridge version of
     -- the keyboard level scaling definition.
-    function Get_Packed_Data (KLS : Keyboard_Level_Scaling_Type) 
+    function Get_Packed_Data (KLS : Keyboard_Level_Scaling_Type)
         return Keyboard_Level_Scaling_Packed_Data_Type;
 
     -- Converts a SysEx MIDI data byte to a breakpoint.
@@ -108,5 +108,8 @@ package DX7.Operators is
 
     -- Converts a breakpoint to SysEx MIDI data byte.
     function Get_Data (Breakpoint : Breakpoint_Type) return Byte;
-    
+
+    procedure Parse (Data : in Keyboard_Level_Scaling_Data_Type; KLS : out Keyboard_Level_Scaling_Type);
+    procedure Parse (Data : in Operator_Data_Type; Op : out Operator_Type);
+
 end DX7.Operators;

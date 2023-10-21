@@ -22,7 +22,7 @@ package Helpers is
     subtype Byte_Vector is Helpers.Byte_Vectors.Vector;
 
     -- Unconstrained array type for various patch data components
-    type Data_Type is array (Positive range <>) of Byte;
+    type Data_Type is array (Natural range <>) of Byte;
 
     package Byte_IO is
         new Ada.Sequential_IO (Byte);
@@ -43,15 +43,9 @@ package Helpers is
     -- MIDI channel number
     type MIDI_Channel_Type is range 1 .. 16;
 
-    -- Naming type, affects what MIDI note 60 is called.
-    -- Roland calls is C4, while Yamaha calls it C3.
-    type Octave_Naming_Type is (Roland, Yamaha);
+    -- Name of MIDI note.
+    subtype Note_Name is String (1 .. 2);
 
-    -- Name of MIDI note. Using unbounded string because it 
-    -- needs to be variable length. 
-    subtype Note_Name is Unbounded_String;
-
-    function Get_Note_Name (Note_Number : MIDI_Note_Type;
-                            Naming : Octave_Naming_Type)
+    function Get_Note_Name (Note_Number : in MIDI_Note_Type)
                             return Note_Name;
 end Helpers;

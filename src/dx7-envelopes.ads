@@ -28,4 +28,6 @@ package DX7.Envelopes is
     -- Makes an envelope with random parameters.
     function Random_Envelope return Envelope_Type;
 
+    procedure Parse (Data : in Envelope_Data_Type; EG : out Envelope_Type);
+
 end DX7.Envelopes;
