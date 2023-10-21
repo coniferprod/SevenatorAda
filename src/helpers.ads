@@ -1,7 +1,5 @@
 with Ada.Sequential_IO;
 with Ada.Containers.Vectors;
-with Ada.Strings; use Ada.Strings;
-with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Unchecked_Deallocation;
 with Ada.Directories; use Ada.Directories;
 with Interfaces;
