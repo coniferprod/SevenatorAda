@@ -133,7 +133,8 @@ package body DX7.Operators is
         );
     end Parse;
 
-    procedure Parse (Data : in Operator_Data_Type; Op : out Operator_Type) is
+    procedure Parse (Data : in Operator_Data_Type; Op : out Operator_Type;
+        Amp_Mod_Sens : out Sensitivity_Type) is
         EG : Envelope_Type;
         KLS : Keyboard_Level_Scaling_Data_Type;
     begin
@@ -144,7 +145,6 @@ package body DX7.Operators is
             EG => EG,
             Keyboard_Level_Scaling => KLS,
             Keyboard_Rate_Scaling => Data (13),
-            Amplitude_Modulation_Scaling => Data (14),
             Keyboard_Velocity_Sensitivity => Data (15),
             Output_Level => Data (16),
             Mode => Data (17),
@@ -152,6 +152,8 @@ package body DX7.Operators is
             Fine => Data (19),
             Detune => Data (20)
         );
+
+        Amp_Mod_Sens := Data(14);
     end Parse;
 
 end DX7.Operators;

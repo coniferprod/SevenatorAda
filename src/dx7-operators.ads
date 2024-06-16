@@ -7,6 +7,7 @@ package DX7.Operators is
 
     type Algorithm_Type is range 1 .. 32;
     type Depth_Type is range 0 .. 7;
+    type Sensitivity_Type is range 0 .. 3;
 
     type Curve_Style_Type is (Linear, Exponential);
 
@@ -52,14 +53,11 @@ package DX7.Operators is
 
     type Operator_Mode is (Ratio, Fixed);
 
-    type Amplitude_Modulation_Scaling_Type is range 0 .. 3;
-
-    -- Represents and operator with its parameters.
+    -- Represents an operator with its parameters.
     type Operator_Type is record
         EG : Envelope_Type;
         Keyboard_Level_Scaling : Keyboard_Level_Scaling_Type;
         Keyboard_Rate_Scaling : Scaling_Depth_Type;
-        Amplitude_Modulation_Scaling : Amplitude_Modulation_Scaling_Type;
         Keyboard_Velocity_Sensitivity : Depth_Type;
         Output_Level : Level_Type;
         Mode : Operator_Mode;
@@ -109,7 +107,10 @@ package DX7.Operators is
     -- Converts a breakpoint to SysEx MIDI data byte.
     function Get_Data (Breakpoint : Breakpoint_Type) return Byte;
 
-    procedure Parse (Data : in Keyboard_Level_Scaling_Data_Type; KLS : out Keyboard_Level_Scaling_Type);
-    procedure Parse (Data : in Operator_Data_Type; Op : out Operator_Type);
+    procedure Parse (Data : in Keyboard_Level_Scaling_Data_Type;
+        KLS : out Keyboard_Level_Scaling_Type);
+
+    procedure Parse (Data : in Operator_Data_Type; Op : out Operator_Type;
+        Amp_Mod_Sens : out Sensitivity_Type);
 
 end DX7.Operators;

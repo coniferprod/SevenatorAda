@@ -13,7 +13,7 @@ package DX7.Voices is
     Voice_Name_Length : constant := 10;
     subtype Voice_Name_Type is String (1 .. Voice_Name_Length);
 
-    type Transpose_Type is range -2 .. 2;
+    type Transpose_Type is range -2 .. 2;  -- -2/+2 octaves
 
     -- Enumeration type for LFO waveforms
     type LFO_Waveform_Type is (
@@ -33,14 +33,20 @@ package DX7.Voices is
         AMD : Level_Type := 0;
         Sync : Boolean := True;
         Wave : LFO_Waveform_Type := Triangle;
-        Pitch_Modulation_Sensitivity : Depth_Type := 3;
     end record;
 
-    LFO_Data_Length : constant := 7;
+    LFO_Data_Length : constant := 6;
     subtype LFO_Data_Type is Data_Type (1 .. LFO_Data_Length);
 
     LFO_Packed_Data_Length : constant := 5;
     subtype LFO_Packed_Data_Type is Data_Type (1 .. LFO_Packed_Data_Length);
+
+    type Amplitude_Sensitivity_Type is array (Operator_Index) of Sensitivity_Type;
+
+    type Modulation_Sensitivity_Type is record
+        Pitch : Depth_Type;
+        Amplitude : Amplitude_Sensitivity_Type;
+    end record;
 
     type Voice_Type is record
         Operators : Operator_Array;
@@ -51,6 +57,7 @@ package DX7.Voices is
         LFO : LFO_Type;
         Transpose: Transpose_Type;
         Name : Voice_Name_Type;
+        Modulation_Sensitivity : Modulation_Sensitivity_Type;
     end record;
 
     type Voice_Index is range 1 .. 32;
@@ -72,6 +79,7 @@ package DX7.Voices is
     function Random_Voice_Name return Voice_Name_Type;
 
     procedure Parse (Data : in Voice_Data_Type; Voice : out Voice_Type);
+    procedure Parse (Data : in LFO_Data_Type; LFO : out LFO_Type);
 
     Brass1 : constant Voice_Type := (
         Operators => (
@@ -88,7 +96,6 @@ package DX7.Voices is
                     Right_Curve => Linear_Positive_Curve
                 ),
                 Keyboard_Rate_Scaling => 0,
-                Amplitude_Modulation_Scaling => 0,
                 Keyboard_Velocity_Sensitivity => 0,
                 Output_Level => 98,
                 Mode => Ratio,
@@ -109,7 +116,6 @@ package DX7.Voices is
                     Right_Curve => Exponential_Negative_Curve
                 ),
                 Keyboard_Rate_Scaling => 0,
-                Amplitude_Modulation_Scaling => 0,
                 Keyboard_Velocity_Sensitivity => 0,
                 Output_Level => 86,
                 Mode => Ratio,
@@ -130,7 +136,6 @@ package DX7.Voices is
                     Right_Curve => Exponential_Negative_Curve
                 ),
                 Keyboard_Rate_Scaling => 0,
-                Amplitude_Modulation_Scaling => 0,
                 Keyboard_Velocity_Sensitivity => 2,
                 Output_Level => 86,
                 Mode => Ratio,
@@ -151,7 +156,6 @@ package DX7.Voices is
                     Right_Curve => Exponential_Negative_Curve
                 ),
                 Keyboard_Rate_Scaling => 0,
-                Amplitude_Modulation_Scaling => 0,
                 Keyboard_Velocity_Sensitivity => 2,
                 Output_Level => 86,
                 Mode => Ratio,
@@ -172,7 +176,6 @@ package DX7.Voices is
                     Right_Curve => Exponential_Negative_Curve
                 ),
                 Keyboard_Rate_Scaling => 0,
-                Amplitude_Modulation_Scaling => 0,
                 Keyboard_Velocity_Sensitivity => 2,
                 Output_Level => 98,
                 Mode => Ratio,
@@ -193,7 +196,6 @@ package DX7.Voices is
                     Right_Curve => Exponential_Negative_Curve
                 ),
                 Keyboard_Rate_Scaling => 4,
-                Amplitude_Modulation_Scaling => 0,
                 Keyboard_Velocity_Sensitivity => 2,
                 Output_Level => 98,
                 Mode => Ratio,
@@ -215,8 +217,11 @@ package DX7.Voices is
             PMD => 5,
             AMD => 0,
             Sync => False,
-            Wave => Sine,
-            Pitch_Modulation_Sensitivity => 3
+            Wave => Sine
+        ),
+        Modulation_Sensitivity => (
+            Pitch => 3,
+            Amplitude => (others => 0)
         ),
         Transpose => 0,
         Name => "BRASS   1 "

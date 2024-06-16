@@ -22,8 +22,7 @@ package body DX7.Voices is
                 Byte (LFO.AMD),
                 (if LFO.Sync then 1 else 0),
                 -- Convert enum value to Byte (first enum is pos zero)
-                Byte (LFO_Waveform_Type'Pos (LFO.Wave)),
-                Byte (LFO.Pitch_Modulation_Sensitivity)
+                Byte (LFO_Waveform_Type'Pos (LFO.Wave))
         );
     end Get_Data;
 
@@ -163,12 +162,10 @@ package body DX7.Voices is
     function Random_LFO return LFO_Type is
         LFO : LFO_Type;
         Level_Gen : Rand_Level.Generator;
-        Depth_Gen : Rand_Depth.Generator;
         Wave_Gen : Rand_Wave.Generator;
         Sync_Gen : Rand_Sync.Generator;
     begin
         Rand_Level.Reset (Level_Gen);
-        Rand_Depth.Reset (Depth_Gen);
         Rand_Wave.Reset (Wave_Gen);
         Rand_Sync.Reset (Sync_Gen);
 
@@ -178,7 +175,6 @@ package body DX7.Voices is
         LFO.AMD := Rand_Level.Random (Level_Gen);
         LFO.Sync := Rand_Sync.Random (Sync_Gen);
         LFO.Wave := Rand_Wave.Random (Wave_Gen);
-        LFO.Pitch_Modulation_Sensitivity := Rand_Depth.Random (Depth_Gen);
 
         return LFO;
     end Random_LFO;
@@ -263,15 +259,60 @@ package body DX7.Voices is
     procedure Parse (Data : in Voice_Data_Type; Voice : out Voice_Type) is
         Ops : Operator_Array;
         Op_Start, Op_End : Natural;
+        Amp_Mod_Sens : Sensitivity_Type;
+        Offset : Natural;
+        LFO : LFO_Type;
     begin
         Op_Start := 0;
         for I in reverse Operator_Index loop
             Op_End := Op_Start + Operator_Data_Length;
-            Parse (Data (Op_Start..Op_End), Ops (I));
+            Parse (Data (Op_Start..Op_End), Ops (I), Amp_Mod_Sens);
+            Voice.Modulation_Sensitivity.Amplitude (I) := Amp_Mod_Sens;
+            Op_Start := Op_Start + Operator_Data_Length;
         end loop;
 
         Voice.Operators := Ops;
 
+        Offset := Op_End + 1;
+        Parse (Data (Offset..Offset + Envelope_Data_Length), Voice.Pitch_Envelope);
+        Offset := Offset + Envelope_Data_Length;
+
+        Voice.Algorithm := Algorithm_Type (Data (Offset) + 1);
+        Offset := Offset + 1;
+        Voice.Feedback := Depth_Type (Data (Offset));
+        Offset := Offset + 1;
+        Voice.Oscillator_Sync := (if Data (Offset) = 1 then True else False);
+        Offset := Offset + 1;
+
+        Parse (Data (Offset..Offset + LFO_Data_Length), LFO);
+        Offset := Offset + LFO_Data_Length;
+
+        Voice.Modulation_Sensitivity.Pitch := Depth_Type (Data (Offset));
+        Offset := Offset + 1;
+
+        -- Transpose is 0...48 in the SysEx spec. 0 = -2 octaves, 48 = +2 octaves
+        declare
+            Semitones : constant Integer := Integer (Data (Offset)) - 24; -- bring into range -24...24
+        begin
+            Voice.Transpose := Transpose_Type (Semitones / 12);
+        end;
+
+
+        for I in 1..Voice_Name_Length loop
+            Voice.Name (I) := Character'Val (Data (Offset + I));
+            Offset := Offset + 1;
+        end loop;
+    end Parse;
+
+    procedure Parse (Data : in LFO_Data_Type; LFO : out LFO_Type) is
+    begin
+        LFO := (Speed     => Level_Type (Data (1)),
+                LFO_Delay => Level_Type (Data (2)),
+                PMD       => Level_Type (Data (3)),
+                AMD       => Level_Type (Data (4)),
+                Sync      => (if Data (5) = 1 then True else False),
+                Wave      => LFO_Waveform_Type'Val (Data (6))
+        );
     end Parse;
 
 end DX7.Voices;
