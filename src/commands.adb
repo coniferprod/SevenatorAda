@@ -42,8 +42,7 @@ package body Commands is
    end Run_Dump;
 
    procedure Run_Cartridge (Name : String) is
-      -- Make a random envelope
-      Random_EG : Envelope_Type := Random_Envelope;
+      Random_EG : constant Envelope_Type := Random_Envelope;
 
       Cartridge          : Cartridge_Type;
       Cartridge_Data     : Cartridge_Data_Type;

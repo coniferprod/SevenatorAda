@@ -3,6 +3,7 @@ with DX7.Envelopes; use DX7.Envelopes;
 package DX7.Operators is
 
    type Coarse_Type is range 0 .. 31;
+   type Fine_Type is range 0 .. 99;
    type Detune_Type is range -7 .. 7;
 
    type Algorithm_Type is range 1 .. 32;
@@ -14,23 +15,26 @@ package DX7.Operators is
    type Scaling_Depth_Type is range 0 .. 99;
 
    type Scaling_Curve_Type is record
-      Curve    : Curve_Style_Type := Linear;
+      Style    : Curve_Style_Type := Linear;
       Positive : Boolean          := False;
    end record;
 
+   -- Curve = 0=-LIN, 1=-EXP, 2=+EXP, 3=+LIN
+
    Linear_Negative_Curve      : constant Scaling_Curve_Type :=
-     (Curve => Linear, Positive => False);
+     (Style => Linear, Positive => False);
    Linear_Positive_Curve      : constant Scaling_Curve_Type :=
-     (Curve => Linear, Positive => True);
+     (Style => Linear, Positive => True);
    Exponential_Negative_Curve : constant Scaling_Curve_Type :=
-     (Curve => Exponential, Positive => False);
+     (Style => Exponential, Positive => False);
    Exponential_Positive_Curve : constant Scaling_Curve_Type :=
-     (Curve => Exponential, Positive => True);
+     (Style => Exponential, Positive => True);
 
    -- Breakpoint is a key from A-1 to C8, with C3 = 0x27 (39) in SysEx.
    -- It can be expressed as a subtype of MIDI_Note_Type.
    -- In Yamaha notation, A-1 is 21, while C8 is 120.
    -- The SysEx value needs a conversion: +/- 21, which is +/- (60 - 39).
+   -- The breakpoint value's data range is specified as 0 - 99.
    subtype Breakpoint_Type is MIDI_Note_Type range 21 .. 120;
 
    type Keyboard_Level_Scaling_Type is record
@@ -44,7 +48,7 @@ package DX7.Operators is
    -- MIDI System Exclusive data for Keyboard Level Scaling (normal)
    Keyboard_Level_Scaling_Data_Length : constant := 5;
    subtype Keyboard_Level_Scaling_Data_Type is
-     Data_Type (1 .. Keyboard_Level_Scaling_Data_Length);
+     Data_Type (0 .. Keyboard_Level_Scaling_Data_Length - 1);
 
    -- MIDI System Exclusive data for Keyboard Level Scaling (packed)
    Keyboard_Level_Scaling_Packed_Data_Length : constant := 4;
@@ -53,18 +57,32 @@ package DX7.Operators is
 
    type Operator_Mode is (Ratio, Fixed);
 
+   type Amplitude_Modulation_Sensitivity_Type is range 0 .. 3;
+
+   Init_Keyboard_Level_Scaling : constant Keyboard_Level_Scaling_Type := (
+      Breakpoint => 39,
+      Left_Depth => 0,
+      Right_Depth => 0,
+      Left_Curve => Linear_Negative_Curve,
+      Right_Curve => Linear_Negative_Curve);
+
    -- Represents an operator with its parameters.
    type Operator_Type is record
-      EG                            : Envelope_Type;
-      Keyboard_Level_Scaling        : Keyboard_Level_Scaling_Type;
-      Keyboard_Rate_Scaling         : Scaling_Depth_Type;
-      Keyboard_Velocity_Sensitivity : Depth_Type;
-      Output_Level                  : Level_Type;
-      Mode                          : Operator_Mode;
-      Coarse                        : Coarse_Type;
-      Fine                          : Level_Type;
+      EG                            : Envelope_Type := Init_Envelope;
+      Keyboard_Level_Scaling        : Keyboard_Level_Scaling_Type := Init_Keyboard_Level_Scaling;
+      Keyboard_Rate_Scaling         : Scaling_Depth_Type := 0;
+      Amplitude_Modulation_Sensitivity : Amplitude_Modulation_Sensitivity_Type := 0; -- AMS
+      Touch_Sensitivity : Depth_Type := 0; -- TS
+      Output_Level                  : Level_Type := 99;
+      Mode                          : Operator_Mode := Ratio;
+      Coarse                        : Coarse_Type := 1;
+      Fine                          : Fine_Type := 0;
       Detune                        : Detune_Type := 0;
    end record;
+
+   Init_Operator : constant Operator_Type := (others => <>);
+
+   Silent_Init_Operator : constant Operator_Type := (Output_Level => 0, others => <>);
 
    -- The DX7 engine has six operators, OP1 ... OP6.
    -- They are arranged in a voice as an array.
@@ -76,7 +94,7 @@ package DX7.Operators is
    -- packed version is used in cartridges.
 
    Operator_Data_Length : constant := 21;
-   subtype Operator_Data_Type is Data_Type (1 .. Operator_Data_Length);
+   subtype Operator_Data_Type is Data_Type (0 .. Operator_Data_Length - 1);
 
    Operator_Packed_Data_Length : constant := 17;
    subtype Operator_Packed_Data_Type is
@@ -114,7 +132,6 @@ package DX7.Operators is
       KLS  :    out Keyboard_Level_Scaling_Type);
 
    procedure Parse
-     (Data         : in     Operator_Data_Type; Op : out Operator_Type;
-      Amp_Mod_Sens :    out Sensitivity_Type);
+     (Data         : in     Operator_Data_Type; Op : out Operator_Type);
 
 end DX7.Operators;

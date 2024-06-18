@@ -39,4 +39,6 @@ package DX7 is
 
    procedure Parse_Message (Data : in Byte_Array; Message : out Message_Type);
 
+   Parse_Error : exception;
+
 end DX7;

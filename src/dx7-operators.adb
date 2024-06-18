@@ -8,10 +8,10 @@ package body DX7.Operators is
       return
         (Get_Data (KLS.Breakpoint), Byte (KLS.Left_Depth),
          Byte (KLS.Right_Depth),
-         (case KLS.Left_Curve.Curve is
+         (case KLS.Left_Curve.Style is
             when Linear => (if KLS.Left_Curve.Positive then 3 else 0),
             when Exponential => (if KLS.Left_Curve.Positive then 2 else 1)),
-         (case KLS.Right_Curve.Curve is
+         (case KLS.Right_Curve.Style is
             when Linear => (if KLS.Right_Curve.Positive then 3 else 0),
             when Exponential => (if KLS.Right_Curve.Positive then 2 else 1)));
    end Get_Data;
@@ -30,12 +30,12 @@ package body DX7.Operators is
          LeftSC, RightSC, SC : Byte;
       begin
          LeftSC :=
-           (case KLS.Left_Curve.Curve is
+           (case KLS.Left_Curve.Style is
               when Linear => (if KLS.Left_Curve.Positive then 3 else 0),
               when Exponential => (if KLS.Left_Curve.Positive then 2 else 1));
 
          RightSC :=
-           (case KLS.Right_Curve.Curve is
+           (case KLS.Right_Curve.Style is
               when Linear => (if KLS.Right_Curve.Positive then 3 else 0),
               when Exponential => (if KLS.Right_Curve.Positive then 2 else 1));
 
@@ -63,8 +63,8 @@ package body DX7.Operators is
       end loop;
 
       Data (Offset)     := Byte (Operator.Keyboard_Rate_Scaling);
-      Data (Offset + 1) := Byte (Operator.Amplitude_Modulation_Scaling);
-      Data (Offset + 2) := Byte (Operator.Keyboard_Velocity_Sensitivity);
+      Data (Offset + 1) := Byte (Operator.Amplitude_Modulation_Sensitivity);
+      Data (Offset + 2) := Byte (Operator.Touch_Sensitivity);
       Data (Offset + 3) := Byte (Operator.Output_Level);
       Data (Offset + 4) := Byte (Operator_Mode'Pos (Operator.Mode));
       Data (Offset + 5) := Byte (Operator.Coarse);
@@ -105,8 +105,8 @@ package body DX7.Operators is
       Data (Offset) := Byte12;
 
       Byte13            :=
-        Byte (Operator.Amplitude_Modulation_Scaling) or
-        Shift_Left (Byte (Operator.Keyboard_Velocity_Sensitivity), 2);
+        Byte (Operator.Amplitude_Modulation_Sensitivity) or
+        Shift_Left (Byte (Operator.Touch_Sensitivity), 2);
       Data (Offset + 1) := Byte13;
 
       Data (Offset + 2) := Byte (Operator.Output_Level);
@@ -137,33 +137,57 @@ package body DX7.Operators is
      (Data : in     Keyboard_Level_Scaling_Data_Type;
       KLS  :    out Keyboard_Level_Scaling_Type)
    is
+      procedure Parse (Data : Byte; Curve : out Scaling_Curve_Type) is
+         C : Scaling_Curve_Type;
+      begin
+         -- Curve = 0=-LIN, 1=-EXP, 2=+EXP, 3=+LIN
+         case Data is
+            when 0 => C := Linear_Negative_Curve;
+            when 1 => C := Exponential_Negative_Curve;
+            when 2 => C := Exponential_Positive_Curve;
+            when 3 => C := Linear_Positive_Curve;
+            when others => raise Parse_Error;
+         end case;
+         Curve := C;
+      end Parse;
+
+      Left_Curve : Scaling_Curve_Type;
+      Right_Curve : Scaling_Curve_Type;
    begin
+      Parse (Data (3), Left_Curve);
+      Parse (Data (4), Right_Curve);
+
       KLS :=
-        (Breakpoint  => MIDI_Note_Type (Data (1)),
-         Left_Depth  => Scaling_Depth_Type (Data (2)),
-         Right_Depth => Scaling_Depth_Type (Data (3)),
-         Left_Curve  => Scaling_Curve_Type (Data (4)),
-         Right_Curve => Scaling_Curve_Type (Data (5)));
+        (Breakpoint  => MIDI_Note_Type (Data (0)),
+         Left_Depth  => Scaling_Depth_Type (Data (1)),
+         Right_Depth => Scaling_Depth_Type (Data (2)),
+         Left_Curve  => Left_Curve,
+         Right_Curve => Right_Curve);
    end Parse;
 
    procedure Parse
-     (Data         : in     Operator_Data_Type; Op : out Operator_Type;
-      Amp_Mod_Sens :    out Sensitivity_Type)
+     (Data         : in     Operator_Data_Type; Op : out Operator_Type)
    is
       EG  : Envelope_Type;
-      KLS : Keyboard_Level_Scaling_Data_Type;
+      KLS : Keyboard_Level_Scaling_Type;
+      Mode : Operator_Mode;
    begin
       Parse (Data (0 .. 7), EG);
       Parse (Data (8 .. 12), KLS);
 
+      if Data (17) = 0 then
+         Mode := Fixed;
+      else
+         Mode := Ratio;
+      end if;
+
       Op :=
         (EG                            => EG, Keyboard_Level_Scaling => KLS,
-         Keyboard_Rate_Scaling         => Data (13),
-         Keyboard_Velocity_Sensitivity => Data (15), Output_Level => Data (16),
-         Mode => Data (17), Coarse => Data (18), Fine => Data (19),
-         Detune                        => Data (20));
-
-      Amp_Mod_Sens := Data (14);
+         Keyboard_Rate_Scaling         => Scaling_Depth_Type (Data (13)),
+         Amplitude_Modulation_Sensitivity => Amplitude_Modulation_Sensitivity_Type (Data (14)),
+         Touch_Sensitivity => Depth_Type (Data (15)), Output_Level => Level_Type (Data (16)),
+         Mode => Mode, Coarse => Coarse_Type (Data (18)), Fine => Fine_Type (Data (19)),
+         Detune                        => Detune_Type (Data (20)));
    end Parse;
 
 end DX7.Operators;

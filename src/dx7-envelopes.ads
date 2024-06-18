@@ -6,15 +6,15 @@ package DX7.Envelopes is
    type Level_Index is range 1 .. 4;
    type Level_Array is array (Level_Index) of Level_Type;
 
-   -- Similarly to rate, define range, array type and array index.
+   -- Similarly to level, define range, array type and array index.
    type Rate_Type is range 0 .. 99;
    type Rate_Index is range 1 .. 4;
    type Rate_Array is array (Rate_Index) of Rate_Type;
 
    -- An envelope is represented by rates and levels.
    type Envelope_Type is record
-      Rates  : Rate_Array;
-      Levels : Level_Array;
+      Rates  : Rate_Array := (others => 99); -- 99,99,99,99
+      Levels : Level_Array := (4 => 0, others => 99); -- 99,99,99,0
    end record;
 
    -- MIDI System Exclusive data length of envelope
@@ -30,4 +30,7 @@ package DX7.Envelopes is
 
    procedure Parse (Data : in Envelope_Data_Type; EG : out Envelope_Type);
 
+   Init_Envelope : constant Envelope_Type := (others => <>);
+   Init_Pitch_Envelope : constant Envelope_Type :=
+      (Levels => (50, 50, 50, 50), others => <>);
 end DX7.Envelopes;

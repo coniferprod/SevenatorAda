@@ -20,21 +20,23 @@ package DX7.Voices is
    type LFO_Waveform_Type is
      (Triangle, SawDown, SawUp, Square, Sine, SampleAndHold);
 
-   -- LFO, with defaults from "The Complete DX7"
    type LFO_Type is record
-      Speed     : Level_Type        := 35;
-      LFO_Delay : Level_Type        := 0;
-      PMD       : Level_Type        := 0;
-      AMD       : Level_Type        := 0;
-      Sync      : Boolean           := True;
-      Wave      : LFO_Waveform_Type := Triangle;
+      Speed     : Level_Type        := 35; --  LFS
+      Delay_Time : Level_Type        := 0;  --  LFD
+      Pitch_Modulation_Depth       : Level_Type        := 0;  --  LPMD
+      Amplitude_Modulation_Depth       : Level_Type        := 0; -- LAMD
+      Key_Sync      : Boolean           := True;  --  LFKS
+      Wave      : LFO_Waveform_Type := Triangle;  --  LFW
+      Pitch_Modulation_Sensitivity : Depth_Type := 0; --  LPMS
    end record;
 
-   LFO_Data_Length : constant := 6;
+   LFO_Data_Length : constant := 7;
    subtype LFO_Data_Type is Data_Type (1 .. LFO_Data_Length);
 
    LFO_Packed_Data_Length : constant := 5;
    subtype LFO_Packed_Data_Type is Data_Type (1 .. LFO_Packed_Data_Length);
+
+   Init_LFO : constant LFO_Type := (others => <>);
 
    type Amplitude_Sensitivity_Type is
      array (Operator_Index) of Sensitivity_Type;
@@ -46,14 +48,13 @@ package DX7.Voices is
 
    type Voice_Type is record
       Operators              : Operator_Array;
-      Pitch_Envelope         : Envelope_Type;
+      Pitch_Envelope         : Envelope_Type := Init_Pitch_Envelope;
       Algorithm              : Algorithm_Type := 1;
       Feedback               : Depth_Type     := 0;
       Oscillator_Sync        : Boolean        := True;
-      LFO                    : LFO_Type;
-      Transpose              : Transpose_Type;
-      Name                   : Voice_Name_Type;
-      Modulation_Sensitivity : Modulation_Sensitivity_Type;
+      LFO                    : LFO_Type := Init_LFO;
+      Transpose              : Transpose_Type := 0;  -- specified in octaves
+      Name                   : Voice_Name_Type := "INIT VOICE";
    end record;
 
    type Voice_Index is range 1 .. 32;
@@ -77,6 +78,10 @@ package DX7.Voices is
    procedure Parse (Data : in Voice_Data_Type; Voice : out Voice_Type);
    procedure Parse (Data : in LFO_Data_Type; LFO : out LFO_Type);
 
+   Init_Voice : constant Voice_Type :=
+      (Operators => (Init_Operator, others => Silent_Init_Operator),
+      others => <>);
+
    Brass1 : constant Voice_Type :=
      (Operators              =>
         (
@@ -87,9 +92,12 @@ package DX7.Voices is
              Left_Depth  => 0, Right_Depth => 0,
              Left_Curve  => Linear_Positive_Curve,
              Right_Curve => Linear_Positive_Curve),
-          Keyboard_Rate_Scaling  => 0, Keyboard_Velocity_Sensitivity => 0,
+          Keyboard_Rate_Scaling  => 0,
+          Amplitude_Modulation_Sensitivity => 0,
+          Touch_Sensitivity => 0,
           Output_Level           => 98, Mode => Ratio, Coarse => 1, Fine => 0,
-          Detune                 => 7),
+          Detune                 => 7
+          ),
          ( --OP2
       EG => (Rates => (62, 51, 29, 71), Levels => (82, 95, 96, 0)),
           Keyboard_Level_Scaling =>
@@ -97,7 +105,9 @@ package DX7.Voices is
              Left_Depth  => 0, Right_Depth => 0,
              Left_Curve  => Linear_Positive_Curve,
              Right_Curve => Exponential_Negative_Curve),
-          Keyboard_Rate_Scaling  => 0, Keyboard_Velocity_Sensitivity => 0,
+          Keyboard_Rate_Scaling  => 0,
+          Amplitude_Modulation_Sensitivity => 0,
+          Touch_Sensitivity => 0,
           Output_Level           => 86, Mode => Ratio, Coarse => 0, Fine => 0,
           Detune                 => 7),
          ( --OP3
@@ -107,7 +117,9 @@ package DX7.Voices is
              Left_Depth  => 0, Right_Depth => 0,
              Left_Curve  => Linear_Positive_Curve,
              Right_Curve => Exponential_Negative_Curve),
-          Keyboard_Rate_Scaling  => 0, Keyboard_Velocity_Sensitivity => 2,
+          Keyboard_Rate_Scaling  => 0,
+          Amplitude_Modulation_Sensitivity => 0,
+          Touch_Sensitivity => 2,
           Output_Level           => 86, Mode => Ratio, Coarse => 0, Fine => 0,
           Detune                 => -2),
          ( --OP4
@@ -117,7 +129,9 @@ package DX7.Voices is
              Left_Depth  => 0, Right_Depth => 0,
              Left_Curve  => Linear_Positive_Curve,
              Right_Curve => Exponential_Negative_Curve),
-          Keyboard_Rate_Scaling  => 0, Keyboard_Velocity_Sensitivity => 2,
+          Keyboard_Rate_Scaling  => 0,
+          Amplitude_Modulation_Sensitivity => 0,
+          Touch_Sensitivity => 2,
           Output_Level           => 86, Mode => Ratio, Coarse => 0, Fine => 0,
           Detune                 => 1),
          ( --OP5
@@ -127,7 +141,9 @@ package DX7.Voices is
              Left_Depth  => 0, Right_Depth => 0,
              Left_Curve  => Linear_Positive_Curve,
              Right_Curve => Exponential_Negative_Curve),
-          Keyboard_Rate_Scaling  => 0, Keyboard_Velocity_Sensitivity => 2,
+          Keyboard_Rate_Scaling  => 0,
+          Amplitude_Modulation_Sensitivity => 0,
+          Touch_Sensitivity => 2,
           Output_Level           => 98, Mode => Ratio, Coarse => 0, Fine => 0,
           Detune                 => 1),
          ( --OP6
@@ -137,16 +153,18 @@ package DX7.Voices is
              Left_Depth  => 54, Right_Depth => 50,
              Left_Curve  => Exponential_Negative_Curve,
              Right_Curve => Exponential_Negative_Curve),
-          Keyboard_Rate_Scaling  => 4, Keyboard_Velocity_Sensitivity => 2,
+          Keyboard_Rate_Scaling  => 4,
+          Amplitude_Modulation_Sensitivity => 0,
+          Touch_Sensitivity => 2,
           Output_Level           => 98, Mode => Ratio, Coarse => 0, Fine => 0,
           Detune                 => 1)),
       Pitch_Envelope         =>
         (Rates => (84, 95, 95, 60), Levels => (50, 50, 50, 50)),
       Algorithm              => 22, Feedback => 7, Oscillator_Sync => True,
       LFO                    =>
-        (Speed => 37, LFO_Delay => 0, PMD => 5, AMD => 0, Sync => False,
-         Wave  => Sine),
-      Modulation_Sensitivity => (Pitch => 3, Amplitude => (others => 0)),
+        (Speed => 37, Delay_Time => 0, Pitch_Modulation_Depth => 5,
+        Amplitude_Modulation_Depth => 0, Key_Sync => False,
+         Wave  => Sine, Pitch_Modulation_Sensitivity => 3),
       Transpose              => 0, Name => "BRASS   1 ");
 
 end DX7.Voices;

@@ -17,10 +17,11 @@ package body DX7.Voices is
    function Get_Data (LFO : LFO_Type) return LFO_Data_Type is
    begin
       return
-        (Byte (LFO.Speed), Byte (LFO.LFO_Delay), Byte (LFO.PMD),
-         Byte (LFO.AMD), (if LFO.Sync then 1 else 0),
+        (Byte (LFO.Speed), Byte (LFO.Delay_Time), Byte (LFO.Pitch_Modulation_Depth),
+         Byte (LFO.Amplitude_Modulation_Depth), (if LFO.Key_Sync then 1 else 0),
          -- Convert enum value to Byte (first enum is pos zero)
-         Byte (LFO_Waveform_Type'Pos (LFO.Wave)));
+         Byte (LFO_Waveform_Type'Pos (LFO.Wave)),
+         Byte (LFO.Amplitude_Modulation_Depth));
    end Get_Data;
 
    -- Gets the LFO data as packed bytes for MIDI System Exclusive.
@@ -28,11 +29,11 @@ package body DX7.Voices is
    function Get_Packed_Data (LFO : LFO_Type) return LFO_Packed_Data_Type is
    begin
       return
-        (Byte (LFO.Speed), Byte (LFO.LFO_Delay), Byte (LFO.PMD),
-         Byte (LFO.AMD),
+        (Byte (LFO.Speed), Byte (LFO.Delay_Time), Byte (LFO.Pitch_Modulation_Depth),
+         Byte (LFO.Amplitude_Modulation_Depth),
 
          -- Waveform type starts at bit 1
-         Byte (if LFO.Sync then 1 else 0) or
+         Byte (if LFO.Key_Sync then 1 else 0) or
          Shift_Left (Byte (LFO_Waveform_Type'Pos (LFO.Wave)), 1));
       -- TODO: How to set a bit range?
       -- b116.replaceBits(1...3, with: Byte(LFO.Wave))
@@ -169,10 +170,10 @@ package body DX7.Voices is
       Rand_Sync.Reset (Sync_Gen);
 
       LFO.Speed     := Rand_Level.Random (Level_Gen);
-      LFO.LFO_Delay := Rand_Level.Random (Level_Gen);
-      LFO.PMD       := Rand_Level.Random (Level_Gen);
-      LFO.AMD       := Rand_Level.Random (Level_Gen);
-      LFO.Sync      := Rand_Sync.Random (Sync_Gen);
+      LFO.Delay_Time := Rand_Level.Random (Level_Gen);
+      LFO.Pitch_Modulation_Depth       := Rand_Level.Random (Level_Gen);
+      LFO.Amplitude_Modulation_Depth       := Rand_Level.Random (Level_Gen);
+      LFO.Key_Sync      := Rand_Sync.Random (Sync_Gen);
       LFO.Wave      := Rand_Wave.Random (Wave_Gen);
 
       return LFO;
@@ -258,15 +259,13 @@ package body DX7.Voices is
    procedure Parse (Data : in Voice_Data_Type; Voice : out Voice_Type) is
       Ops              : Operator_Array;
       Op_Start, Op_End : Natural;
-      Amp_Mod_Sens     : Sensitivity_Type;
       Offset           : Natural;
       LFO              : LFO_Type;
    begin
       Op_Start := 0;
       for I in reverse Operator_Index loop
          Op_End := Op_Start + Operator_Data_Length;
-         Parse (Data (Op_Start .. Op_End), Ops (I), Amp_Mod_Sens);
-         Voice.Modulation_Sensitivity.Amplitude (I) := Amp_Mod_Sens;
+         Parse (Data (Op_Start .. Op_End), Ops (I));
          Op_Start := Op_Start + Operator_Data_Length;
       end loop;
 
@@ -281,14 +280,11 @@ package body DX7.Voices is
       Offset                := Offset + 1;
       Voice.Feedback        := Depth_Type (Data (Offset));
       Offset                := Offset + 1;
-      Voice.Oscillator_Sync := (if Data (Offset) = 1 then True else False);
+      Voice.Oscillator_Sync := (Data (Offset) = 1);
       Offset                := Offset + 1;
 
       Parse (Data (Offset .. Offset + LFO_Data_Length), LFO);
       Offset := Offset + LFO_Data_Length;
-
-      Voice.Modulation_Sensitivity.Pitch := Depth_Type (Data (Offset));
-      Offset                             := Offset + 1;
 
       -- Transpose is 0...48 in the SysEx spec. 0 = -2 octaves, 48 = +2 octaves
       declare
@@ -307,10 +303,12 @@ package body DX7.Voices is
    procedure Parse (Data : in LFO_Data_Type; LFO : out LFO_Type) is
    begin
       LFO :=
-        (Speed => Level_Type (Data (1)), LFO_Delay => Level_Type (Data (2)),
-         PMD   => Level_Type (Data (3)), AMD => Level_Type (Data (4)),
-         Sync  => (if Data (5) = 1 then True else False),
-         Wave  => LFO_Waveform_Type'Val (Data (6)));
+        (Speed => Level_Type (Data (1)), Delay_Time => Level_Type (Data (2)),
+         Pitch_Modulation_Depth  => Level_Type (Data (3)),
+         Amplitude_Modulation_Depth => Level_Type (Data (4)),
+         Key_Sync  => (Data (5) = 1),
+         Wave  => LFO_Waveform_Type'Val (Data (6)),
+         Pitch_Modulation_Sensitivity => Depth_Type (Data (7)));
    end Parse;
 
 end DX7.Voices;
