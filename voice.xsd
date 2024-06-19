@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+    <xsd:element name="voice">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element ref="operators"/>
+                <xsd:element ref="lfo"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="operators">
+
+    </xsd:element>
+
+    <xsd:element name="operator" minOccurs="6" maxOccurs="6">
+        <xsd:complexType>
+            <xsd:attribute name="level" use="required">
+                <xsd:simpleType>
+                    <xsd:restriction base="xsd:nonNegativeInteger">
+                        <xsd:maxInclusive value="99"></xsd:maxInclusive>
+                    </xsd:restriction>
+                </xsd:simpleType>
+            </xsd:attribute>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="lfo">
+        <xsd:complexType>
+            <xsd:attribute name="speed" use="required">
+                <xsd:simpleType>
+                    <xsd:restriction base="xsd:nonNegativeInteger">
+                        <xsd:maxInclusive value="99"></xsd:maxInclusive>
+                    </xsd:restriction>
+                </xsd:simpleType>
+            </xsd:attribute>
+        </xsd:complexType>
+    </xsd:element>
+
+</xsd:schema>

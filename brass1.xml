@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<voice name="BRASS   1 " algorithm="22" transpose="0" feedback="7" sync="true">
+    <operators>
+        <operator level="98" mode="ratio" coarse="1" fine="0" detune="7"
+            ams="0" touchsensitivity="0" ratescaling="0">
+            <eg>
+                <rates>
+                    <rate>72</rate>
+                    <rate>76</rate>
+                    <rate>99</rate>
+                    <rate>71</rate>
+                </rates>
+                <levels>
+                    <level>99</level>
+                    <level>88</level>
+                    <level>96</level>
+                    <level>0</level>
+                </levels>
+            </eg>
+            <levelscaling breakpoint="60">
+                <depth left="0" right="0" />
+                <curve left="+LIN" right="+LIN" />
+            </levelscaling>
+        </operator>
+
+        <operator level="86" mode="ratio" coarse="0" fine="0" detune="7"
+            ams="0" touchsensitivity="0" ratescaling="0">
+            <eg>
+                <rates>
+                    <rate>62</rate>
+                    <rate>51</rate>
+                    <rate>29</rate>
+                    <rate>71</rate>
+                </rates>
+                <levels>
+                    <level>82</level>
+                    <level>95</level>
+                    <level>96</level>
+                    <level>0</level>
+                </levels>
+            </eg>
+            <levelscaling breakpoint="48">
+                <depth left="0" right="0" />
+                <curve left="+LIN" right="-EXP" />
+            </levelscaling>
+        </operator>
+
+        <operator level="86" mode="ratio" coarse="0" fine="0" detune="-2"
+            ams="0" touchsensitivity="2" ratescaling="0">
+            <eg>
+                <rates>
+                    <rate>77</rate>
+                    <rate>76</rate>
+                    <rate>82</rate>
+                    <rate>71</rate>
+                </rates>
+                <levels>
+                    <level>99</level>
+                    <level>98</level>
+                    <level>98</level>
+                    <level>0</level>
+                </levels>
+            </eg>
+            <levelscaling breakpoint="48">
+                <depth left="0" right="0" />
+                <curve left="+LIN" right="-EXP" />
+            </levelscaling>
+        </operator>
+
+        <operator level="86" mode="ratio" coarse="0" fine="0" detune="1"
+            ams="0" touchsensitivity="2" ratescaling="0">
+            <eg>
+                <rates>
+                    <rate>77</rate>
+                    <rate>36</rate>
+                    <rate>41</rate>
+                    <rate>71</rate>
+                </rates>
+                <levels>
+                    <level>99</level>
+                    <level>98</level>
+                    <level>98</level>
+                    <level>0</level>
+                </levels>
+            </eg>
+            <levelscaling breakpoint="48">
+                <depth left="0" right="0" />
+                <curve left="+LIN" right="-EXP" />
+            </levelscaling>
+        </operator>
+
+        <operator level="98" mode="ratio" coarse="0" fine="0" detune="1"
+            ams="0" touchsensitivity="2" ratescaling="0">
+            <eg>
+                <rates>
+                    <rate>77</rate>
+                    <rate>36</rate>
+                    <rate>41</rate>
+                    <rate>71</rate>
+                </rates>
+                <levels>
+                    <level>99</level>
+                    <level>98</level>
+                    <level>98</level>
+                    <level>0</level>
+                </levels>
+            </eg>
+            <levelscaling breakpoint="48">
+                <depth left="0" right="0" />
+                <curve left="+LIN" right="-EXP" />
+            </levelscaling>
+        </operator>
+
+        <operator level="98" mode="ratio" coarse="0" fine="0" detune="1"
+            ams="0" touchsensitivity="2" ratescaling="4">
+            <eg>
+                <rates>
+                    <rate>49</rate>
+                    <rate>99</rate>
+                    <rate>28</rate>
+                    <rate>68</rate>
+                </rates>
+                <levels>
+                    <level>99</level>
+                    <level>98</level>
+                    <level>91</level>
+                    <level>0</level>
+                </levels>
+            </eg>
+            <levelscaling breakpoint="60">
+                <depth left="54" right="50" />
+                <curve left="-EXP" right="-EXP" />
+            </levelscaling>
+        </operator>
+    </operators>
+
+    <peg>
+        <rates>
+            <rate>84</rate>
+            <rate>95</rate>
+            <rate>95</rate>
+            <rate>60</rate>
+        </rates>
+        <levels>
+            <level>50</level>
+            <level>50</level>
+            <level>50</level>
+            <level>50</level>
+        </levels>
+    </peg>
+
+    <lfo speed="37" delay="0" pmd="5" amd="0" sync="false" wave="sine" pms="3" />
+</voice>
