@@ -133,5 +133,6 @@ package DX7.Operators is
 
    procedure Parse
      (Data         : in     Operator_Data_Type; Op : out Operator_Type);
+   procedure Parse (Data : in Operator_Packed_Data_Type; Op : out Operator_Type);
 
 end DX7.Operators;

@@ -60,8 +60,8 @@ package DX7.Voices is
    type Voice_Index is range 1 .. 32;
    type Voice_Array is array (Voice_Index) of Voice_Type;
 
-   function Get_Data (Voice : Voice_Type) return Voice_Data_Type;
-   function Get_Packed_Data (Voice : Voice_Type) return Voice_Packed_Data_Type;
+   procedure Emit (Voice : in Voice_Type; Voice_Data : out Voice_Data_Type);
+   function Emit_Packed (Voice : Voice_Type) return Voice_Packed_Data_Type;
 
    function Get_Data (LFO : LFO_Type) return LFO_Data_Type;
    function Get_Packed_Data (LFO : LFO_Type) return LFO_Packed_Data_Type;
@@ -76,6 +76,8 @@ package DX7.Voices is
    function Random_Voice_Name return Voice_Name_Type;
 
    procedure Parse (Data : in Voice_Data_Type; Voice : out Voice_Type);
+   procedure Parse_Packed (Data : in Voice_Packed_Data_Type; Voice : out Voice_Type);
+
    procedure Parse (Data : in LFO_Data_Type; LFO : out LFO_Type);
 
    Init_Voice : constant Voice_Type :=

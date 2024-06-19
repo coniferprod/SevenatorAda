@@ -6,22 +6,18 @@ with DX7;            use DX7;
 with DX7.Envelopes;  use DX7.Envelopes;
 with DX7.Voices;     use DX7.Voices;
 with DX7.Cartridges; use DX7.Cartridges;
+with DX7.System_Exclusive; use DX7.System_Exclusive;
 
 package body Commands is
-
-   -- DX7 patch file formats: 0 = one voice, 9 = cartridge of 32 voices
-   Voice_Format     : constant Byte := 0;
-   Cartridge_Format : constant Byte := 9;
-
    Manufacturer : constant Manufacturer_Type :=
-     (Standard_Kind, Standard_Identifier =>
-        16#43#  -- identifier for Yamaha
+     (Normal, Identifier => 16#43#  -- identifier for Yamaha
    );
 
    procedure Run_Dump (Name : String) is
       Size : constant Ada.Directories.File_Size := Ada.Directories.Size (Name);
       Data    : Byte_Array (0 .. Size - 1);
       Message : Message_Type;
+      Channel : MIDI_Channel_Type;
    begin
       Put ("Input file: ");
       Put (Name);
@@ -33,26 +29,69 @@ package body Commands is
 
       Read_File (Name, Data);
 
-      for I in Data'Range loop
-         Put (Hex (Data (I)));
-         Put (" ");
-      end loop;
+      --for I in Data'Range loop
+      --   Put (Hex (Data (I)));
+      --   Put (" ");
+      --end loop;
 
       Parse_Message (Data, Message);
+
+      --for B of Message.Payload loop
+      --   Put (Hex (B));
+      --   Put (" ");
+      --end loop;
+
+      Put_Line ("Channel = " & Message.Payload.Channel'Image);
+
+      declare
+         package Format_IO is new Ada.Text_IO.Enumeration_IO(Enum => Format_Type);
+      begin
+         Put ("Format = ");
+         Format_IO.Put (Message.Payload.Format);
+      end;
+
+      if Message.Payload.Format = Voice then
+         declare
+            Voice : Voice_Type;
+            Data : Voice_Data_Type;
+         begin
+            for I in Message.Payload.Voice_Data'First .. Message.Payload.Voice_Data'Last loop
+               Data (I) := Message.Payload.Voice_Data (I);
+            end loop;
+            Parse (Data, Voice);
+
+            Ada.Text_IO.Put_Line ("Voice name = " & Voice.Name);
+         end;
+      else
+         declare
+            Cartridge : Cartridge_Type;
+            Data : Cartridge_Data_Type;
+         begin
+            for I in Message.Payload.Cartridge_Data'First .. Message.Payload.Cartridge_Data'Last loop
+               Data (I) := Message.Payload.Cartridge_Data (I);
+            end loop;
+            Parse (Data, Cartridge);
+
+            for V of Cartridge.Voices loop
+               Put_Line (V.Name);
+            end loop;
+         end;
+      end if;
+
    end Run_Dump;
 
    procedure Run_Cartridge (Name : String) is
       Random_EG : constant Envelope_Type := Random_Envelope;
 
-      Cartridge          : Cartridge_Type;
-      Cartridge_Data     : Cartridge_Data_Type;
-      Cartridge_Checksum : Byte;
-
-      Payload : Byte_Vector;
       Channel : constant MIDI_Channel_Type := 1;  -- MIDI channel number
       Message : Message_Type;
       Data    : Byte_Vector;
 
+      Payload : Payload_Type := (Format => Cartridge,
+                                 Channel => Channel,
+                                 Byte_Count => 16#2000#,
+                                 Checksum => 0,
+                                 Cartridge_Data => (others => 0));
    begin
       -- Test code to print envelope generator:
       New_Line;
@@ -67,67 +106,59 @@ package body Commands is
       end loop;
       New_Line;
 
-      Payload.Clear;
-      Payload.Append (Byte (Channel - 1));
-      Payload.Append (Cartridge_Format);       -- format = 9 (32 voices)
-      Payload.Append (16#20#);  -- byte count (MSB)
-      Payload.Append (16#00#);  -- byte count (LSB) (b=4096; 32 voices)
-
       Put_Line ("Generating new cartridge...");
 
-      -- Just fill the cartridge with copies of the "BRASS1" voice
-      for I in Voice_Index loop
-         Cartridge.Voices (I) := Brass1;
+      declare
+         Cartridge          : Cartridge_Type;
+         Cartridge_Data     : Cartridge_Data_Type;
+      begin
+         -- Just fill the cartridge with copies of the "BRASS1" voice
+         for I in Voice_Index loop
+            Cartridge.Voices (I) := Brass1;
 
-         -- But change the name to a random one:
-         Cartridge.Voices (I).Name := Random_Voice_Name;
-      end loop;
+            -- But change the name to a random one:
+            Cartridge.Voices (I).Name := Random_Voice_Name;
+         end loop;
 
-      Get_Data (Cartridge, Cartridge_Data);
-      Put ("Cartridge data length = ");
-      Put_Line (Cartridge_Data'Length'Image);
-      for B of Cartridge_Data loop
-         Payload.Append (B);
-      end loop;
+         Emit (Cartridge, Cartridge_Data);
+         Put ("Cartridge data length = ");
+         Put_Line (Cartridge_Data'Length'Image);
 
-      Cartridge_Checksum := Checksum (Cartridge_Data);
-      Payload.Append (Cartridge_Checksum);
+         Payload.Cartridge_Data := Cartridge_Data;
+         Payload.Checksum := Checksum (Cartridge_Data);
+      end;
 
       Message := (Manufacturer, Payload);
-      Data    := Get_Data (Message);
+      Data    := Emit (Message);
       Helpers.Write_File (Name, Data);
    end Run_Cartridge;
 
    procedure Run_Voice (Name : String) is
-      Payload : Byte_Vector;
       Channel : constant MIDI_Channel_Type := 1;  -- MIDI channel number
       Message : Message_Type;
       Data    : Byte_Vector;
 
-      Voice      : Voice_Type;
-      Voice_Data : Voice_Data_Type;
-      Offset     : Integer;
+      Payload : Payload_Type := (Format => Voice,
+                                 Channel => Channel,
+                                 Byte_Count => 16#011B#,
+                                 Checksum => 0,
+                                 Voice_Data => (others => 0));
+
    begin
       Put_Line ("Generating new voice...");
-      Voice := Brass1;
 
-      Payload.Clear;
-      Payload.Append (Byte (Channel - 1));  -- adjust channel to 0...15
-      Payload.Append (Voice_Format);        -- format = 0 (1 voice)
-      Payload.Append (16#01#);  -- byte count (MSB)
-      Payload.Append (16#1B#);  -- byte count (LSB) (b=155; 1 voice)
-
-      Voice_Data := Get_Data (Voice);
-      Offset     := 1;
-      for B of Voice_Data loop
-         Payload.Append (B);
-         Offset := Offset + 1;
-      end loop;
-
-      Payload.Append (Checksum (Voice_Data));
+      declare
+         Voice      : Voice_Type;
+         Voice_Data : Voice_Data_Type;
+      begin
+         Voice := Brass1;
+         Emit (Voice, Voice_Data);
+         Payload.Voice_Data := Voice_Data;
+         Payload.Checksum := Checksum (Voice_Data);
+      end;
 
       Message := (Manufacturer, Payload);
-      Data    := Get_Data (Message);
+      Data    := Emit (Message);
       Helpers.Write_File (Name, Data);
    end Run_Voice;
 

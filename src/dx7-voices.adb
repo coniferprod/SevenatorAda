@@ -41,7 +41,7 @@ package body DX7.Voices is
 
    -- Gets the voice data bytes for MIDI System Exclusive.
    -- The normal format is used for individual voices.
-   function Get_Data (Voice : Voice_Type) return Voice_Data_Type is
+   procedure Emit (Voice : in Voice_Type; Voice_Data : out Voice_Data_Type) is
       Ch     : Character;
       Data   : Voice_Data_Type;
       Offset : Natural;
@@ -81,12 +81,12 @@ package body DX7.Voices is
          Offset        := Offset + 1;
       end loop;
 
-      return Data;
-   end Get_Data;
+      Voice_Data := Data;
+   end Emit;
 
    -- Gets the voice data bytes in packed format for MIDI System Exclusive.
    -- The packed format is used when voice data is embedded in cartridge data.
-   function Get_Packed_Data (Voice : Voice_Type) return Voice_Packed_Data_Type
+   function Emit_Packed (Voice : Voice_Type) return Voice_Packed_Data_Type
    is
       -- Use the Ada representation facilities to make a type that
       -- packs several fields into one byte. For details, see
@@ -299,6 +299,22 @@ package body DX7.Voices is
          Offset         := Offset + 1;
       end loop;
    end Parse;
+
+   procedure Parse_Packed (Data : in Voice_Packed_Data_Type; Voice : out Voice_Type) is
+      Ops              : Operator_Array;
+      Op_Start, Op_End : Natural;
+      Offset           : Natural;
+      LFO              : LFO_Type;
+   begin
+      Op_Start := 0;
+      for I in reverse Operator_Index loop
+         Op_End := Op_Start + Operator_Packed_Data_Length;
+         Parse (Data (Op_Start .. Op_End), Ops (I));
+         Op_Start := Op_Start + Operator_Packed_Data_Length;
+      end loop;
+
+
+   end Parse_Packed;
 
    procedure Parse (Data : in LFO_Data_Type; LFO : out LFO_Type) is
    begin

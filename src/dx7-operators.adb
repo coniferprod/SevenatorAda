@@ -166,6 +166,14 @@ package body DX7.Operators is
    end Parse;
 
    procedure Parse
+     (Data : in     Keyboard_Level_Scaling_Packed_Data_Type;
+      KLS  :    out Keyboard_Level_Scaling_Type)
+   is
+   begin
+
+   end Parse;
+
+   procedure Parse
      (Data         : in     Operator_Data_Type; Op : out Operator_Type)
    is
       EG  : Envelope_Type;
@@ -188,6 +196,20 @@ package body DX7.Operators is
          Touch_Sensitivity => Depth_Type (Data (15)), Output_Level => Level_Type (Data (16)),
          Mode => Mode, Coarse => Coarse_Type (Data (18)), Fine => Fine_Type (Data (19)),
          Detune                        => Detune_Type (Data (20)));
+   end Parse;
+
+   procedure Parse (Data : in Operator_Packed_Data_Type; Op : out Operator_Type) is
+      EG  : Envelope_Type;
+      KLS : Keyboard_Level_Scaling_Type;
+      Mode : Operator_Mode;
+      KLS_Data : Keyboard_Level_Scaling_Packed_Data_Type;
+   begin
+      Parse (Data (0 .. 7), EG);
+
+      KLS_Data := Data (8 .. 11);
+      Parse (KLS_Data, KLS);
+
+
    end Parse;
 
 end DX7.Operators;
