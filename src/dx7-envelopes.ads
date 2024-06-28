@@ -23,7 +23,7 @@ package DX7.Envelopes is
    subtype Envelope_Data_Type is Data_Type (1 .. Envelope_Data_Length);
 
    -- Gets the MIDI System Exclusive data for an envelope.
-   function Get_Data (Envelope : Envelope_Type) return Envelope_Data_Type;
+   procedure Emit (Envelope : in Envelope_Type; Data : out Envelope_Data_Type);
 
    -- Makes an envelope with random parameters.
    function Random_Envelope return Envelope_Type;

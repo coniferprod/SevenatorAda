@@ -17,6 +17,14 @@ package Helpers is
 
    subtype Byte_Vector is Helpers.Byte_Vectors.Vector;
 
+   -- Helper function to increment an integer value by one.
+   function Inc (I : Integer) return Integer is (I + 1)
+      with Inline;
+
+   -- Helper function to decrement an integer value by one.
+   function Dec (I : Integer) return Integer is (I - 1)
+      with Inline;
+
    -- Unconstrained array type for various patch data components
    type Data_Type is array (Natural range <>) of Byte;
 

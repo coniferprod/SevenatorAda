@@ -1,12 +1,9 @@
 package body DX7.Operators is
 
-   function Get_Data
-     (KLS : Keyboard_Level_Scaling_Type)
-      return Keyboard_Level_Scaling_Data_Type
-   is
+   procedure Emit
+     (KLS : in Keyboard_Level_Scaling_Type; Data : Keyboard_Level_Scaling_Data_Type) is
    begin
-      return
-        (Get_Data (KLS.Breakpoint), Byte (KLS.Left_Depth),
+      Data := (Get_Data (KLS.Breakpoint), Byte (KLS.Left_Depth),
          Byte (KLS.Right_Depth),
          (case KLS.Left_Curve.Style is
             when Linear => (if KLS.Left_Curve.Positive then 3 else 0),
@@ -14,7 +11,7 @@ package body DX7.Operators is
          (case KLS.Right_Curve.Style is
             when Linear => (if KLS.Right_Curve.Positive then 3 else 0),
             when Exponential => (if KLS.Right_Curve.Positive then 2 else 1)));
-   end Get_Data;
+   end Emit;
 
    function Get_Packed_Data
      (KLS : Keyboard_Level_Scaling_Type)
@@ -47,20 +44,23 @@ package body DX7.Operators is
       return Data;
    end Get_Packed_Data;
 
-   function Get_Data (Operator : Operator_Type) return Operator_Data_Type is
-      Data   : Operator_Data_Type;
+   procedure Emit (Operator : in Operator_Type; Data : out Operator_Data_Type) is
       Offset : Positive;
    begin
       Offset := 1;
-      for EG_Byte of Get_Data (Operator.EG) loop
-         Data (Offset) := EG_Byte;
-         Offset        := Offset + 1;
-      end loop;
 
-      for KLS_Byte of Get_Data (Operator.Keyboard_Level_Scaling) loop
-         Data (Offset) := KLS_Byte;
-         Offset        := Offset + 1;
-      end loop;
+      declare
+         EG_Data : Data (1 .. Envelope_Data_Length);
+         KLS_Data :Data (1 .. Keyboard_Level_Scaling_Data_Length);
+      begin
+         Emit (Operator.EG, EG_Data);
+         Data (Offset .. Offset + Envelope_Data_Length) := EG_Data;
+         Offset        := Offset + EG_Data'Length;
+
+         Emit (Operator.Keyboard_Level_Scaling, KLS_Data);
+         Data (Offset .. Offset + KLS_Data'Length);
+         Offset := Offset + KLS_Data'Length;
+      end;
 
       Data (Offset)     := Byte (Operator.Keyboard_Rate_Scaling);
       Data (Offset + 1) := Byte (Operator.Amplitude_Modulation_Sensitivity);
@@ -71,8 +71,6 @@ package body DX7.Operators is
       Data (Offset + 6) := Byte (Operator.Fine);
       Data (Offset + 7) :=
         Byte (Operator.Detune + 7); -- adjust to 0...14 for SysEx
-
-      return Data;
    end Get_Data;
 
    function Get_Packed_Data
