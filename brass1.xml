@@ -6,10 +6,10 @@
             <rates>72 76 99 71</rates>
             <levels>99 88 96 0</levels>
         </eg>
-        <levelscaling breakpoint="60">
+        <keyboardlevelscaling breakpoint="60">
             <depth left="0" right="0" />
             <curve left="+LIN" right="+LIN" />
-        </levelscaling>
+        </keyboardlevelscaling>
     </operator1>
 
     <operator2 level="86" mode="ratio" coarse="0" fine="0" detune="7"
@@ -18,10 +18,10 @@
             <rates>62 51 29 71</rates>
             <levels>82 95 96 0</levels>
         </eg>
-        <levelscaling breakpoint="48">
+        <keyboardlevelscaling breakpoint="48">
             <depth left="0" right="0" />
             <curve left="+LIN" right="-EXP" />
-        </levelscaling>
+        </keyboardlevelscaling>
     </operator2>
 
     <operator3 level="86" mode="ratio" coarse="0" fine="0" detune="-2"
@@ -30,10 +30,10 @@
             <rates>77 76 82 71</rates>
             <levels>99 98 98 0</levels>
         </eg>
-        <levelscaling breakpoint="48">
+        <keyboardlevelscaling breakpoint="48">
             <depth left="0" right="0" />
             <curve left="+LIN" right="-EXP" />
-        </levelscaling>
+        </keyboardlevelscaling>
     </operator3>
 
     <operator4 level="86" mode="ratio" coarse="0" fine="0" detune="1"
@@ -42,10 +42,10 @@
             <rates>77 36 41 71</rates>
             <levels>99 98 98 0</levels>
         </eg>
-        <levelscaling breakpoint="48">
+        <keyboardlevelscaling breakpoint="48">
             <depth left="0" right="0" />
             <curve left="+LIN" right="-EXP" />
-        </levelscaling>
+        </keyboardlevelscaling>
     </operator4>
 
     <operator5 level="98" mode="ratio" coarse="0" fine="0" detune="1"
@@ -54,10 +54,10 @@
             <rates>77 36 41 71</rates>
             <levels>99 98 98 0</levels>
         </eg>
-        <levelscaling breakpoint="48">
+        <keyboardlevelscaling breakpoint="48">
             <depth left="0" right="0" />
             <curve left="+LIN" right="-EXP" />
-        </levelscaling>
+        </keyboardlevelscaling>
     </operator5>
 
     <operator6 level="98" mode="ratio" coarse="0" fine="0" detune="1"
@@ -66,10 +66,10 @@
             <rates>49 99 28 68</rates>
             <levels>99 98 91 0</levels>
         </eg>
-        <levelscaling breakpoint="60">
+        <keyboardlevelscaling breakpoint="60">
             <depth left="54" right="50" />
             <curve left="-EXP" right="-EXP" />
-        </levelscaling>
+        </keyboardlevelscaling>
     </operator6>
 
     <peg>
@@ -77,5 +77,5 @@
         <levels>50 50 50 50</levels>
     </peg>
 
-    <lfo speed="37" delaytime="0" pmd="5" amd="0" sync="false" wave="sine" pms="3" />
+    <lfo speed="37" delay="0" pmd="5" amd="0" sync="false" wave="sine" pms="3" />
 </voice>

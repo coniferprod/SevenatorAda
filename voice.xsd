@@ -3,7 +3,7 @@
 
     <!-- Algorithm 1...32 -->
     <xsd:simpleType name="algorithm-type">
-        <xsd:restriction base="xsd:integer">
+        <xsd:restriction base="xsd:positiveInteger">
             <xsd:minInclusive value="1"/>
             <xsd:maxInclusive value="32"/>
         </xsd:restriction>
@@ -38,32 +38,28 @@
 
     <!-- Depth 0...7 -->
     <xsd:simpleType name="depth-type">
-        <xsd:restriction base="xsd:integer">
-            <xsd:minInclusive value="0"/>
+        <xsd:restriction base="xsd:nonNegativeInteger">
             <xsd:maxInclusive value="7"/>
         </xsd:restriction>
     </xsd:simpleType>
 
     <!-- Sensitivity 0...3 -->
     <xsd:simpleType name="sensitivity-type">
-        <xsd:restriction base="xsd:integer">
-            <xsd:minInclusive value="0"/>
+        <xsd:restriction base="xsd:nonNegativeInteger">
             <xsd:maxInclusive value="3"/>
         </xsd:restriction>
     </xsd:simpleType>
 
     <!-- Coarse 0...31 -->
     <xsd:simpleType name="coarse-type">
-        <xsd:restriction base="xsd:integer">
-            <xsd:minInclusive value="0"/>
+        <xsd:restriction base="xsd:nonNegativeInteger">
             <xsd:maxInclusive value="31"/>
         </xsd:restriction>
     </xsd:simpleType>
 
     <!-- Fine 0...99 -->
     <xsd:simpleType name="fine-type">
-        <xsd:restriction base="xsd:integer">
-            <xsd:minInclusive value="0"/>
+        <xsd:restriction base="xsd:nonNegativeInteger">
             <xsd:maxInclusive value="99"/>
         </xsd:restriction>
     </xsd:simpleType>
@@ -157,7 +153,7 @@
         </xsd:restriction>
     </xsd:simpleType>
 
-    <xsd:element name="levelscaling">
+    <xsd:element name="keyboardlevelscaling">
         <xsd:complexType>
             <xsd:all>
                 <xsd:element name="depth">
@@ -180,7 +176,7 @@
     <xsd:complexType name="operator-type">
         <xsd:all>
             <xsd:element ref="eg"/>
-            <xsd:element ref="levelscaling"/>
+            <xsd:element ref="keyboardlevelscaling"/>
         </xsd:all>
         <xsd:attribute name="level" type="level-type" use="required"/>
         <xsd:attribute name="mode" type="mode-type" use="required"/>
@@ -195,7 +191,7 @@
     <xsd:element name="lfo">
         <xsd:complexType>
             <xsd:attribute name="speed" type="level-type" use="required"/>
-            <xsd:attribute name="delaytime" type="level-type" use="required"/>
+            <xsd:attribute name="delay" type="level-type" use="required"/>
             <xsd:attribute name="pmd" type="level-type" use="required"/>
             <xsd:attribute name="amd" type="level-type" use="required"/>
             <xsd:attribute name="sync" type="xsd:boolean" use="required"/>
