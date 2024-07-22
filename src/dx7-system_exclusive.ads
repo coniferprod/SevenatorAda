@@ -6,7 +6,7 @@ package DX7.System_Exclusive is
    type Format_Type is (Voice, Cartridge);
    for Format_Type use (Voice => 1, Cartridge => 9);
 
-   type Payload_Type (Format : Format_Type) is record
+   type Payload_Type (Format : Format_Type := Voice) is record
       Channel : MIDI_Channel_Type;
       Byte_Count : Natural;
       Checksum : Byte;
@@ -48,6 +48,8 @@ package DX7.System_Exclusive is
    -- Use overloading by argument to define Get_Data for each type as required.
    function Emit (Manufacturer : Manufacturer_Type) return Byte_Vector;
    function Emit (Message : Message_Type) return Byte_Vector;
+
+   function Emit (Payload : Payload_Type) return Byte_Vector;
 
    procedure Parse_Message (Data : in Byte_Array; Message : out Message_Type);
    procedure Parse_Payload (Data : in Byte_Vector; Payload : out Payload_Type);

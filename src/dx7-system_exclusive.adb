@@ -1,3 +1,5 @@
+with Ada.Directories; use Ada.Directories;
+
 package body DX7.System_Exclusive is
 
    function Emit (Manufacturer : Manufacturer_Type) return Byte_Vector is
@@ -12,22 +14,29 @@ package body DX7.System_Exclusive is
             BV.Append (Manufacturer.Identifier_2);
       end case;
       return BV;
-   end Get_Data;
+   end Emit;
 
    function Emit (Message : Message_Type) return Byte_Vector is
       BV : Byte_Vector;
    begin
       BV.Append (System_Exclusive_Initiator);
       BV.Append (Emit (Message.Manufacturer));
-      BV.Append (Message.Payload);
+      BV.Append (Emit (Message.Payload));
       BV.Append (System_Exclusive_Terminator);
       return BV;
-   end Get_Data;
+   end Emit;
+
+   function Emit (Payload : Payload_Type) return Byte_Vector is
+      BV : Byte_Vector;
+   begin
+
+      return BV;
+   end Emit;
 
    procedure Parse_Payload (Data : in Byte_Vector; Payload : out Payload_Type) is
       Data_Size : Natural;
    begin
-      Payload.Channel := Data (0) + 1;
+      Payload.Channel := MIDI_Channel_Type (Data (0) + 1);
       Payload.Format := (if Data (1) = 0 then Voice else Cartridge);
       Payload.Byte_Count := Data (2) * 256 + Data (3);
 
