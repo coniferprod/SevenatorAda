@@ -3,8 +3,8 @@ with Ada.Numerics.Discrete_Random;
 package body DX7.Envelopes is
 
    -- Make new packages for random rate and level
-   package Rand_Rate is new Ada.Numerics.Discrete_Random (Rate_Type);
-   package Rand_Level is new Ada.Numerics.Discrete_Random (Level_Type);
+   package Random_Rates is new Ada.Numerics.Discrete_Random (Rate_Type);
+   package Random_Levels is new Ada.Numerics.Discrete_Random (Level_Type);
 
    procedure Emit (Envelope : in Envelope_Type; Data : out Envelope_Data_Type) is
    begin
@@ -16,21 +16,21 @@ package body DX7.Envelopes is
          Data (Integer (I) + Integer (Rate_Index'Last)) :=
            Byte (Envelope.Levels (I));
       end loop;
-   end Get_Data;
+   end Emit;
 
    function Random_Envelope return Envelope_Type is
       Envelope  : Envelope_Type;
-      Rate_Gen  : Rand_Rate.Generator;
-      Level_Gen : Rand_Level.Generator;
+      Rate_Gen  : Random_Rates.Generator;
+      Level_Gen : Random_Levels.Generator;
    begin
-      Rand_Rate.Reset (Rate_Gen);
+      Random_Rates.Reset (Rate_Gen);
       for I in Rate_Index loop
-         Envelope.Rates (I) := Rand_Rate.Random (Rate_Gen);
+         Envelope.Rates (I) := Random_Rates.Random (Rate_Gen);
       end loop;
 
-      Rand_Level.Reset (Level_Gen);
+      Random_Levels.Reset (Level_Gen);
       for I in Level_Index loop
-         Envelope.Levels (I) := Rand_Level.Random (Level_Gen);
+         Envelope.Levels (I) := Random_Levels.Random (Level_Gen);
       end loop;
 
       return Envelope;

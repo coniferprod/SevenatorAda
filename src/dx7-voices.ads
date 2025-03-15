@@ -18,7 +18,7 @@ package DX7.Voices is
 
    -- Enumeration type for LFO waveforms
    type LFO_Waveform_Type is
-     (Triangle, SawDown, SawUp, Square, Sine, SampleAndHold);
+     (Triangle, Saw_Down, Saw_Up, Square, Sine, Sample_And_Hold);
 
    type LFO_Type is record
       Speed     : Level_Type        := 35; --  LFS
@@ -26,7 +26,7 @@ package DX7.Voices is
       Pitch_Modulation_Depth       : Level_Type        := 0;  --  LPMD
       Amplitude_Modulation_Depth       : Level_Type        := 0; -- LAMD
       Key_Sync      : Boolean           := True;  --  LFKS
-      Wave      : LFO_Waveform_Type := Triangle;  --  LFW
+      Waveform      : LFO_Waveform_Type := Triangle;  --  LFW
       Pitch_Modulation_Sensitivity : Depth_Type := 0; --  LPMS
    end record;
 
@@ -91,9 +91,8 @@ package DX7.Voices is
       EG => (Rates => (72, 76, 99, 71), Levels => (99, 88, 96, 0)),
           Keyboard_Level_Scaling =>
             (Breakpoint  => 60,  -- Yamaha note C3
-             Left_Depth  => 0, Right_Depth => 0,
-             Left_Curve  => Linear_Positive_Curve,
-             Right_Curve => Linear_Positive_Curve),
+             Left => (Depth  => 0, Curve => Linear_Positive_Curve),
+             Right => (Depth => 0, Curve => Linear_Positive_Curve)),
           Keyboard_Rate_Scaling  => 0,
           Amplitude_Modulation_Sensitivity => 0,
           Touch_Sensitivity => 0,
@@ -104,9 +103,8 @@ package DX7.Voices is
       EG => (Rates => (62, 51, 29, 71), Levels => (82, 95, 96, 0)),
           Keyboard_Level_Scaling =>
             (Breakpoint  => 48, -- Yamaha note C2
-             Left_Depth  => 0, Right_Depth => 0,
-             Left_Curve  => Linear_Positive_Curve,
-             Right_Curve => Exponential_Negative_Curve),
+             Left => (Depth  => 0, Curve => Linear_Positive_Curve),
+             Right => (Depth => 0, Curve => Exponential_Negative_Curve)),
           Keyboard_Rate_Scaling  => 0,
           Amplitude_Modulation_Sensitivity => 0,
           Touch_Sensitivity => 0,
@@ -116,9 +114,8 @@ package DX7.Voices is
       EG => (Rates => (77, 76, 82, 71), Levels => (99, 98, 98, 0)),
           Keyboard_Level_Scaling =>
             (Breakpoint  => 48, -- Yamaha note C2
-             Left_Depth  => 0, Right_Depth => 0,
-             Left_Curve  => Linear_Positive_Curve,
-             Right_Curve => Exponential_Negative_Curve),
+             Left => (Depth  => 0, Curve => Linear_Positive_Curve),
+             Right => (Depth => 0, Curve => Exponential_Negative_Curve)),
           Keyboard_Rate_Scaling  => 0,
           Amplitude_Modulation_Sensitivity => 0,
           Touch_Sensitivity => 2,
@@ -128,9 +125,8 @@ package DX7.Voices is
       EG => (Rates => (77, 36, 41, 71), Levels => (99, 98, 98, 0)),
           Keyboard_Level_Scaling =>
             (Breakpoint  => 48, -- Yamaha note C2
-             Left_Depth  => 0, Right_Depth => 0,
-             Left_Curve  => Linear_Positive_Curve,
-             Right_Curve => Exponential_Negative_Curve),
+             Left => (Depth  => 0, Curve => Linear_Positive_Curve), 
+             Right => (Depth => 0, Curve => Exponential_Negative_Curve)),
           Keyboard_Rate_Scaling  => 0,
           Amplitude_Modulation_Sensitivity => 0,
           Touch_Sensitivity => 2,
@@ -140,9 +136,8 @@ package DX7.Voices is
       EG => (Rates => (77, 36, 41, 71), Levels => (99, 98, 98, 0)),
           Keyboard_Level_Scaling =>
             (Breakpoint  => 48, -- Yamaha note C2
-             Left_Depth  => 0, Right_Depth => 0,
-             Left_Curve  => Linear_Positive_Curve,
-             Right_Curve => Exponential_Negative_Curve),
+             Left => (Depth  => 0, Curve => Linear_Positive_Curve),
+             Right => (Depth => 0, Curve => Exponential_Negative_Curve)),
           Keyboard_Rate_Scaling  => 0,
           Amplitude_Modulation_Sensitivity => 0,
           Touch_Sensitivity => 2,
@@ -152,9 +147,8 @@ package DX7.Voices is
       EG => (Rates => (49, 99, 28, 68), Levels => (98, 98, 91, 0)),
           Keyboard_Level_Scaling =>
             (Breakpoint  => 60, -- Yamaha note C3
-             Left_Depth  => 54, Right_Depth => 50,
-             Left_Curve  => Exponential_Negative_Curve,
-             Right_Curve => Exponential_Negative_Curve),
+             Left => (Depth  => 54, Curve => Exponential_Negative_Curve),
+             Right => (Depth => 50, Curve => Exponential_Negative_Curve)),
           Keyboard_Rate_Scaling  => 4,
           Amplitude_Modulation_Sensitivity => 0,
           Touch_Sensitivity => 2,
@@ -166,7 +160,7 @@ package DX7.Voices is
       LFO                    =>
         (Speed => 37, Delay_Time => 0, Pitch_Modulation_Depth => 5,
         Amplitude_Modulation_Depth => 0, Key_Sync => False,
-         Wave  => Sine, Pitch_Modulation_Sensitivity => 3),
+         Waveform  => Sine, Pitch_Modulation_Sensitivity => 3),
       Transpose              => 0, Name => "BRASS   1 ");
 
 end DX7.Voices;

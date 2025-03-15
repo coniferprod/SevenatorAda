@@ -2,33 +2,31 @@ with DX7.Envelopes; use DX7.Envelopes;
 
 package DX7.Operators is
 
-   type Coarse_Type is range 0 .. 31;
-   type Fine_Type is range 0 .. 99;
-   type Detune_Type is range -7 .. 7;
-
-   type Algorithm_Type is range 1 .. 32;
-   type Depth_Type is range 0 .. 7;
-   type Sensitivity_Type is range 0 .. 3;
-
-   type Curve_Style_Type is (Linear, Exponential);
+   type Curve_Style is (Linear, Exponential);
+   type Curve_Sign is (Negative, Positive);
 
    type Scaling_Depth_Type is range 0 .. 99;
 
    type Scaling_Curve_Type is record
-      Style    : Curve_Style_Type := Linear;
-      Positive : Boolean          := False;
+      Style    : Curve_Style := Linear;
+      Sign : Curve_Sign := Negative;
+   end record;
+
+   type Scaling_Type is record
+      Depth : Scaling_Depth_Type;
+      Curve : Scaling_Curve_Type;
    end record;
 
    -- Curve = 0=-LIN, 1=-EXP, 2=+EXP, 3=+LIN
 
    Linear_Negative_Curve      : constant Scaling_Curve_Type :=
-     (Style => Linear, Positive => False);
+     (Style => Linear, Sign => Negative);
    Linear_Positive_Curve      : constant Scaling_Curve_Type :=
-     (Style => Linear, Positive => True);
+     (Style => Linear, Sign => Positive);
    Exponential_Negative_Curve : constant Scaling_Curve_Type :=
-     (Style => Exponential, Positive => False);
+     (Style => Exponential, Sign => Negative);
    Exponential_Positive_Curve : constant Scaling_Curve_Type :=
-     (Style => Exponential, Positive => True);
+     (Style => Exponential, Sign => Positive);
 
    -- Breakpoint is a key from A-1 to C8, with C3 = 0x27 (39) in SysEx.
    -- It can be expressed as a subtype of MIDI_Note_Type.
@@ -39,10 +37,8 @@ package DX7.Operators is
 
    type Keyboard_Level_Scaling_Type is record
       Breakpoint  : Breakpoint_Type;
-      Left_Depth  : Scaling_Depth_Type;
-      Right_Depth : Scaling_Depth_Type;
-      Left_Curve  : Scaling_Curve_Type;
-      Right_Curve : Scaling_Curve_Type;
+      Left : Scaling_Type;
+      Right : Scaling_Type;
    end record;
 
    -- MIDI System Exclusive data for Keyboard Level Scaling (normal)
@@ -59,12 +55,10 @@ package DX7.Operators is
 
    type Amplitude_Modulation_Sensitivity_Type is range 0 .. 3;
 
-   Init_Keyboard_Level_Scaling : constant Keyboard_Level_Scaling_Type := (
-      Breakpoint => 39,
-      Left_Depth => 0,
-      Right_Depth => 0,
-      Left_Curve => Linear_Negative_Curve,
-      Right_Curve => Linear_Negative_Curve);
+   Init_Keyboard_Level_Scaling : constant Keyboard_Level_Scaling_Type :=
+      (Breakpoint => 39,
+      Left => (Depth => 0, Curve => Linear_Negative_Curve),
+      Right => (Depth => 0, Curve => Linear_Negative_Curve));
 
    -- Represents an operator with its parameters.
    type Operator_Type is record
@@ -132,6 +126,8 @@ package DX7.Operators is
 
    procedure Parse
      (Data         : in     Operator_Data_Type; Op : out Operator_Type);
-   procedure Parse (Data : in Operator_Packed_Data_Type; Op : out Operator_Type);
+
+   -- Unpacks the packed operator data into normal data for parsing.   
+   procedure Unpack (Data : in Operator_Packed_Data_Type; Result : out Operator_Data_Type);
 
 end DX7.Operators;

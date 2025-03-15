@@ -18,6 +18,6 @@ package body DX7.Cartridges is
             Offset        := Offset + 1;
          end loop;
       end loop;
-   end Get_Data;
+   end Emit;
 
 end DX7.Cartridges;

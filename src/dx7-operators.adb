@@ -1,3 +1,5 @@
+with Interfaces; use Interfaces;
+
 package body DX7.Operators is
 
    procedure Emit
@@ -168,7 +170,7 @@ package body DX7.Operators is
       KLS  :    out Keyboard_Level_Scaling_Type)
    is
    begin
-
+      null;
    end Parse;
 
    procedure Parse
@@ -196,18 +198,38 @@ package body DX7.Operators is
          Detune                        => Detune_Type (Data (20)));
    end Parse;
 
-   procedure Parse (Data : in Operator_Packed_Data_Type; Op : out Operator_Type) is
-      EG  : Envelope_Type;
-      KLS : Keyboard_Level_Scaling_Type;
-      Mode : Operator_Mode;
-      KLS_Data : Keyboard_Level_Scaling_Packed_Data_Type;
+   procedure Unpack (Data : in Operator_Packed_Data_Type; Result : out Operator_Data_Type) is
    begin
-      Parse (Data (0 .. 7), EG);
+      -- Operator EG rates and levels are unpacked, so just copy them as is.
+      -- KLS breakpoint, left depth and right depth are also unpacked.
+      Result (0 .. 10) := Data (0 .. 10);
 
-      KLS_Data := Data (8 .. 11);
-      Parse (KLS_Data, KLS);
+      -- KLS left and right curve are both in byte #11.
+      -- Left curve is in bits 0..1, right curve is in bits 2...3.
+      Result (11) := Data (11) and 2#00000011#;
+      Result (12) := Data (11) and 2#00001100#;
 
+      -- Operator detune and rate scaling are both in byte #12.
+      -- Detune is in bits 3...6, RS is in bits 0...2.
+      Result (13) := Data (12) and 2#00000111#; -- RS
+      Result (20) := Data (12) and 2#01111000#; -- detune
 
-   end Parse;
+      -- Key Vel Sens and Amp Mod Sens are both in byte #13.
+      -- KVS is in bits 2...4, AMS is in bits 0...1.
+      Result (15) := Data (13) and 2#00011100#;
+      Result (14) := Data (13) and 2#00000011#;
+
+      -- Operator output level is not packed with anything else.
+      Result (16) := Data (14);
+
+      -- Osc mode (ratio/fixed) is in bit0 of byte #15.
+      Result (17) := Data (15) and 2#00000001#;
+
+      -- Freq coarse is in bits 1...5 of byte #15.
+      Result (18) := Data (15) and 2#001111110#;
+
+      -- Freq fine is not packed with anything else.
+      Result (19) := Data (16);
+   end Unpack;
 
 end DX7.Operators;
