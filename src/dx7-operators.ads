@@ -102,7 +102,7 @@ package DX7.Operators is
 
    -- Gets the data for the normal voice version of
    -- the operator for MIDI System Exclusive.
-   function Get_Data (Operator : Operator_Type) return Operator_Data_Type;
+   procedure Emit (Operator : in Operator_Type; Data : out Operator_Data_Type);
 
    -- Gets the data for the packed cartridge version of
    -- the operator for MIDI System Exclusive.
@@ -111,9 +111,8 @@ package DX7.Operators is
 
    -- Gets the data for the normal voice version of
    -- the keyboard level scaling definition.
-   function Get_Data
-     (KLS : Keyboard_Level_Scaling_Type)
-      return Keyboard_Level_Scaling_Data_Type;
+   procedure Emit
+     (KLS : in Keyboard_Level_Scaling_Type; Data : Keyboard_Level_Scaling_Data_Type);
 
    -- Gets the data for the packed cartridge version of
    -- the keyboard level scaling definition.
