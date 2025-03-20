@@ -51,4 +51,6 @@ package Helpers is
    subtype Note_Name is String (1 .. 2);
 
    function Get_Note_Name (Note_Number : in MIDI_Note_Type) return Note_Name;
+
+   function To_Byte_Array(V: Byte_Vector) return Byte_Array;
 end Helpers;

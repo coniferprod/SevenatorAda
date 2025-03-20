@@ -1,5 +1,7 @@
 with Ada.Directories; use Ada.Directories;
 
+with DX7.Voices;
+
 package body DX7.System_Exclusive is
 
    function Emit (Manufacturer : Manufacturer_Type) return Byte_Vector is
@@ -26,37 +28,53 @@ package body DX7.System_Exclusive is
       return BV;
    end Emit;
 
+   function Emit (Header : Header_Type) return Byte_Vector is
+   begin
+
+   end Emit;
+
    function Emit (Payload : Payload_Type) return Byte_Vector is
       BV : Byte_Vector;
+      Voice_Data : Voice_Data_Type;
+      Cartridge_Data : Cartridge_Data_Type;
    begin
+      if Payload.Format = Voice then
+         DX7.Voices.Emit (Payload.Voice_Data, Voice_Data);
+         for I in Voice_Data'Range loop
+            BV.Append (Voice_Data (I));
+         end loop;
+      else
+         Emit (Payload.Cartridge_Data, Cartridge_Data);
+         for I in Cartridge_Data'Range loop
+            BV.Append (Cartridge_Data (I));
+         end loop;
+      end if;
 
       return BV;
    end Emit;
 
+   procedure Parse_Header (Data : in Byte_Array; Header : out Header_Type) is
+   begin
+      null;
+   end Parse_Header;
+
    procedure Parse_Payload (Data : in Byte_Vector; Payload : out Payload_Type) is
       Data_Size : Natural;
+      Temp_Payload : Payload_Type;
+      Channel : MIDI_Channel_Type;
+      Byte_Count : Natural;
+      Checksum : Byte;
    begin
-      Payload.Channel := MIDI_Channel_Type (Data (0) + 1);
-      Payload.Format := (if Data (1) = 0 then Voice else Cartridge);
-      Payload.Byte_Count := Data (2) * 256 + Data (3);
-
-      if Payload.Format = Voice then
-         Data_Size := 155;
+      Channel := MIDI_Channel_Type (Data (0) + 1);
+      Byte_Count := Natural (Data (2)) * 256 + Natural (Data (3));
+      Checksum := Data (Data.Last_Index);
+      if Data (1) = 0 then
+         Temp_Payload := (Voice, Channel, Byte_Count, Checksum, Data (0 .. 154));
       else
-         Data_Size := 4096;
+         Temp_Payload := (Cartridge, Channel, Byte_Count, Checksum, Data (0 .. 4095));
       end if;
 
-      declare
-         Patch_Data : Data_Type (0 .. Data_Size - 1);
-         Index : Natural := 0;
-      begin
-         for I in 4 .. Data.Last_Index - 1 loop
-            Patch_Data (Index) := Data (I);
-         end loop;
-         Payload.Data := Patch_Data;
-      end;
-
-      Payload.Checksum := Data (Data.Last_Index);
+      Payload := Temp_Payload;
    end Parse_Payload;
 
    procedure Parse_Message (Data : in Byte_Array; Message : out Message_Type)

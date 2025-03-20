@@ -6,6 +6,15 @@ package DX7.System_Exclusive is
    type Format_Type is (Voice, Cartridge);
    for Format_Type use (Voice => 1, Cartridge => 9);
 
+   type Header_Type is record
+      Sub_Status : Byte; -- 0=voice/cartridge, 1=parameter
+      Channel : MIDI_Channel_Type;
+      Format : Format_Type;
+      Byte_Count : Natural;  -- 14-bit number distributed evenly over two bytes
+      -- voice=155 (00000010011011 = 0x009B, appears as "01 1B")
+      -- cartridge=4096 (01000000000000 = 0x1000, appears as "20 00")
+   end record;
+
    type Payload_Type (Format : Format_Type := Voice) is record
       Channel : MIDI_Channel_Type;
       Byte_Count : Natural;
@@ -48,9 +57,10 @@ package DX7.System_Exclusive is
    -- Use overloading by argument to define Get_Data for each type as required.
    function Emit (Manufacturer : Manufacturer_Type) return Byte_Vector;
    function Emit (Message : Message_Type) return Byte_Vector;
-
+   function Emit (Header : Header_Type) return Byte_Vector;
    function Emit (Payload : Payload_Type) return Byte_Vector;
 
+   procedure Parse_Header (Data : in Byte_Array; Header : out Header_Type);
    procedure Parse_Message (Data : in Byte_Array; Message : out Message_Type);
    procedure Parse_Payload (Data : in Byte_Vector; Payload : out Payload_Type);
 

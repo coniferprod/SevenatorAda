@@ -88,4 +88,12 @@ package body Helpers is
       return Note_Names (Note_Index (Note_Number mod 12)) & Octave'Image;
    end Get_Note_Name;
 
+   function To_Byte_Array(V: Byte_Vector) return Byte_Array is
+      Temp_Arr: Byte_Array (0 .. Natural (V.Length) - 1);
+   begin
+      for I in Temp_Arr'Range loop
+         Temp_Arr (I) := V.Element (I);
+      end loop;
+      return Temp_Arr;
+   end To_Byte_Array;
 end Helpers;
