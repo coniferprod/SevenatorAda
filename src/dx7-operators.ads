@@ -1,3 +1,5 @@
+with Sixten; use Sixten;
+
 with DX7.Envelopes; use DX7.Envelopes;
 
 package DX7.Operators is

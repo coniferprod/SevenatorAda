@@ -1,3 +1,4 @@
+with Sixten; use Sixten;
 with DX7.Voices; use DX7.Voices;
 
 package DX7.Cartridges is
@@ -6,7 +7,7 @@ package DX7.Cartridges is
    end record;
 
    Cartridge_Data_Length : constant Positive := 4_096;
-   subtype Cartridge_Data_Type is Data_Type (1 .. Cartridge_Data_Length);
+   subtype Cartridge_Data_Type is Byte_Array (0 .. Cartridge_Data_Length - 1);
 
    procedure Parse (Data : in Cartridge_Data_Type; Cartridge : out Cartridge_Type);
 

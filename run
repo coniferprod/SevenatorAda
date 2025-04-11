@@ -1,1 +1,1 @@
-gprbuild -P sevenator.gpr && obj/sevenator
+gprbuild -Psevenator && obj/sevenator

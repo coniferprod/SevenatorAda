@@ -1,3 +1,6 @@
+with Sixten; use Sixten;
+with Sixten.Manufacturers; use Sixten.Manufacturers;
+
 with DX7.Voices; use DX7.Voices;
 with DX7.Cartridges; use DX7.Cartridges;
 
@@ -25,24 +28,6 @@ package DX7.System_Exclusive is
       end case;
    end record;
 
-   -- Use a variant record to describe the manufacturer
-   -- in a MIDI System Exclusive Message.
-
-   -- Would have used "Standard" instead of normal, but it
-   -- causes trouble because it is the name of an Ada package.
-   -- Using "Normal" instead.
-   type Manufacturer_Kind is (Normal, Extended);
-   type Manufacturer_Type (Kind : Manufacturer_Kind := Normal) is
-   record
-      case Kind is
-         when Normal =>
-            Identifier : Byte;
-         when Extended =>
-            Identifier_1 : Byte;
-            Identifier_2 : Byte;
-      end case;
-   end record;
-
    -- MIDI System Exclusive message
    type Message_Type is record
       Manufacturer : Manufacturer_Type;
@@ -64,4 +49,5 @@ package DX7.System_Exclusive is
    procedure Parse_Message (Data : in Byte_Array; Message : out Message_Type);
    procedure Parse_Payload (Data : in Byte_Vector; Payload : out Payload_Type);
 
+   function Checksum (Data : Data_Type) return Byte;
 end DX7.System_Exclusive;

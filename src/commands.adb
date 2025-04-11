@@ -1,7 +1,10 @@
 with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Directories;
 use type Ada.Directories.File_Size;
-with Helpers;        use Helpers;
+
+with Sixten; use Sixten;
+with Sixten.Manufacturers; use Sixten.Manufacturers;
+
 with DX7;            use DX7;
 with DX7.Envelopes;  use DX7.Envelopes;
 with DX7.Voices;     use DX7.Voices;
@@ -9,13 +12,9 @@ with DX7.Cartridges; use DX7.Cartridges;
 with DX7.System_Exclusive; use DX7.System_Exclusive;
 
 package body Commands is
-   Manufacturer : constant Manufacturer_Type :=
-     (Normal, Identifier => 16#43#  -- identifier for Yamaha
-   );
-
    procedure Run_Dump (Name : String) is
       Size : constant Ada.Directories.File_Size := Ada.Directories.Size (Name);
-      Data    : Byte_Array (0 .. Size - 1);
+      Data    : Byte_Array (0 .. Integer (Size) - 1);
       Message : Message_Type;
       Channel : MIDI_Channel_Type;
    begin
@@ -128,9 +127,9 @@ package body Commands is
          Payload.Checksum := Checksum (Cartridge_Data);
       end;
 
-      Message := (Manufacturer, Payload);
+      Message := (Sixten.Manufacturers.Yamaha, Payload);
       Data    := Emit (Message);
-      Helpers.Write_File (Name, Data);
+      Write_File (Name, Data);
    end Run_Cartridge;
 
    procedure Run_Voice (Name : String) is
@@ -157,9 +156,9 @@ package body Commands is
          Payload.Checksum := Checksum (Voice_Data);
       end;
 
-      Message := (Manufacturer, Payload);
+      Message := (Sixten.Manufacturers.Yamaha, Payload);
       Data    := Emit (Message);
-      Helpers.Write_File (Name, Data);
+      Write_File (Name, Data);
    end Run_Voice;
 
 end Commands;

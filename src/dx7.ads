@@ -1,4 +1,4 @@
-with Helpers; use Helpers;
+with Sixten; use Sixten;
 
 -- The various parts of the data model are split into
 -- child packages. "If your root pkg needs the child
@@ -16,5 +16,8 @@ package DX7 is
    type Algorithm_Type is range 1 .. 32;
    type Depth_Type is range 0 .. 7;
    type Sensitivity_Type is range 0 .. 3;
+
+   -- Unconstrained array type for various patch data components
+   type Data_Type is array (Natural range <>) of Byte;
 
 end DX7;

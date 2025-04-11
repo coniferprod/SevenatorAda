@@ -1,15 +1,16 @@
+with Sixten; use Sixten;
+
 with DX7.Envelopes; use DX7.Envelopes;
 with DX7.Operators; use DX7.Operators;
 
 package DX7.Voices is
-   Voice_Data_Length : constant := 155;
-
    -- First voice data offset is 0 to match SysEx spec offsets
-   subtype Voice_Data_Type is Data_Type (0 .. Voice_Data_Length - 1);
+   Voice_Data_Length : constant := 155;
+   subtype Voice_Data_Type is Byte_Array (0 .. Voice_Data_Length - 1);
 
    Voice_Packed_Data_Length : constant := 128;
    subtype Voice_Packed_Data_Type is
-     Data_Type (0 .. Voice_Packed_Data_Length - 1);
+     Byte_Array (0 .. Voice_Packed_Data_Length - 1);
 
    Voice_Name_Length : constant := 10;
    subtype Voice_Name_Type is String (1 .. Voice_Name_Length);
@@ -31,10 +32,10 @@ package DX7.Voices is
    end record;
 
    LFO_Data_Length : constant := 7;
-   subtype LFO_Data_Type is Data_Type (1 .. LFO_Data_Length);
+   subtype LFO_Data_Type is Byte_Array (1 .. LFO_Data_Length);
 
    LFO_Packed_Data_Length : constant := 5;
-   subtype LFO_Packed_Data_Type is Data_Type (1 .. LFO_Packed_Data_Length);
+   subtype LFO_Packed_Data_Type is Byte_Array (1 .. LFO_Packed_Data_Length);
 
    Init_LFO : constant LFO_Type := (others => <>);
 
@@ -76,6 +77,10 @@ package DX7.Voices is
    function Random_Voice_Name return Voice_Name_Type;
 
    procedure Parse (Data : in Voice_Data_Type; Voice : out Voice_Type);
+   procedure Pack (Data : in Voice_Data_Type; Result : out Voice_Packed_Data_Type);
+   procedure Unpack (Data : in Voice_Packed_Data_Type; Result : out Voice_Data_Type);
+   procedure Emit (Voice : Voice_Type; Result : out Byte_Vector);
+
    procedure Parse_Packed (Data : in Voice_Packed_Data_Type; Voice : out Voice_Type);
 
    procedure Parse (Data : in LFO_Data_Type; LFO : out LFO_Type);

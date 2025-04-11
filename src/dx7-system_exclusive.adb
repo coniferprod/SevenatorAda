@@ -1,20 +1,15 @@
 with Ada.Directories; use Ada.Directories;
-
-with DX7.Voices;
+with Sixten.Manufacturers; use Sixten.Manufacturers;
 
 package body DX7.System_Exclusive is
 
-   function Emit (Manufacturer : Manufacturer_Type) return Byte_Vector is
-      BV : Byte_Vector;
+   function Emit (Manufacturer : Manufacturer_Type) return Sixten.Byte_Vector is
+      BV : Sixten.Byte_Vector;
+      Bytes : Sixten.Byte_Array := To_Bytes (Manufacturer);
    begin
-      case Manufacturer.Kind is
-         when Normal =>
-            BV.Append (Manufacturer.Identifier);
-         when Extended =>
-            BV.Append (0);  -- start of extended identifier
-            BV.Append (Manufacturer.Identifier_1);
-            BV.Append (Manufacturer.Identifier_2);
-      end case;
+      for B of Bytes loop
+         BV.Append (B);
+      end loop;
       return BV;
    end Emit;
 
@@ -29,8 +24,9 @@ package body DX7.System_Exclusive is
    end Emit;
 
    function Emit (Header : Header_Type) return Byte_Vector is
+      BV : Byte_Vector;
    begin
-
+      return BV;
    end Emit;
 
    function Emit (Payload : Payload_Type) return Byte_Vector is
@@ -38,18 +34,18 @@ package body DX7.System_Exclusive is
       Voice_Data : Voice_Data_Type;
       Cartridge_Data : Cartridge_Data_Type;
    begin
-      if Payload.Format = Voice then
-         DX7.Voices.Emit (Payload.Voice_Data, Voice_Data);
-         for I in Voice_Data'Range loop
-            BV.Append (Voice_Data (I));
-         end loop;
-      else
-         Emit (Payload.Cartridge_Data, Cartridge_Data);
-         for I in Cartridge_Data'Range loop
-            BV.Append (Cartridge_Data (I));
-         end loop;
-      end if;
-
+      case Payload.Format is
+         when Voice => 
+            DX7.Voices.Emit (Payload.Voice_Data, Voice_Data);
+            for I in Voice_Data'Range loop
+               BV.Append (Voice_Data (I));
+            end loop;
+         when Cartridge =>
+            Emit (Payload.Cartridge_Data, Cartridge_Data);
+            for I in Cartridge_Data'Range loop
+               BV.Append (Cartridge_Data (I));
+            end loop;
+      end case;
       return BV;
    end Emit;
 
@@ -119,5 +115,21 @@ package body DX7.System_Exclusive is
 
       Message := (Manufacturer => Manufacturer, Payload => Payload);
    end Parse_Message;
+
+   -- Computes the checksum byte for voice or cartridge data.
+   function Checksum (Data : Data_Type) return Byte is
+      Sum    : Byte := 0;
+      Result : Byte;
+   begin
+      for B of Data loop
+         Sum := Sum + B;
+      end loop;
+
+      Result := Sum and 16#FF#;
+      Result := not Result;
+      Result := Result and 16#7F#;
+      Result := Result + 1;
+      return Result;
+   end Checksum;
 
 end DX7.System_Exclusive;

@@ -1,5 +1,7 @@
 with Ada.Numerics.Discrete_Random;
 
+with Sixten; use Sixten;
+
 package body DX7.Envelopes is
 
    -- Make new packages for random rate and level
