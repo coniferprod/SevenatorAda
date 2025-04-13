@@ -6,11 +6,11 @@ with DX7.Operators; use DX7.Operators;
 package DX7.Voices is
    -- First voice data offset is 0 to match SysEx spec offsets
    Voice_Data_Length : constant := 155;
-   subtype Voice_Data_Type is Byte_Array (0 .. Voice_Data_Length - 1);
+   subtype Voice_Data_Type is Byte_Array (1 .. Voice_Data_Length);
 
    Voice_Packed_Data_Length : constant := 128;
    subtype Voice_Packed_Data_Type is
-     Byte_Array (0 .. Voice_Packed_Data_Length - 1);
+     Byte_Array (1 .. Voice_Packed_Data_Length);
 
    Voice_Name_Length : constant := 10;
    subtype Voice_Name_Type is String (1 .. Voice_Name_Length);
@@ -28,14 +28,10 @@ package DX7.Voices is
       Amplitude_Modulation_Depth       : Level_Type        := 0; -- LAMD
       Key_Sync      : Boolean           := True;  --  LFKS
       Waveform      : LFO_Waveform_Type := Triangle;  --  LFW
-      Pitch_Modulation_Sensitivity : Depth_Type := 0; --  LPMS
    end record;
 
-   LFO_Data_Length : constant := 7;
+   LFO_Data_Length : constant := 6;
    subtype LFO_Data_Type is Byte_Array (1 .. LFO_Data_Length);
-
-   LFO_Packed_Data_Length : constant := 5;
-   subtype LFO_Packed_Data_Type is Byte_Array (1 .. LFO_Packed_Data_Length);
 
    Init_LFO : constant LFO_Type := (others => <>);
 
@@ -54,6 +50,7 @@ package DX7.Voices is
       Feedback               : Depth_Type     := 0;
       Oscillator_Sync        : Boolean        := True;
       LFO                    : LFO_Type := Init_LFO;
+      Pitch_Modulation_Sensitivity : Depth_Type := 0;
       Transpose              : Transpose_Type := 0;  -- specified in octaves
       Name                   : Voice_Name_Type := "INIT VOICE";
    end record;
@@ -62,13 +59,10 @@ package DX7.Voices is
    type Voice_Array is array (Voice_Index) of Voice_Type;
 
    procedure Emit (Voice : in Voice_Type; Voice_Data : out Voice_Data_Type);
-   function Emit_Packed (Voice : Voice_Type) return Voice_Packed_Data_Type;
-
-   function Get_Data (LFO : LFO_Type) return LFO_Data_Type;
-   function Get_Packed_Data (LFO : LFO_Type) return LFO_Packed_Data_Type;
-
-   -- Makes an LFO with random parameters.
-   function Random_LFO return LFO_Type;
+   procedure Parse (Data : in Voice_Data_Type; Voice : out Voice_Type);
+   procedure Pack_Voice (Data : in Voice_Data_Type; Result : out Voice_Packed_Data_Type);
+   procedure Unpack_Voice (Data : in Voice_Packed_Data_Type; Result : out Voice_Data_Type);
+   procedure Parse_Packed (Data : in Voice_Packed_Data_Type; Voice : out Voice_Type);
 
    -- Makes a voice with random parameters.
    function Random_Voice return Voice_Type;
@@ -76,13 +70,14 @@ package DX7.Voices is
    -- Makes a random voice name.
    function Random_Voice_Name return Voice_Name_Type;
 
-   procedure Parse (Data : in Voice_Data_Type; Voice : out Voice_Type);
-   procedure Pack (Data : in Voice_Data_Type; Result : out Voice_Packed_Data_Type);
-   procedure Unpack (Data : in Voice_Packed_Data_Type; Result : out Voice_Data_Type);
-   procedure Emit (Voice : Voice_Type; Result : out Byte_Vector);
+   --------------
+   --  LFO
+   --------------
 
-   procedure Parse_Packed (Data : in Voice_Packed_Data_Type; Voice : out Voice_Type);
+   -- Makes an LFO with random parameters.
+   function Random_LFO return LFO_Type;
 
+   procedure Emit (LFO : in LFO_Type; Result : out LFO_Data_Type);
    procedure Parse (Data : in LFO_Data_Type; LFO : out LFO_Type);
 
    Init_Voice : constant Voice_Type :=
@@ -165,7 +160,8 @@ package DX7.Voices is
       LFO                    =>
         (Speed => 37, Delay_Time => 0, Pitch_Modulation_Depth => 5,
         Amplitude_Modulation_Depth => 0, Key_Sync => False,
-         Waveform  => Sine, Pitch_Modulation_Sensitivity => 3),
+         Waveform  => Sine),
+         Pitch_Modulation_Sensitivity => 3,
       Transpose              => 0, Name => "BRASS   1 ");
 
 end DX7.Voices;

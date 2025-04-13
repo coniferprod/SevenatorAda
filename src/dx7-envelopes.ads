@@ -20,7 +20,7 @@ package DX7.Envelopes is
    -- MIDI System Exclusive data length of envelope
    Envelope_Data_Length : constant := Rate_Array'Length + Level_Array'Length;
 
-   subtype Envelope_Data_Type is Data_Type (1 .. Envelope_Data_Length);
+   subtype Envelope_Data_Type is Byte_Array (1 .. Envelope_Data_Length);
 
    -- Gets the MIDI System Exclusive data for an envelope.
    procedure Emit (Envelope : in Envelope_Type; Data : out Envelope_Data_Type);
@@ -28,7 +28,7 @@ package DX7.Envelopes is
    -- Makes an envelope with random parameters.
    function Random_Envelope return Envelope_Type;
 
-   procedure Parse (Data : in Envelope_Data_Type; EG : out Envelope_Type);
+   procedure Parse (Data : in Envelope_Data_Type; Result : out Envelope_Type);
 
    Init_Envelope : constant Envelope_Type := (others => <>);
    Init_Pitch_Envelope : constant Envelope_Type :=

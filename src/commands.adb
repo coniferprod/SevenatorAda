@@ -16,7 +16,6 @@ package body Commands is
       Size : constant Ada.Directories.File_Size := Ada.Directories.Size (Name);
       Data    : Byte_Array (0 .. Integer (Size) - 1);
       Message : Message_Type;
-      Channel : MIDI_Channel_Type;
    begin
       Put ("Input file: ");
       Put (Name);
@@ -33,14 +32,14 @@ package body Commands is
       --   Put (" ");
       --end loop;
 
-      Parse_Message (Data, Message);
+      Parse (Data, Message);
 
       --for B of Message.Payload loop
       --   Put (Hex (B));
       --   Put (" ");
       --end loop;
 
-      Put_Line ("Channel = " & Message.Payload.Channel'Image);
+      Put_Line ("Channel = " & Message.Payload.Header.Channel'Image);
 
       declare
          package Format_IO is new Ada.Text_IO.Enumeration_IO(Enum => Format_Type);
@@ -49,33 +48,34 @@ package body Commands is
          Format_IO.Put (Message.Payload.Format);
       end;
 
-      if Message.Payload.Format = Voice then
-         declare
-            Voice : Voice_Type;
-            Data : Voice_Data_Type;
-         begin
-            for I in Message.Payload.Voice_Data'First .. Message.Payload.Voice_Data'Last loop
-               Data (I) := Message.Payload.Voice_Data (I);
-            end loop;
-            Parse (Data, Voice);
+      case Message.Payload.Format is
+         when Voice =>
+            declare
+               Voice : Voice_Type;
+               Data : Voice_Data_Type;
+            begin
+               for I in Message.Payload.Voice_Data'First .. Message.Payload.Voice_Data'Last loop
+                  Data (I) := Message.Payload.Voice_Data (I);
+               end loop;
+               Parse (Data, Voice);
 
-            Ada.Text_IO.Put_Line ("Voice name = " & Voice.Name);
-         end;
-      else
-         declare
-            Cartridge : Cartridge_Type;
-            Data : Cartridge_Data_Type;
-         begin
-            for I in Message.Payload.Cartridge_Data'First .. Message.Payload.Cartridge_Data'Last loop
-               Data (I) := Message.Payload.Cartridge_Data (I);
-            end loop;
-            Parse (Data, Cartridge);
+               Ada.Text_IO.Put_Line ("Voice name = " & Voice.Name);
+            end;
+         when Cartridge =>
+            declare
+               Cartridge : Cartridge_Type;
+               Data : Cartridge_Data_Type;
+            begin
+               for I in Message.Payload.Cartridge_Data'First .. Message.Payload.Cartridge_Data'Last loop
+                  Data (I) := Message.Payload.Cartridge_Data (I);
+               end loop;
+               Parse (Data, Cartridge);
 
-            for V of Cartridge.Voices loop
-               Put_Line (V.Name);
-            end loop;
-         end;
-      end if;
+               for V of Cartridge.Voices loop
+                  Put_Line (V.Name);
+               end loop;
+            end;
+      end case;
 
    end Run_Dump;
 
@@ -85,13 +85,13 @@ package body Commands is
       Channel : constant MIDI_Channel_Type := 1;  -- MIDI channel number
       Message : Message_Type;
       Data    : Byte_Vector;
-
-      Payload : Payload_Type := (Format => Cartridge,
-                                 Channel => Channel,
-                                 Byte_Count => 16#2000#,
-                                 Checksum => 0,
-                                 Cartridge_Data => (others => 0));
+      Header : Header_Type;
+      Payload : Payload_Type;
    begin
+      Header := (Sub_Status => 0, Channel => 1, Format => Cartridge, Byte_Count => 4096);
+      Payload := (Cartridge, Header, Checksum => 0,
+                                 Cartridge_Data => (others => 0));
+
       -- Test code to print envelope generator:
       New_Line;
       Put_Line ("Random EG:");
@@ -136,14 +136,16 @@ package body Commands is
       Channel : constant MIDI_Channel_Type := 1;  -- MIDI channel number
       Message : Message_Type;
       Data    : Byte_Vector;
+      Header : Header_Type;
+      Payload : Payload_Type;
 
-      Payload : Payload_Type := (Format => Voice,
-                                 Channel => Channel,
-                                 Byte_Count => 16#011B#,
+   begin
+      Header := (Sub_Status => 0, Channel => 1, Format => Voice, Byte_Count => 155);
+
+      Payload := (Voice, Header,
                                  Checksum => 0,
                                  Voice_Data => (others => 0));
 
-   begin
       Put_Line ("Generating new voice...");
 
       declare

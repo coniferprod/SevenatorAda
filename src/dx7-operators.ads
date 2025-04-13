@@ -1,5 +1,3 @@
-with Sixten; use Sixten;
-
 with DX7.Envelopes; use DX7.Envelopes;
 
 package DX7.Operators is
@@ -46,12 +44,12 @@ package DX7.Operators is
    -- MIDI System Exclusive data for Keyboard Level Scaling (normal)
    Keyboard_Level_Scaling_Data_Length : constant := 5;
    subtype Keyboard_Level_Scaling_Data_Type is
-     Data_Type (0 .. Keyboard_Level_Scaling_Data_Length - 1);
+     Byte_Array (1 .. Keyboard_Level_Scaling_Data_Length);
 
    -- MIDI System Exclusive data for Keyboard Level Scaling (packed)
    Keyboard_Level_Scaling_Packed_Data_Length : constant := 4;
    subtype Keyboard_Level_Scaling_Packed_Data_Type is
-     Data_Type (1 .. Keyboard_Level_Scaling_Packed_Data_Length);
+     Byte_Array (1 .. Keyboard_Level_Scaling_Packed_Data_Length);
 
    type Operator_Mode is (Ratio, Fixed);
 
@@ -90,11 +88,11 @@ package DX7.Operators is
    -- packed version is used in cartridges.
 
    Operator_Data_Length : constant := 21;
-   subtype Operator_Data_Type is Data_Type (0 .. Operator_Data_Length - 1);
+   subtype Operator_Data_Type is Byte_Array (1 .. Operator_Data_Length);
 
    Operator_Packed_Data_Length : constant := 17;
    subtype Operator_Packed_Data_Type is
-     Data_Type (1 .. Operator_Packed_Data_Length);
+     Byte_Array (1 .. Operator_Packed_Data_Length);
 
    -- Gets the data for the normal voice version of
    -- the operator for MIDI System Exclusive.
@@ -102,25 +100,19 @@ package DX7.Operators is
 
    -- Gets the data for the packed cartridge version of
    -- the operator for MIDI System Exclusive.
-   function Get_Packed_Data
-     (Operator : Operator_Type) return Operator_Packed_Data_Type;
+   procedure Pack_Operator (Data : Operator_Data_Type; Result : out Operator_Packed_Data_Type);
 
    -- Gets the data for the normal voice version of
    -- the keyboard level scaling definition.
    procedure Emit
-     (KLS : in Keyboard_Level_Scaling_Type; Data : Keyboard_Level_Scaling_Data_Type);
+     (KLS : in Keyboard_Level_Scaling_Type; Data : out Keyboard_Level_Scaling_Data_Type);
 
    -- Gets the data for the packed cartridge version of
    -- the keyboard level scaling definition.
-   function Get_Packed_Data
-     (KLS : Keyboard_Level_Scaling_Type)
-      return Keyboard_Level_Scaling_Packed_Data_Type;
+   procedure Pack_Scaling (Data : Keyboard_Level_Scaling_Data_Type; Result : out Keyboard_Level_Scaling_Packed_Data_Type);
 
    -- Converts a SysEx MIDI data byte to a breakpoint.
    function Get_Breakpoint (Data : Byte) return Breakpoint_Type;
-
-   -- Converts a breakpoint to SysEx MIDI data byte.
-   function Get_Data (Breakpoint : Breakpoint_Type) return Byte;
 
    procedure Parse
      (Data : in     Keyboard_Level_Scaling_Data_Type;

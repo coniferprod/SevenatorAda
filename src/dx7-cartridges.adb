@@ -10,10 +10,14 @@ package body DX7.Cartridges is
      (Cartridge : in Cartridge_Type; Data : out Cartridge_Data_Type)
    is
       Offset : Positive;
+      Voice_Data : Voice_Data_Type;
+      Voice_Packed_Data : Voice_Packed_Data_Type;
    begin
       Offset := 1;
       for I in Voice_Index loop
-         for B of Emit_Packed (Cartridge.Voices (I)) loop
+         Emit (Cartridge.Voices (I), Voice_Data);
+         Pack_Voice (Voice_Data, Voice_Packed_Data);
+         for B of Voice_Packed_Data loop
             Data (Offset) := B;
             Offset        := Offset + 1;
          end loop;

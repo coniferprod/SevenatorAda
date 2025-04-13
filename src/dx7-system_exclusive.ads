@@ -19,8 +19,7 @@ package DX7.System_Exclusive is
    end record;
 
    type Payload_Type (Format : Format_Type := Voice) is record
-      Channel : MIDI_Channel_Type;
-      Byte_Count : Natural;
+      Header : Header_Type;
       Checksum : Byte;
       case Format is
          when Voice => Voice_Data : Voice_Data_Type;
@@ -45,9 +44,9 @@ package DX7.System_Exclusive is
    function Emit (Header : Header_Type) return Byte_Vector;
    function Emit (Payload : Payload_Type) return Byte_Vector;
 
-   procedure Parse_Header (Data : in Byte_Array; Header : out Header_Type);
-   procedure Parse_Message (Data : in Byte_Array; Message : out Message_Type);
-   procedure Parse_Payload (Data : in Byte_Vector; Payload : out Payload_Type);
+   procedure Parse (Data : in Byte_Array; Header : out Header_Type);
+   procedure Parse (Data : in Byte_Array; Message : out Message_Type);
+   procedure Parse (Data : in Byte_Vector; Payload : out Payload_Type);
 
-   function Checksum (Data : Data_Type) return Byte;
+   function Checksum (Data : Byte_Array) return Byte;
 end DX7.System_Exclusive;

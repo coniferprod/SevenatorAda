@@ -38,7 +38,7 @@ package body DX7.Envelopes is
       return Envelope;
    end Random_Envelope;
 
-   procedure Parse (Data : in Envelope_Data_Type; EG : out Envelope_Type) is
+   procedure Parse (Data : in Envelope_Data_Type; Result : out Envelope_Type) is
       R : Rate_Array;
       L : Level_Array;
    begin
@@ -50,8 +50,7 @@ package body DX7.Envelopes is
          L (I + 1) := Level_Type (Data (Integer (I + 4)));
       end loop;
 
-      --EG := (Rates => Data (0..3), Levels => (Data (4..7)));
-      EG := (Rates => R, Levels => L);
+      Result := (Rates => R, Levels => L);
    end Parse;
 
 end DX7.Envelopes;
