@@ -321,7 +321,7 @@ package body DX7.Voices is
       return Name;
    end Random_Voice_Name;
 
-   procedure Parse (Data : in Voice_Data_Type; Voice : out Voice_Type) is
+   procedure Parse_Voice (Data : in Voice_Data_Type; Voice : out Voice_Type) is
       Ops              : Operator_Array;
       Op_Start, Op_End : Natural;
       Offset           : Natural;
@@ -329,16 +329,16 @@ package body DX7.Voices is
    begin
       Op_Start := 0;
       for I in reverse Operator_Index loop
-         Op_End := Op_Start + Operator_Data_Length;
-         Parse (Data (Op_Start .. Op_End), Ops (I));
+         Op_End := Op_Start + Operator_Data_Length - 1;
+         Parse_Operator (Data (Op_Start .. Op_End), Ops (I));
          Op_Start := Op_Start + Operator_Data_Length;
       end loop;
+      Offset := Offset + Operator_Data_Length;
 
       Voice.Operators := Ops;
 
-      Offset := Op_End + 1;
-      Parse
-        (Data (Offset .. Offset + Envelope_Data_Length), Voice.Pitch_Envelope);
+      Parse_Envelope
+        (Data (Offset .. Offset + Envelope_Data_Length - 1), Voice.Pitch_Envelope);
       Offset := Offset + Envelope_Data_Length;
 
       Voice.Algorithm       := Algorithm_Type (Data (Offset) + 1);
@@ -348,7 +348,7 @@ package body DX7.Voices is
       Voice.Oscillator_Sync := (Data (Offset) = 1);
       Offset                := Offset + 1;
 
-      Parse (Data (Offset .. Offset + LFO_Data_Length), LFO);
+      Parse_LFO (Data (Offset .. Offset + LFO_Data_Length), LFO);
       Offset := Offset + LFO_Data_Length;
 
       Voice.Pitch_Modulation_Sensitivity := Depth_Type (Data (Offset));
@@ -366,9 +366,9 @@ package body DX7.Voices is
          Voice.Name (I) := Character'Val (Data (Offset + I));
          Offset         := Offset + 1;
       end loop;
-   end Parse;
+   end Parse_Voice;
 
-   procedure Parse (Data : in LFO_Data_Type; LFO : out LFO_Type) is
+   procedure Parse_LFO (Data : in LFO_Data_Type; LFO : out LFO_Type) is
    begin
       LFO :=
         (Speed => Level_Type (Data (1)), Delay_Time => Level_Type (Data (2)),
@@ -376,6 +376,6 @@ package body DX7.Voices is
          Amplitude_Modulation_Depth => Level_Type (Data (4)),
          Key_Sync  => (Data (5) = 1),
          Waveform  => LFO_Waveform_Type'Val (Data (6)));
-   end Parse;
+   end Parse_LFO;
 
 end DX7.Voices;

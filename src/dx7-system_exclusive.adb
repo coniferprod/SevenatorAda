@@ -1,4 +1,6 @@
 with Ada.Directories; use Ada.Directories;
+with Ada.Text_IO;
+with DX7.System_Exclusive;
 
 package body DX7.System_Exclusive is
    function Emit (Message : Message_Type) return Byte_Vector is
@@ -13,7 +15,7 @@ package body DX7.System_Exclusive is
 
       BV.Append (Byte ((Message.Payload.Header.Channel - 1)) or Shift_Left (Message.Payload.Header.Sub_Status, 4));
       BV.Append (Byte (Format_Type'Pos (Message.Payload.Header.Format)));
-      case Message.Payload.Header.Format is
+      case Message.Payload.Format is
          when Cartridge =>
             BV.Append (16#20#);
             BV.Append (0);
@@ -30,56 +32,74 @@ package body DX7.System_Exclusive is
       return BV;
    end Emit;
 
-   procedure Parse (Data : in Byte_Array; Header : out Header_Type) is
+   procedure Put (Header : Header_Type) is
+   begin
+      Ada.Text_IO.Put_Line ("Header: channel = " & Integer'Image (Integer (Header.Channel))
+         & " format = " & Integer'Image (Format_Type'Enum_Rep (Header.Format))
+         & " byte count = " & Integer'Image (Header.Byte_Count));
+   end Put;
+
+   procedure Parse_Header (Data : in Byte_Array; Header : out Header_Type) is
       Channel : MIDI_Channel_Type;
       Byte_Count : Natural;
       Format : Format_Type;
-      Result : Header_Type;
    begin
+      Ada.Text_IO.Put_Line ("Parsing header");
+
       -- sub_status: (data[0] >> 4) & 0b00000111,
       Channel := MIDI_Channel_Type (Data (0) + 1);
       Format := (if Data (1) = 1 then Voice else Cartridge);
       Byte_Count := (if Format = Voice then 155 else 4096);
       Header := (Data (0), Channel, Format, Byte_Count);
-   end Parse;
+   end Parse_Header;
 
-   procedure Parse (Data : in Byte_Vector; Payload : out Payload_Type) is
+   procedure Parse_Payload (Data : in Byte_Vector; Payload : out Payload_Type) is
       Header : Header_Type;
-      Header_Data : Byte_Array (0 .. 4);
+      Header_Data : Byte_Array (0 .. 3);
       Temp_Payload : Payload_Type;
       Checksum : Byte;
    begin
-      for I in 0 .. 4 loop
-         Header_Data (I) := Data (I);
+      Ada.Text_IO.Put_Line ("Parsing payload");
+
+      for I in 0 .. 3 loop
+         Header_Data (I) := Data.Element (I);
       end loop;
-      Parse (Header_Data, Header);
-      Checksum := Data (Data.Last_Index);
+      Parse_Header (Header_Data, Header);
+      Put (Header);
+
+      Checksum := Data.Element (Data.Last_Index);
+
       declare
          Voice_Data : Voice_Data_Type;
          Cartridge_Data : Cartridge_Data_Type;
+         Offset : Natural;
       begin
-         if Data (1) = 0 then
-            for I in 0 .. 154 loop
-               Voice_Data (I) := Data.Element (I);
-            end loop;
-            Temp_Payload := (Voice, Header, Checksum, Voice_Data);
-         else
-            for I in 0 .. 4095 loop
-               Cartridge_Data (I) := Data.Element (I);
-            end loop;
-            Temp_Payload := (Cartridge, Header, Checksum, Cartridge_Data);
-         end if;
+         Offset := Header_Data_Length;
+         case Header.Format is
+            when Voice => 
+               for I in 0 .. 154 loop
+                  Voice_Data (I) := Data.Element (I + Offset);
+               end loop;
+               Temp_Payload := (Voice, Header, Checksum, Voice_Data);
+            when Cartridge =>
+               for I in 0 .. 4095 loop
+                  Cartridge_Data (I) := Data.Element (I + Offset);
+               end loop;
+               Temp_Payload := (Cartridge, Header, Checksum, Cartridge_Data);
+         end case;
       end;
       Payload := Temp_Payload;
-   end Parse;
+   end Parse_Payload;
 
-   procedure Parse (Data : in Byte_Array; Message : out Message_Type)
+   procedure Parse_Message (Data : in Byte_Array; Message : out Message_Type)
    is
       Manuf  : Manufacturer_Type;
       Payload_Start : Natural := 2; -- zero-based, defaults to the position after standard manufacturer ID
       Payload_Data : Byte_Vector;
       Payload : Payload_Type;
    begin
+      Ada.Text_IO.Put_Line ("Parsing message");
+
       if Data (0) /= System_Exclusive_Initiator then
          raise Parse_Error;
       end if;
@@ -106,10 +126,10 @@ package body DX7.System_Exclusive is
          Payload_Data.Append (Data (I));
       end loop;
 
-      Parse (Payload_Data, Payload);
+      Parse_Payload (Payload_Data, Payload);
 
       Message := (Manufacturer => Manuf, Payload => Payload);
-   end Parse;
+   end Parse_Message;
 
    -- Computes the checksum byte for voice or cartridge data.
    function Checksum (Data : Byte_Array) return Byte is

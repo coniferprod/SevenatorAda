@@ -1,18 +1,28 @@
 package body DX7.Cartridges is
 
-   function To_Byte_Vector (Data : Cartridge_Data_Type) return Byte_Vector is
+   function To_Byte_Vector (Data : Byte_Array) return Byte_Vector is
       BV : Byte_Vector;
    begin
-      for I in Cartridge_Data_Type'Range loop
+      for I in Data'Range loop
          BV.Append (Byte (Data (I)));
       end loop;
       return BV;
    end To_Byte_Vector;
 
-   procedure Parse (Data : in Cartridge_Data_Type; Cartridge : out Cartridge_Type) is
+   procedure Parse_Cartridge (Data : in Cartridge_Data_Type; Cartridge : out Cartridge_Type) is
+      Packed_Voice_Data : Packed_Voice_Data_Type;
+      Voice_Data : Voice_Data_Type;
+      Voice : Voice_Type;
+      Offset : Natural := 0;
    begin
-      null;
-   end Parse;
+      for I in Voice_Index loop
+         Packed_Voice_Data := Data (Offset .. Offset + Packed_Voice_Data_Length - 1);
+         Unpack_Voice (Data => Packed_Voice_Data, Result => Voice_Data);
+         Parse_Voice (Data => Voice_Data, Voice => Voice);
+         Cartridge.Voices (I) := Voice;
+         Offset := Offset + Packed_Voice_Data_Length;
+      end loop;
+   end Parse_Cartridge;
 
    -- Gets the cartridge data as bytes for MIDI System Exclusive.
    procedure Emit (Cartridge : in Cartridge_Type; Result : out Cartridge_Data_Type) is

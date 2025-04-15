@@ -32,7 +32,7 @@ package body Commands is
       --   Put (" ");
       --end loop;
 
-      Parse (Data, Message);
+      Parse_Message(Data, Message);
 
       --for B of Message.Payload loop
       --   Put (Hex (B));
@@ -58,7 +58,7 @@ package body Commands is
                for I in Message.Payload.Voice_Data'First .. Message.Payload.Voice_Data'Last loop
                   Data (I) := Message.Payload.Voice_Data (I);
                end loop;
-               Parse (Data, Voice);
+               Parse_Voice (Data, Voice);
 
                Ada.Text_IO.Put_Line ("Voice name = " & Voice.Name);
             end;
@@ -70,7 +70,7 @@ package body Commands is
                for I in Message.Payload.Cartridge_Data'First .. Message.Payload.Cartridge_Data'Last loop
                   Data (I) := Message.Payload.Cartridge_Data (I);
                end loop;
-               Parse (Data, Cartridge);
+               Parse_Cartridge (Data, Cartridge);
 
                for V of Cartridge.Voices loop
                   Put_Line (V.Name);

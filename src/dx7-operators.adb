@@ -27,13 +27,11 @@ package body DX7.Operators is
    procedure Pack_Scaling (Data : Keyboard_Level_Scaling_Data_Type; Result : out Packed_Keyboard_Level_Scaling_Data_Type) is
    begin
       -- The first three bytes are copied as is
-      Result (1) := Data (1);
-      Result (2) := Data (2);
-      Result (3) := Data (3);
+      Result (0 .. 2) := Data (0 .. 2);
 
       -- The fourth byte combines the left and right curves
       -- 11    0   0   0 |  RC   |   LC  | SCL LEFT CURVE 0-3   SCL RGHT CURVE 0-3
-      Result (4) := Data (4) or (Shift_Left (Data (5), 2));
+      Result (3) := Data (3) or (Shift_Left (Data (4), 2));
    end Pack_Scaling;
 
    procedure Emit (Operator : in Operator_Type; Data : out Operator_Data_Type) is
@@ -104,11 +102,11 @@ package body DX7.Operators is
       return Breakpoint_Type (Data + 21);
    end Get_Breakpoint;
 
-   procedure Parse
+   procedure Parse_Scaling
      (Data : in     Keyboard_Level_Scaling_Data_Type;
       KLS  :    out Keyboard_Level_Scaling_Type)
    is
-      procedure Parse (Data : Byte; Curve : out Scaling_Curve_Type) is
+      procedure Parse_Curve (Data : Byte; Curve : out Scaling_Curve_Type) is
          C : Scaling_Curve_Type;
       begin
          -- Curve = 0=-LIN, 1=-EXP, 2=+EXP, 3=+LIN
@@ -120,44 +118,38 @@ package body DX7.Operators is
             when others => raise Parse_Error;
          end case;
          Curve := C;
-      end Parse;
+      end Parse_Curve;
 
       Left_Curve : Scaling_Curve_Type;
       Right_Curve : Scaling_Curve_Type;
    begin
-      Parse (Data (3), Left_Curve);
-      Parse (Data (4), Right_Curve);
+      Parse_Curve (Data (3), Left_Curve);
+      Parse_Curve (Data (4), Right_Curve);
 
       KLS :=
-        (Breakpoint  => Breakpoint_Type (Data (1) - 21),
-         Left => (Depth => Scaling_Depth_Type (Data (2)), Curve => Left_Curve),
-         Right => (Depth => Scaling_Depth_Type (Data (3)), Curve => Right_Curve));
-   end Parse;
+        (Breakpoint  => Breakpoint_Type (Data (0) + 21),  -- from 0 ... 99
+         Left => (Depth => Scaling_Depth_Type (Data (1)), Curve => Left_Curve),
+         Right => (Depth => Scaling_Depth_Type (Data (2)), Curve => Right_Curve));
+   end Parse_Scaling;
 
-   procedure Parse
+   procedure Parse_Operator
      (Data         : in     Operator_Data_Type; Op : out Operator_Type)
    is
       EG  : Envelope_Type;
       KLS : Keyboard_Level_Scaling_Type;
       Mode : Operator_Mode;
    begin
-      Parse (Data (1 .. 8), EG);
-      Parse (Data (9 .. 13), KLS);
-
-      if Data (18) = 0 then
-         Mode := Fixed;
-      else
-         Mode := Ratio;
-      end if;
+      Parse_Envelope (Data (0 .. 7), EG);
+      Parse_Scaling (Data (8 .. 12), KLS);
 
       Op :=
         (EG                            => EG, Keyboard_Level_Scaling => KLS,
-         Keyboard_Rate_Scaling         => Scaling_Depth_Type (Data (14)),
-         Amplitude_Modulation_Sensitivity => Amplitude_Modulation_Sensitivity_Type (Data (15)),
-         Touch_Sensitivity => Depth_Type (Data (16)), Output_Level => Level_Type (Data (17)),
-         Mode => Mode, Coarse => Coarse_Type (Data (18)), Fine => Fine_Type (Data (19)),
-         Detune                        => Detune_Type (Data (20)));
-   end Parse;
+         Keyboard_Rate_Scaling         => Scaling_Depth_Type (Data (13)),
+         Amplitude_Modulation_Sensitivity => Amplitude_Modulation_Sensitivity_Type (Data (14)),
+         Touch_Sensitivity => Depth_Type (Data (15)), Output_Level => Level_Type (Data (16)),
+         Mode => (if Data(17) = 0 then Fixed else Ratio), Coarse => Coarse_Type (Data (18)), 
+         Fine => Fine_Type (Data (19)), Detune => Detune_Type (Data (19)));
+   end Parse_Operator;
 
    procedure Unpack_Operator (Data : in Packed_Operator_Data_Type; Result : out Operator_Data_Type) is
    begin

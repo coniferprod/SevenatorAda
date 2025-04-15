@@ -18,6 +18,8 @@ package DX7.System_Exclusive is
       -- cartridge=4096 (01000000000000 = 0x1000, appears as "20 00")
    end record;
 
+   Header_Data_Length : constant := 4;
+
    type Payload_Type (Format : Format_Type := Voice) is record
       Header : Header_Type;
       Checksum : Byte;
@@ -41,9 +43,9 @@ package DX7.System_Exclusive is
 
    function Emit (Message : Message_Type) return Byte_Vector;
 
-   procedure Parse (Data : in Byte_Array; Header : out Header_Type);
-   procedure Parse (Data : in Byte_Array; Message : out Message_Type);
-   procedure Parse (Data : in Byte_Vector; Payload : out Payload_Type);
+   procedure Parse_Header (Data : in Byte_Array; Header : out Header_Type);
+   procedure Parse_Message (Data : in Byte_Array; Message : out Message_Type);
+   procedure Parse_Payload (Data : in Byte_Vector; Payload : out Payload_Type);
 
    function Checksum (Data : Byte_Array) return Byte;
 end DX7.System_Exclusive;
