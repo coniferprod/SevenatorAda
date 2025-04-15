@@ -1,7 +1,7 @@
 with Ada.Text_IO;
 
 package body DX7.Operators is
-   Debugging : constant Boolean := True;
+   Debugging : constant Boolean := False;
 
    -- Helper function to increment an integer value by the given amount.
    procedure Inc (I : in out Integer; Amount : in Integer := 1) is
@@ -24,7 +24,7 @@ package body DX7.Operators is
    end Emit;
 
    -- Packs the KLS data for use in a cartridge (from five bytes to four)
-   procedure Pack_Scaling (Data : Keyboard_Level_Scaling_Data_Type; Result : out Keyboard_Level_Scaling_Packed_Data_Type) is
+   procedure Pack_Scaling (Data : Keyboard_Level_Scaling_Data_Type; Result : out Packed_Keyboard_Level_Scaling_Data_Type) is
    begin
       -- The first three bytes are copied as is
       Result (1) := Data (1);
@@ -68,7 +68,7 @@ package body DX7.Operators is
         Byte (Operator.Detune + 7); -- adjust to 0...14 for SysEx
    end Emit;
 
-   procedure Pack_Operator (Data : Operator_Data_Type; Result : out Operator_Packed_Data_Type) is
+   procedure Pack_Operator (Data : Operator_Data_Type; Result : out Packed_Operator_Data_Type) is
       Data_Offset : Integer := 1;
       Offset : Integer := 1;
    begin
@@ -159,7 +159,7 @@ package body DX7.Operators is
          Detune                        => Detune_Type (Data (20)));
    end Parse;
 
-   procedure Unpack (Data : in Operator_Packed_Data_Type; Result : out Operator_Data_Type) is
+   procedure Unpack_Operator (Data : in Packed_Operator_Data_Type; Result : out Operator_Data_Type) is
    begin
       -- Operator EG rates and levels are unpacked, so just copy them as is.
       -- KLS breakpoint, left depth and right depth are also unpacked.
@@ -191,6 +191,6 @@ package body DX7.Operators is
 
       -- Freq fine is not packed with anything else.
       Result (20) := Data (17);
-   end Unpack;
+   end Unpack_Operator;
 
 end DX7.Operators;

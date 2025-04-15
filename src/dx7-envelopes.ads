@@ -22,6 +22,8 @@ package DX7.Envelopes is
 
    subtype Envelope_Data_Type is Byte_Array (1 .. Envelope_Data_Length);
 
+   function Data (Envelope : in Envelope_Type) return Byte_Vector;
+
    -- Gets the MIDI System Exclusive data for an envelope.
    procedure Emit (Envelope : in Envelope_Type; Data : out Envelope_Data_Type);
 

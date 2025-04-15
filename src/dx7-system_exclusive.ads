@@ -22,8 +22,10 @@ package DX7.System_Exclusive is
       Header : Header_Type;
       Checksum : Byte;
       case Format is
-         when Voice => Voice_Data : Voice_Data_Type;
-         when Cartridge => Cartridge_Data : Cartridge_Data_Type;
+         when Voice =>
+            Voice_Data : Voice_Data_Type;
+         when Cartridge =>
+            Cartridge_Data : Cartridge_Data_Type;
       end case;
    end record;
 
@@ -37,12 +39,7 @@ package DX7.System_Exclusive is
    System_Exclusive_Terminator : constant Byte := 16#F7#;
    Development_Identifier      : constant Byte := 16#7D#;
 
-   -- Get the MIDI System Exclusive data for manufacturer or message.
-   -- Use overloading by argument to define Get_Data for each type as required.
-   function Emit (Manufacturer : Manufacturer_Type) return Byte_Vector;
    function Emit (Message : Message_Type) return Byte_Vector;
-   function Emit (Header : Header_Type) return Byte_Vector;
-   function Emit (Payload : Payload_Type) return Byte_Vector;
 
    procedure Parse (Data : in Byte_Array; Header : out Header_Type);
    procedure Parse (Data : in Byte_Array; Message : out Message_Type);

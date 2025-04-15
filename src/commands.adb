@@ -46,6 +46,7 @@ package body Commands is
       begin
          Put ("Format = ");
          Format_IO.Put (Message.Payload.Format);
+         New_Line;
       end;
 
       case Message.Payload.Format is
@@ -85,12 +86,12 @@ package body Commands is
       Channel : constant MIDI_Channel_Type := 1;  -- MIDI channel number
       Message : Message_Type;
       Data    : Byte_Vector;
-      Header : Header_Type;
+      Header  : Header_Type;
       Payload : Payload_Type;
    begin
       Header := (Sub_Status => 0, Channel => 1, Format => Cartridge, Byte_Count => 4096);
       Payload := (Cartridge, Header, Checksum => 0,
-                                 Cartridge_Data => (others => 0));
+                  Cartridge_Data => (others => 0));
 
       -- Test code to print envelope generator:
       New_Line;
@@ -110,6 +111,7 @@ package body Commands is
       declare
          Cartridge          : Cartridge_Type;
          Cartridge_Data     : Cartridge_Data_Type;
+         C_Bytes : Byte_Array (0 .. Cartridge_Data_Length - 1);
       begin
          -- Just fill the cartridge with copies of the "BRASS1" voice
          for I in Voice_Index loop
@@ -120,11 +122,12 @@ package body Commands is
          end loop;
 
          Emit (Cartridge, Cartridge_Data);
-         Put ("Cartridge data length = ");
-         Put_Line (Cartridge_Data'Length'Image);
-
          Payload.Cartridge_Data := Cartridge_Data;
-         Payload.Checksum := Checksum (Cartridge_Data);
+
+         for I in Cartridge_Data'Range loop
+            C_Bytes (I) := Cartridge_Data (I);
+         end loop;
+         Payload.Checksum := Checksum (C_Bytes);
       end;
 
       Message := (Sixten.Manufacturers.Yamaha, Payload);
@@ -138,7 +141,7 @@ package body Commands is
       Data    : Byte_Vector;
       Header : Header_Type;
       Payload : Payload_Type;
-
+      V_Bytes : Byte_Array (1 .. Voice_Data_Length);
    begin
       Header := (Sub_Status => 0, Channel => 1, Format => Voice, Byte_Count => 155);
 
@@ -155,7 +158,12 @@ package body Commands is
          Voice := Brass1;
          Emit (Voice, Voice_Data);
          Payload.Voice_Data := Voice_Data;
-         Payload.Checksum := Checksum (Voice_Data);
+
+         for I in Voice_Data'Range loop
+            V_Bytes (I) := Voice_Data (I);
+         end loop;
+
+         Payload.Checksum := Checksum (V_Bytes);
       end;
 
       Message := (Sixten.Manufacturers.Yamaha, Payload);

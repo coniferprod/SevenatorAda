@@ -1,46 +1,32 @@
 with Ada.Directories; use Ada.Directories;
 
 package body DX7.System_Exclusive is
-
-   function Emit (Manufacturer : Manufacturer_Type) return Byte_Vector is
-      BV : Sixten.Byte_Vector;
-      Bytes : Sixten.Byte_Array := To_Bytes (Manufacturer);
-   begin
-      for B of Bytes loop
-         BV.Append (B);
-      end loop;
-      return BV;
-   end Emit;
-
    function Emit (Message : Message_Type) return Byte_Vector is
       BV : Byte_Vector;
+      Manuf_Bytes : Byte_Array := To_Bytes (Message.Manufacturer);
    begin
       BV.Append (System_Exclusive_Initiator);
-      BV.Append (Emit (Message.Manufacturer));
-      BV.Append (Emit (Message.Payload));
-      BV.Append (System_Exclusive_Terminator);
-      return BV;
-   end Emit;
 
-   function Emit (Header : Header_Type) return Byte_Vector is
-      BV : Byte_Vector;
-   begin
-      return BV;
-   end Emit;
+      for I in Manuf_Bytes'First .. Manuf_Bytes'Last loop
+         BV.Append (Manuf_Bytes (I));
+      end loop;
 
-   function Emit (Payload : Payload_Type) return Byte_Vector is
-      BV : Byte_Vector;
-   begin
-      case Payload.Format is
-         when Voice => 
-            for B of Payload.Voice_Data loop
-               BV.Append (B);
-            end loop;
+      BV.Append (Byte ((Message.Payload.Header.Channel - 1)) or Shift_Left (Message.Payload.Header.Sub_Status, 4));
+      BV.Append (Byte (Format_Type'Pos (Message.Payload.Header.Format)));
+      case Message.Payload.Header.Format is
          when Cartridge =>
-            for B of Payload.Cartridge_Data loop
-               BV.Append (B);
-            end loop;
+            BV.Append (16#20#);
+            BV.Append (0);
+            BV.Append (To_Byte_Vector (Message.Payload.Cartridge_Data));
+         when Voice =>
+            BV.Append (1);
+            BV.Append (16#1B#);
+            BV.Append (To_Byte_Vector (Message.Payload.Voice_Data));
       end case;
+
+      BV.Append (Message.Payload.Checksum);
+
+      BV.Append (System_Exclusive_Terminator);
       return BV;
    end Emit;
 
@@ -74,12 +60,12 @@ package body DX7.System_Exclusive is
       begin
          if Data (1) = 0 then
             for I in 0 .. 154 loop
-               Voice_Data (I) := Data (I);
+               Voice_Data (I) := Data.Element (I);
             end loop;
             Temp_Payload := (Voice, Header, Checksum, Voice_Data);
          else
             for I in 0 .. 4095 loop
-               Cartridge_Data (I) := Data (I);
+               Cartridge_Data (I) := Data.Element (I);
             end loop;
             Temp_Payload := (Cartridge, Header, Checksum, Cartridge_Data);
          end if;

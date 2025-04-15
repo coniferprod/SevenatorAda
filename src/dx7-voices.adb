@@ -5,6 +5,8 @@ with Ada.Characters.Handling;
 with Ada.Unchecked_Conversion;
 with System;
 
+with DX7.Operators; use DX7.Operators;
+
 package body DX7.Voices is
 
    package Random_Levels is new Ada.Numerics.Discrete_Random (Level_Type);
@@ -15,10 +17,11 @@ package body DX7.Voices is
 
    Debugging : constant Boolean := True;
 
-   procedure Put_Offset (Offset : Natural; Message : String) is
+   procedure Put_Offset (Offset : Natural; Message : String; Data_Offset : Natural) is
    begin
       if Debugging then
-         Ada.Text_IO.Put_Line ("offset = " & Integer'Image (Offset) & " " & Message);
+         Ada.Text_IO.Put_Line ("offset = " & Integer'Image (Offset) & " " & Message
+            & " from " & Integer'Image (Data_Offset));
       end if;
    end Put_Offset;
 
@@ -39,7 +42,7 @@ package body DX7.Voices is
 
    -- Gets the voice data bytes for MIDI System Exclusive.
    -- The normal format is used for individual voices.
-   procedure Emit (Voice : in Voice_Type; Voice_Data : out Voice_Data_Type) is
+   procedure Emit (Voice : in Voice_Type; Result : out Voice_Data_Type) is
       Ch     : Character;
       Data   : Voice_Data_Type;
       Offset : Natural;
@@ -47,7 +50,7 @@ package body DX7.Voices is
       PEG_Data : Envelope_Data_Type;
       LFO_Data : LFO_Data_Type;
    begin
-      Offset := 1;
+      Offset := 0;
       
       -- Note: the operators appear in reverse order: OP6, OP5 etc.
       for Op in reverse Operator_Index loop
@@ -68,7 +71,7 @@ package body DX7.Voices is
         Byte (Voice.Algorithm - 1); -- adjust to 0...31 for SysEx
       Data (Offset + 1) := Byte (Voice.Feedback);
       Data (Offset + 2) := (if Voice.Oscillator_Sync = True then 1 else 0);
-      Offset := 2;
+      Offset := Offset + 3;
 
       Emit (Voice.LFO, LFO_Data);
       for B of LFO_Data loop
@@ -89,11 +92,11 @@ package body DX7.Voices is
          Offset        := Offset + 1;
       end loop;
 
-      Voice_Data := Data;
+      Result := Data;
    end Emit;
 
    --  Packs voice data for cartridge use.
-   procedure Pack_Voice (Data : in Voice_Data_Type; Result : out Voice_Packed_Data_Type) is
+   procedure Pack_Voice (Data : in Voice_Data_Type; Result : out Packed_Voice_Data_Type) is
       -- Use the Ada representation facilities to make a type that
       -- packs several fields into one byte. For details, see
       -- https://en.wikibooks.org/wiki/Ada_Programming/Attributes/%27Bit_Order
@@ -138,8 +141,9 @@ package body DX7.Voices is
       Byte116  : Byte116_Type;
       Data_Offset, Offset   : Natural;
       Op_Data : Operator_Data_Type;
-      Packed_Op_Data : Operator_Packed_Data_Type;
+      Packed_Op_Data : Packed_Operator_Data_Type;
       B : Byte;
+      Op_Index : Natural;
 
       function Byte111_Type_To_Byte is new Ada.Unchecked_Conversion
         (Byte111_Type, Byte);
@@ -147,77 +151,77 @@ package body DX7.Voices is
         (Byte116_Type, Byte);
 
    begin
-      Data_Offset := 1; -- into the parameter Data : Voice_Data_Type
-      Offset := 1;      -- into Result
-      Put_Offset (Offset, "Starting to pack voice data");
+      Data_Offset := 0; -- into the parameter Data : Voice_Data_Type
+      Offset := 0;      -- into Result
 
       -- The operator data is already in reverse order (OP6 first),
       -- so just take each chunk and pack it.      
 
+      Op_Index := 0;
+      Offset := Op_Index * Packed_Operator_Data_Length;
       for Op in reverse Operator_Index loop
+         Put_Offset (Offset, "Packed operator", Data_Offset);
          Op_Data := Data (Data_Offset .. Data_Offset + 21 - 1);
          Pack_Operator (Op_Data, Packed_Op_Data);
-         for B of Packed_Op_Data loop
-            Result (Offset) := B;
-            Inc (Offset);
-            Inc (Data_Offset);
-         end loop;
-         Put_Offset (Offset, "Packed operator added");
+         Result (Offset .. Offset + Packed_Operator_Data_Length - 1) := Packed_Op_Data;
+         Inc (Offset, Packed_Operator_Data_Length);
+         Inc (Data_Offset, Operator_Data_Length);
       end loop;
 
       -- Copy the PEG as is
-      PEG_Data := Data (Data_Offset .. Data_Offset + 8 - 1);
-      for B of PEG_Data loop
-         Result (Offset) := B;
-         Inc (Offset);
-      end loop;
-      Inc (Data_Offset, 8);
-      Put_Offset (Offset, "PEG added");
+      Put_Offset (Offset, "PEG", Data_Offset);
+      PEG_Data := Data (Data_Offset .. Data_Offset + Envelope_Data_Length - 1);
+      Result (Offset .. Offset + Envelope_Data_Length - 1) := PEG_Data;
+      Inc (Offset, Envelope_Data_Length);
+      Inc (Data_Offset, Envelope_Data_Length);
 
+      Put_Offset (Offset, "Algorithm", Data_Offset);
       Result (Offset) := Data (Data_Offset);
       Inc (Offset);
       Inc (Data_Offset);
-      Put_Offset (Offset, "Algorithm added");
 
+      Put_Offset (Offset, "FB + osc sync", Data_Offset);
       B := Data (Data_Offset)  -- feedback
          or Shift_Left (Data (Data_Offset + 1), 3);  -- osc sync
       Result (Offset) := B;
-      Inc (Data_Offset, 2);
-      Put_Offset (Offset, "FB + osc sync added");
+      Inc (Offset);
+      Inc (Data_Offset, 2);  -- note that we took two bytes from original
 
       -- LFO speed, delay, PMD, AMD
+      Put_Offset (Offset, "Four LFO bytes", Data_Offset);
       Result (Offset .. Offset + 3) := Data (Data_Offset .. Data_Offset + 3);
-      for I in 1 .. 4 loop
-         Result (Offset) := Data (I);
-      end loop;
       Inc (Offset, 4);
       Inc (Data_Offset, 4);
-      Put_Offset (Offset, "Four LFO bytes added");
 
       B := (Data (Data_Offset) 
          or Shift_Left (Data (Data_Offset + 1), 1))  -- LFO waveform
          or (Shift_Left (Data (Data_Offset + 2), 4)); -- PMS (voice)
 
+      Ada.Text_IO.Put_Line ("LFO waveform at " & Integer'Image (Data_Offset + 1) & " = "
+         & Integer'Image (Integer (Data (Data_Offset + 1))));
+      Put_Offset (Offset, "Byte 116", Data_Offset);
       Byte116 := (Sync => (if Data (Data_Offset) = 1 then True else False),
          Waveform => LFO_Waveform_Type'Val (Data (Data_Offset + 1)), 
          PMS => Depth_Type (Data (Data_Offset + 2)));
       Result (Offset) := Byte116_Type_To_Byte (Byte116);
-      Inc (Offset, 3);
+      Inc (Offset, 1);
       Inc (Data_Offset, 3);
 
       -- Adjust -2..+2 to 0...48 for SysEx
+      Put_Offset (Offset, "Transpose", Data_Offset);
       Result (Offset) := Data (Data_Offset);
       Inc (Offset);
       Inc (Data_Offset);
 
       for I in 1 .. Voice_Name_Length loop
+         Put_Offset (Offset, "Character", Data_Offset);
          Result (Offset) := Data (Data_Offset);
          Inc (Offset);
          Inc (Data_Offset);
       end loop;
    end Pack_Voice;
 
-   procedure Unpack_Voice (Data : in Voice_Packed_Data_Type; Result : out Voice_Data_Type) is
+   procedure Unpack_Voice (Data : in Packed_Voice_Data_Type; Result : out Voice_Data_Type) is
    begin
       null;
    end Unpack_Voice;
@@ -252,9 +256,7 @@ package body DX7.Voices is
       Random_Depths.Reset (Depth_Gen);
       Random_Booleans.Reset (Sync_Gen);
 
-      --Operators : Operator_Array;
       Voice.Pitch_Envelope := Random_Envelope;
-
       Voice.Algorithm       := Random_Algorithms.Random (Alg_Gen);
       Voice.Feedback        := Random_Depths.Random (Depth_Gen);
       Voice.Oscillator_Sync := Random_Booleans.Random (Sync_Gen);
@@ -365,22 +367,6 @@ package body DX7.Voices is
          Offset         := Offset + 1;
       end loop;
    end Parse;
-
-   procedure Parse_Packed (Data : in Voice_Packed_Data_Type; Voice : out Voice_Type) is
-      Ops              : Operator_Array;
-      Op_Start, Op_End : Natural;
-      Offset           : Natural;
-      LFO              : LFO_Type;
-   begin
-      Op_Start := 0;
-      for I in reverse Operator_Index loop
-         Op_End := Op_Start + Operator_Packed_Data_Length;
-         Parse (Data (Op_Start .. Op_End), Ops (I));
-         Op_Start := Op_Start + Operator_Packed_Data_Length;
-      end loop;
-
-
-   end Parse_Packed;
 
    procedure Parse (Data : in LFO_Data_Type; LFO : out LFO_Type) is
    begin

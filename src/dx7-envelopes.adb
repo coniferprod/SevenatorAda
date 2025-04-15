@@ -8,6 +8,20 @@ package body DX7.Envelopes is
    package Random_Rates is new Ada.Numerics.Discrete_Random (Rate_Type);
    package Random_Levels is new Ada.Numerics.Discrete_Random (Level_Type);
 
+   function Data (Envelope : in Envelope_Type) return Byte_Vector is
+      BV : Byte_Vector;
+   begin
+      for Rate of Envelope.Rates loop
+         BV.Append (Byte (Rate));
+      end loop;
+
+      for Level of Envelope.Levels loop
+         BV.Append (Byte (Level));
+      end loop;
+
+      return BV;
+   end Data;
+
    procedure Emit (Envelope : in Envelope_Type; Data : out Envelope_Data_Type) is
    begin
       for I in Rate_Index loop
@@ -43,11 +57,11 @@ package body DX7.Envelopes is
       L : Level_Array;
    begin
       for I in Rate_Index loop
-         R (I + 1) := Rate_Type (Data (Integer (I)));
+         R (I) := Rate_Type (Data (Integer (I)));
       end loop;
 
       for I in Level_Index loop
-         L (I + 1) := Level_Type (Data (Integer (I + 4)));
+         L (I) := Level_Type (Data (Integer (I + 4)));
       end loop;
 
       Result := (Rates => R, Levels => L);
