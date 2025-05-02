@@ -68,13 +68,13 @@ package body DX7.System_Exclusive is
          Offset := Header_Data_Length;
          case Header.Format is
             when Voice =>
-               for I in 0 .. 154 loop
+               for I in 0 .. Voice_Data_Length - 1 loop
                   Voice_Data (I) := Data.Element (Offset);
                end loop;
                Temp_Payload := (Voice, Header, Checksum, Voice_Data);
             when Cartridge =>
                Ada.Text_IO.Put_Line (Integer'Image (Data.First_Index) & " to " & Integer'Image (Data.Last_Index));
-               for I in 0 .. 4095 loop
+               for I in 0 .. Cartridge_Data_Length - 1 loop
                   --Ada.Text_IO.Put_Line ("I = " & Integer'Image (I));
                   Cartridge_Data (I) := Data.Element (Offset);
                end loop;
