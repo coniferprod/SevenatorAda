@@ -16,6 +16,18 @@ package body Commands is
       Size : constant Ada.Directories.File_Size := Ada.Directories.Size (Name);
       Data    : Byte_Array (0 .. Integer (Size) - 1);
       Message : Message_Type;
+
+   procedure Put (Header : Header_Type) is
+      package Format_IO is new Ada.Text_IO.Enumeration_IO (Enum => Format_Type);
+
+   begin
+      Ada.Text_IO.Put ("Header: Channel = " & Integer'Image (Integer (Header.Channel)));
+      Ada.Text_IO.Put (" Format = ");
+      Format_IO.Put (Message.Payload.Format);
+      Ada.Text_IO.Put (" Byte count = " & Integer'Image (Header.Byte_Count));
+      Ada.Text_IO.New_Line;
+   end Put;
+
    begin
       Put ("Input file: ");
       Put (Name);
@@ -38,16 +50,6 @@ package body Commands is
       --   Put (Hex (B));
       --   Put (" ");
       --end loop;
-
-      Put_Line ("Channel = " & Message.Payload.Header.Channel'Image);
-
-      declare
-         package Format_IO is new Ada.Text_IO.Enumeration_IO(Enum => Format_Type);
-      begin
-         Put ("Format = ");
-         Format_IO.Put (Message.Payload.Format);
-         New_Line;
-      end;
 
       case Message.Payload.Format is
          when Voice =>

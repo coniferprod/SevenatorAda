@@ -32,21 +32,11 @@ package body DX7.System_Exclusive is
       return BV;
    end Emit;
 
-   procedure Put (Header : Header_Type) is
-   begin
-      Ada.Text_IO.Put_Line ("Header: channel = " & Integer'Image (Integer (Header.Channel))
-         & " format = " & Integer'Image (Format_Type'Enum_Rep (Header.Format))
-         & " byte count = " & Integer'Image (Header.Byte_Count));
-   end Put;
-
    procedure Parse_Header (Data : in Byte_Array; Header : out Header_Type) is
       Channel : MIDI_Channel_Type;
       Byte_Count : Natural;
       Format : Format_Type;
    begin
-      Ada.Text_IO.Put_Line ("Parsing header");
-
-      -- sub_status: (data[0] >> 4) & 0b00000111,
       Channel := MIDI_Channel_Type (Data (0) + 1);
       Format := (if Data (1) = 1 then Voice else Cartridge);
       Byte_Count := (if Format = Voice then 155 else 4096);
@@ -59,13 +49,10 @@ package body DX7.System_Exclusive is
       Temp_Payload : Payload_Type;
       Checksum : Byte;
    begin
-      Ada.Text_IO.Put_Line ("Parsing payload");
-
       for I in 0 .. 3 loop
          Header_Data (I) := Data.Element (I);
       end loop;
       Parse_Header (Header_Data, Header);
-      Put (Header);
 
       Checksum := Data.Element (Data.Last_Index);
 
@@ -98,13 +85,9 @@ package body DX7.System_Exclusive is
       Payload_Data : Byte_Vector;
       Payload : Payload_Type;
    begin
-      Ada.Text_IO.Put_Line ("Parsing message");
-
       if Data (0) /= System_Exclusive_Initiator then
          raise Parse_Error;
       end if;
-
-      --Put (Data'Last'Image);
 
       if Data (Data'Last) /= System_Exclusive_Terminator then
          raise Parse_Error;

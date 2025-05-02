@@ -110,14 +110,12 @@ package body DX7.Operators is
          C : Scaling_Curve_Type;
       begin
          -- Curve = 0=-LIN, 1=-EXP, 2=+EXP, 3=+LIN
-         case Data is
-            when 0 => C := Linear_Negative_Curve;
-            when 1 => C := Exponential_Negative_Curve;
-            when 2 => C := Exponential_Positive_Curve;
-            when 3 => C := Linear_Positive_Curve;
-            when others => raise Parse_Error;
-         end case;
-         Curve := C;
+         Curve := (case Data is
+            when 0 => Linear_Negative_Curve,
+            when 1 => Exponential_Negative_Curve,
+            when 2 => Exponential_Positive_Curve,
+            when 3 => Linear_Positive_Curve,
+            when others => raise Parse_Error);
       end Parse_Curve;
 
       Left_Curve : Scaling_Curve_Type;
