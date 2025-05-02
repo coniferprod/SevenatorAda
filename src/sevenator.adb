@@ -8,12 +8,6 @@ procedure Sevenator is
    package CLI renames Ada.Command_Line;
 
 begin
-   declare
-      Manuf : Sixten.Manufacturers.Manufacturer_Type := Sixten.Manufacturers.Yamaha;
-   begin
-      Put_Line (Sixten.Manufacturers.Name (Manuf));
-   end;
-
    if CLI.Argument_Count < 2 then
       Put_Line ("Usage: sevenator command filename");
       Put_Line ("  dump = show contents of DX7 file <filename>");

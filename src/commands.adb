@@ -4,6 +4,7 @@ use type Ada.Directories.File_Size;
 
 with Sixten; use Sixten;
 with Sixten.Manufacturers; use Sixten.Manufacturers;
+with Sixten.Messages; use Sixten.Messages;
 
 with DX7;            use DX7;
 with DX7.Envelopes;  use DX7.Envelopes;
@@ -13,52 +14,51 @@ with DX7.System_Exclusive; use DX7.System_Exclusive;
 
 package body Commands is
    procedure Run_Dump (Name : String) is
+
+      function Slice (BV : Byte_Vector; Start_Index : Natural; End_Index : Natural) return Byte_Vector is
+         Length : Natural := End_Index - Start_Index;
+         Result : Byte_Vector;
+         I : Natural := Start_Index;
+      begin
+         for I in Start_Index .. End_Index loop
+            Result.Append (BV (I));
+         end loop;
+         return Result;
+      end Slice;
+
       Size : constant Ada.Directories.File_Size := Ada.Directories.Size (Name);
       Data    : Byte_Array (0 .. Integer (Size) - 1);
-      Message : Message_Type;
-
-   procedure Put (Header : Header_Type) is
-      package Format_IO is new Ada.Text_IO.Enumeration_IO (Enum => Format_Type);
-
+      BV : Byte_Vector;
+      Manufacturer : Sixten.Manufacturers.Manufacturer_Type;
+      Raw_Message : Sixten.Messages.Message_Type;
+      Payload : DX7.System_Exclusive.Payload_Type;
+      A_Slice : Byte_Vector;
    begin
-      Ada.Text_IO.Put ("Header: Channel = " & Integer'Image (Integer (Header.Channel)));
-      Ada.Text_IO.Put (" Format = ");
-      Format_IO.Put (Message.Payload.Format);
-      Ada.Text_IO.Put (" Byte count = " & Integer'Image (Header.Byte_Count));
-      Ada.Text_IO.New_Line;
-   end Put;
+      --Put ("Input file: "); Put (Name); New_Line;
+      --Put ("Size (bytes): "); Put (Item => Size'Image); New_Line;
 
-   begin
-      Put ("Input file: ");
-      Put (Name);
-      New_Line;
+      --Read_File (Name, Data);
+      --BV := DX7.Cartridges.To_Byte_Vector (Data);
+      BV := Sixten.Read_All_Bytes (Name);
+      Sixten.Messages.Parse (BV, Raw_Message);
+      --  Now we should have the System Exclusive message
+      --  with type and payload in Raw_Message
 
-      Put ("Size (bytes): ");
-      Put (Item => Size'Image);
-      New_Line;
+      Put_Line ("Raw message parsed");
 
-      Read_File (Name, Data);
+      A_Slice := Slice (Raw_Message.Payload, Raw_Message.Payload.First_Index, Raw_Message.Payload.Last_Index - 1);
+      Put_Line ("Got a slice");
+      Parse_Payload (A_Slice, Payload);
+      --Put (Header);
 
-      --for I in Data'Range loop
-      --   Put (Hex (Data (I)));
-      --   Put (" ");
-      --end loop;
-
-      Parse_Message(Data, Message);
-
-      --for B of Message.Payload loop
-      --   Put (Hex (B));
-      --   Put (" ");
-      --end loop;
-
-      case Message.Payload.Format is
+      case Payload.Header.Format is
          when Voice =>
             declare
                Voice : Voice_Type;
                Data : Voice_Data_Type;
             begin
-               for I in Message.Payload.Voice_Data'First .. Message.Payload.Voice_Data'Last loop
-                  Data (I) := Message.Payload.Voice_Data (I);
+               for I in Payload.Voice_Data'First .. Payload.Voice_Data'Last loop
+                  Data (I) := Payload.Voice_Data (I);
                end loop;
                Parse_Voice (Data, Voice);
 
@@ -69,8 +69,8 @@ package body Commands is
                Cartridge : Cartridge_Type;
                Data : Cartridge_Data_Type;
             begin
-               for I in Message.Payload.Cartridge_Data'First .. Message.Payload.Cartridge_Data'Last loop
-                  Data (I) := Message.Payload.Cartridge_Data (I);
+               for I in Payload.Cartridge_Data'First .. Payload.Cartridge_Data'Last loop
+                  Data (I) := Payload.Cartridge_Data (I);
                end loop;
                Parse_Cartridge (Data, Cartridge);
 
@@ -132,8 +132,8 @@ package body Commands is
          Payload.Checksum := Checksum (C_Bytes);
       end;
 
-      Message := (Sixten.Manufacturers.Yamaha, Payload);
-      Data    := Emit (Message);
+      Message := (Manufacturer_Specific, Emit_Payload (Payload), Sixten.Manufacturers.Yamaha);
+      Sixten.Messages.Emit (Message, Data);
       Write_File (Name, Data);
    end Run_Cartridge;
 
@@ -168,8 +168,8 @@ package body Commands is
          Payload.Checksum := Checksum (V_Bytes);
       end;
 
-      Message := (Sixten.Manufacturers.Yamaha, Payload);
-      Data    := Emit (Message);
+      Message := (Manufacturer_Specific, Emit_Payload (Payload), Sixten.Manufacturers.Yamaha);
+      Emit (Message, Data);
       Write_File (Name, Data);
    end Run_Voice;
 
