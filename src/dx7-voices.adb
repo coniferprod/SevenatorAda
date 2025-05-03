@@ -33,7 +33,7 @@ package body DX7.Voices is
 
    procedure Emit (LFO : in LFO_Type; Result : out LFO_Data_Type) is
    begin
-      Result := 
+      Result :=
         (Byte (LFO.Speed), Byte (LFO.Delay_Time), Byte (LFO.Pitch_Modulation_Depth),
          Byte (LFO.Amplitude_Modulation_Depth), (if LFO.Key_Sync then 1 else 0),
          -- Convert enum value to Byte (first enum is pos zero)
@@ -51,7 +51,7 @@ package body DX7.Voices is
       LFO_Data : LFO_Data_Type;
    begin
       Offset := 0;
-      
+
       -- Note: the operators appear in reverse order: OP6, OP5 etc.
       for Op in reverse Operator_Index loop
          Emit (Voice.Operators (Op), Op_Data);
@@ -95,45 +95,51 @@ package body DX7.Voices is
       Result := Data;
    end Emit;
 
+   -- Use the Ada representation facilities to make a type that
+   -- packs several fields into one byte. For details, see
+   -- https://en.wikibooks.org/wiki/Ada_Programming/Attributes/%27Bit_Order
+
+   -- byte             bit #
+   --  #     6   5   4   3   2   1   0   param A       range  param B       range
+   -- 111    0   0   0 |OKS|    FB     | OSC KEY SYNC  0-1    FEEDBACK      0-7
+
+   type Byte111_Type is record
+      Feedback        : Depth_Type;
+      Oscillator_Sync : Boolean;
+   end record;
+
+   for Byte111_Type use record
+      Feedback        at 0 range 0 .. 2;
+      Oscillator_Sync at 0 range 3 .. 3;
+   end record;
+
+   for Byte111_Type'Size use 8;  -- one 8-bit byte, please
+   -- Make bit 0 the least significant
+   for Byte111_Type'Bit_Order use System.Low_Order_First;
+
+   type Byte116_Type is record
+      Sync : Boolean;
+      Waveform : LFO_Waveform_Type;
+      PMS : Depth_Type;
+   end record;
+
+   for Byte116_Type use record
+      Sync at 0 range 0 .. 0;
+      Waveform at 0 range 1 .. 3;
+      PMS at 0 range 4 .. 6;
+   end record;
+
+   for Byte116_Type'Size use 8;
+   for Byte116_Type'Bit_Order use System.Low_Order_First;
+
+   function Byte_To_Byte111_Type is new Ada.Unchecked_Conversion
+      (Byte, Byte111_Type);
+   function Byte_To_Byte116_Type is new Ada.Unchecked_Conversion
+      (Byte, Byte116_Type);
+
+
    --  Packs voice data for cartridge use.
    procedure Pack_Voice (Data : in Voice_Data_Type; Result : out Packed_Voice_Data_Type) is
-      -- Use the Ada representation facilities to make a type that
-      -- packs several fields into one byte. For details, see
-      -- https://en.wikibooks.org/wiki/Ada_Programming/Attributes/%27Bit_Order
-
-      -- byte             bit #
-      --  #     6   5   4   3   2   1   0   param A       range  param B       range
-      -- 111    0   0   0 |OKS|    FB     | OSC KEY SYNC  0-1    FEEDBACK      0-7
-
-      type Byte111_Type is record
-         Feedback        : Depth_Type;
-         Oscillator_Sync : Boolean;
-      end record;
-
-      for Byte111_Type use record
-         Feedback        at 0 range 0 .. 2;
-         Oscillator_Sync at 0 range 3 .. 3;
-      end record;
-
-      for Byte111_Type'Size use 8;  -- one 8-bit byte, please
-      -- Make bit 0 the least significant
-      for Byte111_Type'Bit_Order use System.Low_Order_First;
-
-      type Byte116_Type is record
-         Sync : Boolean;
-         Waveform : LFO_Waveform_Type;
-         PMS : Depth_Type;
-      end record;
-
-      for Byte116_Type use record
-         Sync at 0 range 0 .. 0;
-         Waveform at 0 range 1 .. 3;
-         PMS at 0 range 4 .. 6;
-      end record;
-
-      for Byte116_Type'Size use 8;
-      for Byte116_Type'Bit_Order use System.Low_Order_First;
-
       Ch       : Character;
       Byte111  : Byte111_Type;
       PEG_Data : Envelope_Data_Type;
@@ -151,27 +157,28 @@ package body DX7.Voices is
         (Byte116_Type, Byte);
 
    begin
-      Data_Offset := 0; -- into the parameter Data : Voice_Data_Type
-      Offset := 0;      -- into Result
+      Data_Offset := 1; -- into the parameter Data : Voice_Data_Type
+      Offset := 1;      -- into Result
 
       -- The operator data is already in reverse order (OP6 first),
-      -- so just take each chunk and pack it.      
+      -- so just take each chunk and pack it.
 
-      Op_Index := 0;
-      Offset := Op_Index * Packed_Operator_Data_Length;
+      --Op_Index := 0;
+      --Offset := Op_Index * Packed_Operator_Data_Length;
       for Op in reverse Operator_Index loop
          Put_Offset (Offset, "Packed operator", Data_Offset);
-         Op_Data := Data (Data_Offset .. Data_Offset + 21 - 1);
-         Pack_Operator (Op_Data, Packed_Op_Data);
-         Result (Offset .. Offset + Packed_Operator_Data_Length - 1) := Packed_Op_Data;
-         Inc (Offset, Packed_Operator_Data_Length);
+         Op_Data := Data (Data_Offset .. Data_Offset + Operator_Data_Length);
          Inc (Data_Offset, Operator_Data_Length);
+
+         Pack_Operator (Op_Data, Packed_Op_Data);
+         Result (Offset .. Offset + Packed_Operator_Data_Length) := Packed_Op_Data;
+         Inc (Offset, Packed_Operator_Data_Length);
       end loop;
 
       -- Copy the PEG as is
       Put_Offset (Offset, "PEG", Data_Offset);
-      PEG_Data := Data (Data_Offset .. Data_Offset + Envelope_Data_Length - 1);
-      Result (Offset .. Offset + Envelope_Data_Length - 1) := PEG_Data;
+      PEG_Data := Data (Data_Offset .. Data_Offset + Envelope_Data_Length);
+      Result (Offset .. Offset + Envelope_Data_Length) := PEG_Data;
       Inc (Offset, Envelope_Data_Length);
       Inc (Data_Offset, Envelope_Data_Length);
 
@@ -193,7 +200,7 @@ package body DX7.Voices is
       Inc (Offset, 4);
       Inc (Data_Offset, 4);
 
-      B := (Data (Data_Offset) 
+      B := (Data (Data_Offset)
          or Shift_Left (Data (Data_Offset + 1), 1))  -- LFO waveform
          or (Shift_Left (Data (Data_Offset + 2), 4)); -- PMS (voice)
 
@@ -201,7 +208,7 @@ package body DX7.Voices is
          & Integer'Image (Integer (Data (Data_Offset + 1))));
       Put_Offset (Offset, "Byte 116", Data_Offset);
       Byte116 := (Sync => (if Data (Data_Offset) = 1 then True else False),
-         Waveform => LFO_Waveform_Type'Val (Data (Data_Offset + 1)), 
+         Waveform => LFO_Waveform_Type'Val (Data (Data_Offset + 1)),
          PMS => Depth_Type (Data (Data_Offset + 2)));
       Result (Offset) := Byte116_Type_To_Byte (Byte116);
       Inc (Offset, 1);
@@ -222,8 +229,53 @@ package body DX7.Voices is
    end Pack_Voice;
 
    procedure Unpack_Voice (Data : in Packed_Voice_Data_Type; Result : out Voice_Data_Type) is
+      Offset : Natural;
+      Result_Offset : Natural;
+      Byte111  : Byte111_Type;
+      Byte116  : Byte116_Type;
    begin
-      null;
+      Offset := 1;
+      Result_Offset := 1;
+      for I in reverse Operator_Index loop
+         declare
+            Packed : Packed_Operator_Data_Type := Data (Offset .. Offset + Packed_Operator_Data_Length);
+            Op_Data : Operator_Data_Type;
+         begin
+            Unpack_Operator (Packed, Op_Data);
+            Result (Result_Offset .. Result_Offset + Operator_Data_Length) := Op_Data;
+            Inc (Offset, Packed_Operator_Data_Length);
+            Inc (Result_Offset, Operator_Data_Length);
+         end;
+      end loop;
+
+      --  Now Offset should be at the start of the Pitch EG.
+      Result (Result_Offset .. Result_Offset + Envelope_Data_Length) := Data (Offset .. Offset + Envelope_Data_Length);
+      Inc (Result_Offset, Envelope_Data_Length);
+      Inc (Offset, Envelope_Data_Length);
+
+      Result (Result_Offset) := Data (Offset);  --  algorithm byte
+      Inc (Result_Offset);
+      Inc (Offset);
+
+      Byte111 := Byte_To_Byte111_Type (Data (Offset));
+      Result (Result_Offset) := Byte (Byte111.Feedback);
+      Inc (Result_Offset);
+      Result (Result_Offset) := (if Byte111.Oscillator_Sync then 1 else 0);
+      Inc (Result_Offset);
+      Inc (Offset);
+
+      Result (Result_Offset .. Result_Offset + LFO_Data_Length) := Data (Offset .. Offset + LFO_Data_Length);
+      Inc (Result_Offset, LFO_Data_Length - 1);
+      Inc (Offset, 4); --  we'll use the last byte soon
+      Byte116 := Byte_To_Byte116_Type (Data (Offset));
+      Result (Result_Offset) := Byte (Byte116.PMS);
+      Inc (Offset);
+
+      Result (Result_Offset) := Data (Offset);  --  transpose
+      Inc (Result_Offset);
+      Inc (Offset);
+
+      Result (Result_Offset .. Result_Offset + Voice_Name_Length) := Data (Offset .. Offset + Voice_Name_Length);
    end Unpack_Voice;
 
    function Random_LFO return LFO_Type is
@@ -327,32 +379,32 @@ package body DX7.Voices is
       Offset           : Natural;
       LFO              : LFO_Type;
    begin
-      Op_Start := 0;
+      Op_Start := 1;
       for I in reverse Operator_Index loop
-         Op_End := Op_Start + Operator_Data_Length - 1;
+         Op_End := Op_Start + Operator_Data_Length;
          Parse_Operator (Data (Op_Start .. Op_End), Ops (I));
-         Op_Start := Op_Start + Operator_Data_Length;
+         Inc (Op_Start, Operator_Data_Length);
       end loop;
-      Offset := Offset + Operator_Data_Length;
+      Inc (Offset, Operator_Data_Length);
 
       Voice.Operators := Ops;
 
       Parse_Envelope
-        (Data (Offset .. Offset + Envelope_Data_Length - 1), Voice.Pitch_Envelope);
+        (Data (Offset .. Offset + Envelope_Data_Length), Voice.Pitch_Envelope);
       Offset := Offset + Envelope_Data_Length;
 
-      Voice.Algorithm       := Algorithm_Type (Data (Offset) + 1);
-      Offset                := Offset + 1;
-      Voice.Feedback        := Depth_Type (Data (Offset));
-      Offset                := Offset + 1;
+      Voice.Algorithm := Algorithm_Type (Data (Offset) + 1);
+      Inc (Offset);
+      Voice.Feedback := Depth_Type (Data (Offset));
+      Inc (Offset);
       Voice.Oscillator_Sync := (Data (Offset) = 1);
-      Offset                := Offset + 1;
+      Inc (Offset);
 
       Parse_LFO (Data (Offset .. Offset + LFO_Data_Length), LFO);
-      Offset := Offset + LFO_Data_Length;
+      Inc (Offset, LFO_Data_Length);
 
       Voice.Pitch_Modulation_Sensitivity := Depth_Type (Data (Offset));
-      Offset := Offset + 1;
+      Inc (Offset);
 
       -- Transpose is 0...48 in the SysEx spec. 0 = -2 octaves, 48 = +2 octaves
       declare
@@ -364,7 +416,7 @@ package body DX7.Voices is
 
       for I in 1 .. Voice_Name_Length loop
          Voice.Name (I) := Character'Val (Data (Offset + I));
-         Offset         := Offset + 1;
+         Inc (Offset);
       end loop;
    end Parse_Voice;
 

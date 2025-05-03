@@ -35,7 +35,7 @@ package body DX7.Operators is
    end Pack_Scaling;
 
    procedure Emit (Operator : in Operator_Type; Data : out Operator_Data_Type) is
-      Offset : Integer;
+      Offset : Natural;
       EG_Data : Envelope_Data_Type;
       KLS_Data : Keyboard_Level_Scaling_Data_Type;
    begin
@@ -43,16 +43,16 @@ package body DX7.Operators is
 
       Emit (Operator.EG, EG_Data);
       if Debugging then
-         Ada.Text_IO.Put_Line ("EG data is " 
+         Ada.Text_IO.Put_Line ("EG data is "
             & Integer'Image (Envelope_Data_Type'First)
             & Integer'Image (Envelope_Data_Type'Last));
       end if;
 
-      Data (Offset .. Offset + Envelope_Data_Length - 1) := EG_Data;
+      Data (Offset .. Offset + Envelope_Data_Length) := EG_Data;
       Inc (Offset, Envelope_Data_Length);
 
       Emit (Operator.Keyboard_Level_Scaling, KLS_Data);
-      Data (Offset .. Offset + Keyboard_Level_Scaling_Data_Length - 1) := KLS_Data;
+      Data (Offset .. Offset + Keyboard_Level_Scaling_Data_Length) := KLS_Data;
       Inc (Offset, Keyboard_Level_Scaling_Data_Length);
 
       Data (Offset)     := Byte (Operator.Keyboard_Rate_Scaling);
@@ -137,16 +137,16 @@ package body DX7.Operators is
       KLS : Keyboard_Level_Scaling_Type;
       Mode : Operator_Mode;
    begin
-      Parse_Envelope (Data (0 .. 7), EG);
-      Parse_Scaling (Data (8 .. 12), KLS);
+      Parse_Envelope (Data (1 .. 8), EG);
+      Parse_Scaling (Data (9 .. 13), KLS);
 
       Op :=
         (EG                            => EG, Keyboard_Level_Scaling => KLS,
-         Keyboard_Rate_Scaling         => Scaling_Depth_Type (Data (13)),
-         Amplitude_Modulation_Sensitivity => Amplitude_Modulation_Sensitivity_Type (Data (14)),
-         Touch_Sensitivity => Depth_Type (Data (15)), Output_Level => Level_Type (Data (16)),
-         Mode => (if Data(17) = 0 then Fixed else Ratio), Coarse => Coarse_Type (Data (18)), 
-         Fine => Fine_Type (Data (19)), Detune => Detune_Type (Data (19)));
+         Keyboard_Rate_Scaling         => Scaling_Depth_Type (Data (14)),
+         Amplitude_Modulation_Sensitivity => Amplitude_Modulation_Sensitivity_Type (Data (15)),
+         Touch_Sensitivity => Depth_Type (Data (16)), Output_Level => Level_Type (Data (17)),
+         Mode => (if Data(18) = 0 then Fixed else Ratio), Coarse => Coarse_Type (Data (19)),
+         Fine => Fine_Type (Data (20)), Detune => Detune_Type (Data (20)));
    end Parse_Operator;
 
    procedure Unpack_Operator (Data : in Packed_Operator_Data_Type; Result : out Operator_Data_Type) is

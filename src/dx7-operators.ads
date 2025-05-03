@@ -43,13 +43,13 @@ package DX7.Operators is
 
    -- MIDI System Exclusive data for Keyboard Level Scaling (normal)
    Keyboard_Level_Scaling_Data_Length : constant := 5;
-   subtype Keyboard_Level_Scaling_Data_Type is 
-      Byte_Array (0 .. Keyboard_Level_Scaling_Data_Length - 1);
+   subtype Keyboard_Level_Scaling_Data_Type is
+      Byte_Array (1 .. Keyboard_Level_Scaling_Data_Length);
 
    -- MIDI System Exclusive data for Keyboard Level Scaling (packed)
    Packed_Keyboard_Level_Scaling_Data_Length : constant := 4;
    subtype Packed_Keyboard_Level_Scaling_Data_Type is
-     Byte_Array (0 .. Packed_Keyboard_Level_Scaling_Data_Length - 1);
+     Byte_Array (1 .. Packed_Keyboard_Level_Scaling_Data_Length);
 
    type Operator_Mode is (Ratio, Fixed);
 
@@ -88,12 +88,12 @@ package DX7.Operators is
    -- packed version is used in cartridges.
 
    Operator_Data_Length : constant := 21;
-   subtype Operator_Data_Type is 
-      Byte_Array (0 .. Operator_Data_Length - 1);
+   subtype Operator_Data_Type is
+      Byte_Array (1 .. Operator_Data_Length);
 
    Packed_Operator_Data_Length : constant := 17;
    subtype Packed_Operator_Data_Type is
-      Byte_Array (0 .. Packed_Operator_Data_Length - 1);
+      Byte_Array (1 .. Packed_Operator_Data_Length);
 
    -- Gets the data for the normal voice version of
    -- the operator for MIDI System Exclusive.
@@ -122,7 +122,7 @@ package DX7.Operators is
    procedure Parse_Operator
      (Data         : in     Operator_Data_Type; Op : out Operator_Type);
 
-   -- Unpacks the packed operator data into normal data for parsing.   
+   -- Unpacks the packed operator data into normal data for parsing.
    procedure Unpack_Operator (Data : in Packed_Operator_Data_Type; Result : out Operator_Data_Type);
 
 end DX7.Operators;
