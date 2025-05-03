@@ -121,13 +121,13 @@ package body DX7.Operators is
       Left_Curve : Scaling_Curve_Type;
       Right_Curve : Scaling_Curve_Type;
    begin
-      Parse_Curve (Data (3), Left_Curve);
-      Parse_Curve (Data (4), Right_Curve);
+      Parse_Curve (Data (4), Left_Curve);
+      Parse_Curve (Data (5), Right_Curve);
 
       KLS :=
-        (Breakpoint  => Breakpoint_Type (Data (0) + 21),  -- from 0 ... 99
-         Left => (Depth => Scaling_Depth_Type (Data (1)), Curve => Left_Curve),
-         Right => (Depth => Scaling_Depth_Type (Data (2)), Curve => Right_Curve));
+        (Breakpoint  => Breakpoint_Type (Data (1) + 21),  -- from 0 ... 99
+         Left => (Depth => Scaling_Depth_Type (Data (2)), Curve => Left_Curve),
+         Right => (Depth => Scaling_Depth_Type (Data (3)), Curve => Right_Curve));
    end Parse_Scaling;
 
    procedure Parse_Operator

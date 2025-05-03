@@ -229,53 +229,41 @@ package body DX7.Voices is
    end Pack_Voice;
 
    procedure Unpack_Voice (Data : in Packed_Voice_Data_Type; Result : out Voice_Data_Type) is
-      Offset : Natural;
-      Result_Offset : Natural;
       Byte111  : Byte111_Type;
       Byte116  : Byte116_Type;
+      Packed_Operator_Data : Packed_Operator_Data_Type;
+      Operator_Data : Operator_Data_Type;
    begin
-      Offset := 1;
-      Result_Offset := 1;
       for I in reverse Operator_Index loop
          declare
-            Packed : Packed_Operator_Data_Type := Data (Offset .. Offset + Packed_Operator_Data_Length);
-            Op_Data : Operator_Data_Type;
+            Packed_Start_Index : Integer := Integer (I - 1) * Packed_Operator_Data_Length + 1;
+            Packed_End_Index : Integer := Packed_Start_Index + Packed_Operator_Data_Length - 1;
+            Start_Index : Integer := Integer (I - 1) * Operator_Data_Length + 1;
+            End_Index : Integer := Start_Index + Operator_Data_Length - 1;
          begin
-            Unpack_Operator (Packed, Op_Data);
-            Result (Result_Offset .. Result_Offset + Operator_Data_Length) := Op_Data;
-            Inc (Offset, Packed_Operator_Data_Length);
-            Inc (Result_Offset, Operator_Data_Length);
+            Ada.Text_IO.Put_Line ("Packed = " & Integer'Image (Packed_Start_Index)
+               & " .. " & Integer'Image (Packed_End_Index));
+            Packed_Operator_Data := Data (Packed_Start_Index .. Packed_End_Index);
+            Unpack_Operator (Packed_Operator_Data, Operator_Data);
+            Result (Start_Index .. End_Index) := Operator_Data;
          end;
       end loop;
 
       --  Now Offset should be at the start of the Pitch EG.
-      Result (Result_Offset .. Result_Offset + Envelope_Data_Length) := Data (Offset .. Offset + Envelope_Data_Length);
-      Inc (Result_Offset, Envelope_Data_Length);
-      Inc (Offset, Envelope_Data_Length);
+      Result (127 .. 134) := Data (103 .. 110);
 
-      Result (Result_Offset) := Data (Offset);  --  algorithm byte
-      Inc (Result_Offset);
-      Inc (Offset);
+      Result (135) := Data (111);  --  algorithm byte
 
-      Byte111 := Byte_To_Byte111_Type (Data (Offset));
-      Result (Result_Offset) := Byte (Byte111.Feedback);
-      Inc (Result_Offset);
-      Result (Result_Offset) := (if Byte111.Oscillator_Sync then 1 else 0);
-      Inc (Result_Offset);
-      Inc (Offset);
+      Byte111 := Byte_To_Byte111_Type (Data (112));  -- TODO: fix type name
+      Result (136) := Byte (Byte111.Feedback);
+      Result (137) := (if Byte111.Oscillator_Sync then 1 else 0);
 
-      Result (Result_Offset .. Result_Offset + LFO_Data_Length) := Data (Offset .. Offset + LFO_Data_Length);
-      Inc (Result_Offset, LFO_Data_Length - 1);
-      Inc (Offset, 4); --  we'll use the last byte soon
-      Byte116 := Byte_To_Byte116_Type (Data (Offset));
-      Result (Result_Offset) := Byte (Byte116.PMS);
-      Inc (Offset);
+      Result (138 .. 141) := Data (113 .. 116);  -- LFO
+      Byte116 := Byte_To_Byte116_Type (Data (117));
+      Result (144) := Byte (Byte116.PMS);
 
-      Result (Result_Offset) := Data (Offset);  --  transpose
-      Inc (Result_Offset);
-      Inc (Offset);
-
-      Result (Result_Offset .. Result_Offset + Voice_Name_Length) := Data (Offset .. Offset + Voice_Name_Length);
+      Result (145) := Data (118);  --  transpose
+      Result (146 .. 155) := Data (119 .. 128); -- voice name
    end Unpack_Voice;
 
    function Random_LFO return LFO_Type is
@@ -379,44 +367,51 @@ package body DX7.Voices is
       Offset           : Natural;
       LFO              : LFO_Type;
    begin
-      Op_Start := 1;
       for I in reverse Operator_Index loop
-         Op_End := Op_Start + Operator_Data_Length;
-         Parse_Operator (Data (Op_Start .. Op_End), Ops (I));
-         Inc (Op_Start, Operator_Data_Length);
+         declare
+            Op_Start : Integer := Integer (I - 1) * Operator_Data_Length + 1;
+            Op_End : Integer := Op_Start + Operator_Data_Length - 1;
+         begin
+            Parse_Operator (Data (Op_Start .. Op_End), Ops (I));
+         end;
       end loop;
-      Inc (Offset, Operator_Data_Length);
-
       Voice.Operators := Ops;
 
-      Parse_Envelope
-        (Data (Offset .. Offset + Envelope_Data_Length), Voice.Pitch_Envelope);
+      Parse_Envelope (Data (127 .. 134), Voice.Pitch_Envelope);
       Offset := Offset + Envelope_Data_Length;
 
-      Voice.Algorithm := Algorithm_Type (Data (Offset) + 1);
+      Voice.Algorithm := Algorithm_Type (Data (135) + 1);
       Inc (Offset);
-      Voice.Feedback := Depth_Type (Data (Offset));
+      Voice.Feedback := Depth_Type (Data (136));
       Inc (Offset);
-      Voice.Oscillator_Sync := (Data (Offset) = 1);
+      Voice.Oscillator_Sync := (Data (137) = 1);
       Inc (Offset);
 
-      Parse_LFO (Data (Offset .. Offset + LFO_Data_Length), LFO);
+      Parse_LFO (Data (138 .. 143), LFO);
       Inc (Offset, LFO_Data_Length);
 
-      Voice.Pitch_Modulation_Sensitivity := Depth_Type (Data (Offset));
+      Voice.Pitch_Modulation_Sensitivity := Depth_Type (Data (144));
       Inc (Offset);
 
       -- Transpose is 0...48 in the SysEx spec. 0 = -2 octaves, 48 = +2 octaves
       declare
          Semitones : constant Integer :=
-           Integer (Data (Offset)) - 24; -- bring into range -24...24
+           Integer (Data (145)) - 24; -- bring into range -24...24
       begin
          Voice.Transpose := Transpose_Type (Semitones / 12);
       end;
 
       for I in 1 .. Voice_Name_Length loop
-         Voice.Name (I) := Character'Val (Data (Offset + I));
-         Inc (Offset);
+         declare
+            Character_Offset : Integer := 146 + I - 1;
+         begin
+            Ada.Text_IO.Put ("Name char " & Integer'Image (I) & " = ");
+            Ada.Text_IO.Put (Character'Val (Data (Character_Offset)));
+            Ada.Text_IO.Put (" at " & Integer'Image (Character_Offset));
+            Ada.Text_IO.New_Line;
+            Voice.Name (I) := Character'Val (Data (Character_Offset));
+            Inc (Offset);
+         end;
       end loop;
    end Parse_Voice;
 

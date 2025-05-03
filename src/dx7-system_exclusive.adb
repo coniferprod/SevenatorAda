@@ -83,7 +83,7 @@ package body DX7.System_Exclusive is
          end case;
       end;
       Payload := Temp_Payload;
-      Ada.Text_IO.Put_Line ("Payload parsed");
+      Ada.Text_IO.Put_Line ("Parse_Payload: done");
    end Parse_Payload;
 
    -- Computes the checksum byte for voice or cartridge data.

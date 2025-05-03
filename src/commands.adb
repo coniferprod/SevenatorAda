@@ -33,6 +33,7 @@ package body Commands is
       Raw_Message : Sixten.Messages.Message_Type;
       Payload : DX7.System_Exclusive.Payload_Type;
       A_Slice : Byte_Vector;
+      Start_Index, End_Index : Natural;
    begin
       --Put ("Input file: "); Put (Name); New_Line;
       --Put ("Size (bytes): "); Put (Item => Size'Image); New_Line;
@@ -46,8 +47,10 @@ package body Commands is
 
       Put_Line ("Raw message parsed");
 
-      A_Slice := Slice (Raw_Message.Payload, Raw_Message.Payload.First_Index, Raw_Message.Payload.Last_Index - 1);
-      Put_Line ("Got a slice");
+      Start_Index := Raw_Message.Payload.First_Index;
+      End_Index := Raw_Message.Payload.Last_Index;
+      A_Slice := Slice (Raw_Message.Payload, Start_Index, End_Index);
+      Put_Line ("Payload slice = " & Natural'Image (Start_Index) & " .. " & Natural'Image (End_Index));
       Parse_Payload (A_Slice, Payload);
       --Put (Header);
 
@@ -67,12 +70,8 @@ package body Commands is
          when Cartridge =>
             declare
                Cartridge : Cartridge_Type;
-               Data : Cartridge_Data_Type;
             begin
-               for I in Payload.Cartridge_Data'First .. Payload.Cartridge_Data'Last loop
-                  Data (I) := Payload.Cartridge_Data (I);
-               end loop;
-               Parse_Cartridge (Data, Cartridge);
+               Parse_Cartridge (Payload.Cartridge_Data, Cartridge);
 
                for V of Cartridge.Voices loop
                   Put_Line (V.Name);
