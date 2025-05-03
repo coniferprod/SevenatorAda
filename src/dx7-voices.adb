@@ -241,8 +241,8 @@ package body DX7.Voices is
             Start_Index : Integer := Integer (I - 1) * Operator_Data_Length + 1;
             End_Index : Integer := Start_Index + Operator_Data_Length - 1;
          begin
-            Ada.Text_IO.Put_Line ("Packed = " & Integer'Image (Packed_Start_Index)
-               & " .. " & Integer'Image (Packed_End_Index));
+            --Ada.Text_IO.Put_Line ("Packed = " & Integer'Image (Packed_Start_Index)
+            --   & " .. " & Integer'Image (Packed_End_Index));
             Packed_Operator_Data := Data (Packed_Start_Index .. Packed_End_Index);
             Unpack_Operator (Packed_Operator_Data, Operator_Data);
             Result (Start_Index .. End_Index) := Operator_Data;
@@ -364,7 +364,6 @@ package body DX7.Voices is
    procedure Parse_Voice (Data : in Voice_Data_Type; Voice : out Voice_Type) is
       Ops              : Operator_Array;
       Op_Start, Op_End : Natural;
-      Offset           : Natural;
       LFO              : LFO_Type;
    begin
       for I in reverse Operator_Index loop
@@ -373,25 +372,23 @@ package body DX7.Voices is
             Op_End : Integer := Op_Start + Operator_Data_Length - 1;
          begin
             Parse_Operator (Data (Op_Start .. Op_End), Ops (I));
+            Ada.Text_IO.Put_Line ("OP" & Integer'Image (Integer (I)) &
+               " parsed");
          end;
       end loop;
       Voice.Operators := Ops;
 
       Parse_Envelope (Data (127 .. 134), Voice.Pitch_Envelope);
-      Offset := Offset + Envelope_Data_Length;
+      Ada.Text_IO.Put_Line ("PEG parsed");
 
       Voice.Algorithm := Algorithm_Type (Data (135) + 1);
-      Inc (Offset);
       Voice.Feedback := Depth_Type (Data (136));
-      Inc (Offset);
       Voice.Oscillator_Sync := (Data (137) = 1);
-      Inc (Offset);
 
       Parse_LFO (Data (138 .. 143), LFO);
-      Inc (Offset, LFO_Data_Length);
+      Ada.Text_IO.Put_Line ("LFO parsed");
 
       Voice.Pitch_Modulation_Sensitivity := Depth_Type (Data (144));
-      Inc (Offset);
 
       -- Transpose is 0...48 in the SysEx spec. 0 = -2 octaves, 48 = +2 octaves
       declare
@@ -405,14 +402,14 @@ package body DX7.Voices is
          declare
             Character_Offset : Integer := 146 + I - 1;
          begin
-            Ada.Text_IO.Put ("Name char " & Integer'Image (I) & " = ");
-            Ada.Text_IO.Put (Character'Val (Data (Character_Offset)));
-            Ada.Text_IO.Put (" at " & Integer'Image (Character_Offset));
-            Ada.Text_IO.New_Line;
+            --Ada.Text_IO.Put ("Name char " & Integer'Image (I) & " = ");
+            --Ada.Text_IO.Put (Character'Val (Data (Character_Offset)));
+            --Ada.Text_IO.Put (" at " & Integer'Image (Character_Offset));
+            --Ada.Text_IO.New_Line;
             Voice.Name (I) := Character'Val (Data (Character_Offset));
-            Inc (Offset);
          end;
       end loop;
+      Ada.Text_IO.Put_Line ("Name parsed");
    end Parse_Voice;
 
    procedure Parse_LFO (Data : in LFO_Data_Type; LFO : out LFO_Type) is

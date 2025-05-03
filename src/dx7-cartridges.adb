@@ -2,30 +2,26 @@ with Ada.Text_IO;
 
 package body DX7.Cartridges is
 
-   function To_Byte_Vector (Data : Byte_Array) return Byte_Vector is
-      BV : Byte_Vector;
-   begin
-      for I in Data'Range loop
-         BV.Append (Byte (Data (I)));
-      end loop;
-      return BV;
-   end To_Byte_Vector;
-
    procedure Parse_Cartridge (Data : in Cartridge_Data_Type; Cartridge : out Cartridge_Type) is
       Packed_Voice_Data : Packed_Voice_Data_Type;
       Voice_Data : Voice_Data_Type;
       Voice : Voice_Type;
       Offset : Natural;
    begin
-      Ada.Text_IO.Put_Line ("Parse_Cartridge: Data = " &
-         Natural'Image (Data'First) & " .. " & Natural'Image (Data'Last));
+      --Ada.Text_IO.Put_Line ("Parse_Cartridge: Data = " &
+      --   Natural'Image (Data'First) & " .. " & Natural'Image (Data'Last));
       Offset := 1;
       for I in Voice_Index loop
+         Ada.Text_IO.Put_Line ("VOICE " & Integer'Image (Integer (I)));
          Packed_Voice_Data := Data (Offset .. Offset + Packed_Voice_Data_Length - 1);
          Unpack_Voice (Data => Packed_Voice_Data, Result => Voice_Data);
+         Ada.Text_IO.Put_Line ("  Voice data unpacked, " &
+            Integer'Image (Packed_Voice_Data'Length) & " to " &
+            Integer'Image (Voice_Data'Length) & " bytes");
          Parse_Voice (Data => Voice_Data, Voice => Voice);
          Cartridge.Voices (I) := Voice;
          Offset := Offset + Packed_Voice_Data_Length;
+         Ada.Text_IO.New_Line;
       end loop;
    end Parse_Cartridge;
 

@@ -47,14 +47,16 @@ package body DX7.System_Exclusive is
 
    procedure Parse_Payload (Data : in Byte_Vector; Payload : out Payload_Type) is
       Header : Header_Type;
-      Header_Data : Byte_Array (1 .. Header_Data_Length);
+      Header_Data : Header_Data_Type;
       Temp_Payload : Payload_Type;
       Checksum : Byte;
    begin
-      for I in 1 .. Header_Data_Length loop
-         Header_Data (I) := Data.Element (I - 1);  -- Data indexing is zero-based
+      for I in Header_Data'Range loop
+         Header_Data (I) := Data.Element (I - 1);  -- BV Data indexing is zero-based
       end loop;
+      Ada.Text_IO.Put_Line ("Header = " & Hex_Dump (Header_Data));
       Parse_Header (Header_Data, Header);
+      Put (Header);
       Ada.Text_IO.Put_Line ("Header parsed");
 
       Checksum := Data.Element (Data.Last_Index);
@@ -65,7 +67,7 @@ package body DX7.System_Exclusive is
          Cartridge_Data : Cartridge_Data_Type;
          Offset : Natural;
       begin
-         Offset := Header_Data_Length - 1;
+         Offset := Header_Data_Length;
          case Header.Format is
             when Voice =>
                for I in 1 .. Voice_Data_Length loop
@@ -77,9 +79,11 @@ package body DX7.System_Exclusive is
                for I in 1 .. Cartridge_Data_Length loop
                   --Ada.Text_IO.Put_Line ("I = " & Integer'Image (I));
                   Cartridge_Data (I) := Data.Element (Offset);
+                  Inc (Offset);
                end loop;
                Temp_Payload := (Cartridge, Header, Checksum, Cartridge_Data);
-               Ada.Text_IO.Put_Line ("Got cartridge temp payload");
+               --Ada.Text_IO.Put_Line ("Got cartridge temp payload");
+               --Ada.Text_IO.Put_Line (Hex_Dump (Cartridge_Data));
          end case;
       end;
       Payload := Temp_Payload;

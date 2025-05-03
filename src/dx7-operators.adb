@@ -3,12 +3,6 @@ with Ada.Text_IO;
 package body DX7.Operators is
    Debugging : constant Boolean := False;
 
-   -- Helper function to increment an integer value by the given amount.
-   procedure Inc (I : in out Integer; Amount : in Integer := 1) is
-   begin
-      I := I + Amount;
-   end Inc;
-
    -- Emits the bytes of KLS for SysEx (five bytes).
    procedure Emit
      (KLS : in Keyboard_Level_Scaling_Type; Data : out Keyboard_Level_Scaling_Data_Type) is
@@ -136,9 +130,18 @@ package body DX7.Operators is
       EG  : Envelope_Type;
       KLS : Keyboard_Level_Scaling_Type;
       Mode : Operator_Mode;
+      EG_Data : Envelope_Data_Type;
+      KLS_Data : Keyboard_Level_Scaling_Data_Type;
    begin
-      Parse_Envelope (Data (1 .. 8), EG);
-      Parse_Scaling (Data (9 .. 13), KLS);
+      EG_Data := Data (1 .. 8);
+      Ada.Text_IO.Put_Line ("EG data = " & Hex_Dump (EG_Data));
+      --Ada.Text_IO.Put_Line ("  EG");
+      Parse_Envelope (EG_Data, EG);
+
+      KLS_Data := Data (9 .. 13);
+      Ada.Text_IO.Put_Line ("KLS data = " & Hex_Dump (KLS_Data));
+      --Ada.Text_IO.Put_Line ("  KLS");
+      Parse_Scaling (KLS_Data, KLS);
 
       Op :=
         (EG                            => EG, Keyboard_Level_Scaling => KLS,

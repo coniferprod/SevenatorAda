@@ -1,8 +1,6 @@
 with Ada.Numerics.Discrete_Random;
 with Ada.Text_IO;
 
-with Sixten; use Sixten;
-
 package body DX7.Envelopes is
    Debugging : constant Boolean := True;
 
@@ -54,20 +52,20 @@ package body DX7.Envelopes is
       B : Byte;
       Offset : Natural;
    begin
-      Ada.Text_IO.Put_Line ("EG data = " & Integer'Image (Data'First) & ".." 
-         & Integer'Image (Data'Last));
+      --Ada.Text_IO.Put_Line ("EG data = " & Integer'Image (Data'First) & ".."
+      --   & Integer'Image (Data'Last));
 
       Offset := 1;
-      Put_Offset (Offset, "Rates", Offset);
+      --Put_Offset (Offset, "Rates", Offset);
       for I in Rate_Index loop
          B := Data (Integer (I));
          R (I) := Rate_Type (B);
-         Ada.Text_IO.Put_Line ("Rate I = " & Integer'Image (Integer (I)) & Integer'Image (Integer (B)));
+         --Ada.Text_IO.Put_Line ("Rate I = " & Integer'Image (Integer (I)) & Integer'Image (Integer (B)));
       end loop;
 
       for I in Level_Index loop
          B := Data (Integer (I + 4));
-         Ada.Text_IO.Put_Line ("Level I = " & Integer'Image (Integer (I)) & Integer'Image (Integer (B)));
+         --Ada.Text_IO.Put_Line ("Level I = " & Integer'Image (Integer (I)) & Integer'Image (Integer (B)));
          L (I) := Level_Type (B);
       end loop;
 

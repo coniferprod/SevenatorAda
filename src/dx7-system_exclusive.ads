@@ -20,6 +20,7 @@ package DX7.System_Exclusive is
    end record;
 
    Header_Data_Length : constant := 4;
+   subtype Header_Data_Type is Byte_Array (1 .. Header_Data_Length);
 
    procedure Put (Header : Header_Type);
 

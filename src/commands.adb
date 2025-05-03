@@ -14,18 +14,6 @@ with DX7.System_Exclusive; use DX7.System_Exclusive;
 
 package body Commands is
    procedure Run_Dump (Name : String) is
-
-      function Slice (BV : Byte_Vector; Start_Index : Natural; End_Index : Natural) return Byte_Vector is
-         Length : Natural := End_Index - Start_Index;
-         Result : Byte_Vector;
-         I : Natural := Start_Index;
-      begin
-         for I in Start_Index .. End_Index loop
-            Result.Append (BV (I));
-         end loop;
-         return Result;
-      end Slice;
-
       Size : constant Ada.Directories.File_Size := Ada.Directories.Size (Name);
       Data    : Byte_Array (0 .. Integer (Size) - 1);
       BV : Byte_Vector;
@@ -45,14 +33,19 @@ package body Commands is
       --  Now we should have the System Exclusive message
       --  with type and payload in Raw_Message
 
-      Put_Line ("Raw message parsed");
+      Put_Line ("BEGIN System Exclusive message parsing");
 
       Start_Index := Raw_Message.Payload.First_Index;
       End_Index := Raw_Message.Payload.Last_Index;
       A_Slice := Slice (Raw_Message.Payload, Start_Index, End_Index);
-      Put_Line ("Payload slice = " & Natural'Image (Start_Index) & " .. " & Natural'Image (End_Index));
+      --Put_Line ("Payload slice = " & Natural'Image (Start_Index) & " .. " & Natural'Image (End_Index));
       Parse_Payload (A_Slice, Payload);
       --Put (Header);
+
+      --Put ("Payload: ");
+      --Put (Sixten.Hex_Dump (A_Slice));
+
+      Put_Line ("END System Exclusive message parsing");
 
       case Payload.Header.Format is
          when Voice =>
@@ -71,7 +64,9 @@ package body Commands is
             declare
                Cartridge : Cartridge_Type;
             begin
+               Put_Line ("BEGIN Cartridge parsing");
                Parse_Cartridge (Payload.Cartridge_Data, Cartridge);
+               Put_Line ("END Cartridge parsing");
 
                for V of Cartridge.Voices loop
                   Put_Line (V.Name);
