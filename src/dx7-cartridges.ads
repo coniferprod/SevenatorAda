@@ -9,7 +9,7 @@ package DX7.Cartridges is
    Cartridge_Data_Length : constant Positive := 4096;
    subtype Cartridge_Data_Type is Byte_Array (1 .. Cartridge_Data_Length);
 
-   procedure Parse_Cartridge (Data : in Cartridge_Data_Type; Cartridge : out Cartridge_Type);
+   procedure Parse (Data : in Cartridge_Data_Type; Cartridge : out Cartridge_Type);
 
    -- Gets the cartridge data as bytes for MIDI System Exclusive.
    procedure Emit (Cartridge : in Cartridge_Type; Result : out Cartridge_Data_Type);

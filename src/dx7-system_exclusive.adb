@@ -4,91 +4,77 @@ with Sixten;
 with Sixten.Messages;
 
 package body DX7.System_Exclusive is
-   function Emit_Header (Header : Header_Type) return Byte_Vector is
-      BV : Byte_Vector;
+   procedure Emit (Header : in Header_Type; Result : out Header_Data_Type) is
    begin
-      BV.Append (Byte ((Header.Channel - 1)) or Shift_Left (Header.Sub_Status, 4));
-      BV.Append (Byte (Format_Type'Pos (Header.Format)));
+      Result (1) := Byte (Header.Channel - 1) or Shift_Left (Byte (Status_Type'Pos (Header.Sub_Status)), 4);
+      Result (2) := Byte (Format_Type'Pos (Header.Format));
       case Header.Format is
          when Cartridge =>
-            BV.Append (16#20#);
-            BV.Append (0);
+            Result (3) := 16#20#;
+            Result (4) := 0;
          when Voice =>
-            BV.Append (1);
-            BV.Append (16#1B#);
+            Result (3) := 1;
+            Result (4) := 16#1B#;
       end case;
-      return BV;
-   end Emit_Header;
+   end Emit;
 
-   function Emit_Payload (Payload : Payload_Type) return Byte_Vector is
-      BV : Byte_Vector;
+
+   procedure Emit (Payload : in Payload_Type; Result : out Byte_Array) is
+      Header_Data : Header_Data_Type;
+      Size : Natural;
+      Start_Index, End_Index : Natural;
    begin
-      BV.Append_Vector (Emit_Header (Payload.Header));
+      Emit (Payload.Header, Header_Data);
+      Result (1 .. Header_Size) := Header_Data;
+      Start_Index := Header_Size + 1;
       case Payload.Format is
          when Cartridge =>
-            BV.Append (Sixten.To_Byte_Vector (Payload.Cartridge_Data));
+            Size := Payload.Cartridge_Data'Length;
+            End_Index := Start_Index + Size;
+            Result (Start_Index .. End_Index) := Payload.Cartridge_Data;
          when Voice =>
-            BV.Append (Sixten.To_Byte_Vector (Payload.Voice_Data));
+            Size := Payload.Voice_Data'Length;
+            End_Index := Start_Index + Size;
+            Result (Start_Index .. End_Index) := Payload.Voice_Data;
       end case;
-      BV.Append (Payload.Checksum);
-      return BV;
-   end Emit_Payload;
+   end Emit;
 
-   procedure Parse_Header (Data : in Byte_Array; Header : out Header_Type) is
+   procedure Parse (Data : in Byte_Array; Header : out Header_Type) is
       Channel : MIDI_Channel_Type;
-      Byte_Count : Natural;
       Format : Format_Type;
    begin
       Channel := MIDI_Channel_Type (Data (1) + 1);
       Format := (if Data (2) = 1 then Voice else Cartridge);
-      Byte_Count := (if Format = Voice then 155 else 4096);
-      Header := (Data (1), Channel, Format, Byte_Count);
-   end Parse_Header;
+      Header := (Status_Type'Val (Data (1)), Channel, Format);
+   end Parse;
 
-   procedure Parse_Payload (Data : in Byte_Vector; Payload : out Payload_Type) is
-      Header : Header_Type;
+   procedure Parse (Data : in Byte_Array; Payload : out Payload_Type) is
       Header_Data : Header_Data_Type;
-      Temp_Payload : Payload_Type;
+      Header : Header_Type;
       Checksum : Byte;
+      Temp_Payload : Payload_Type;
    begin
-      for I in Header_Data'Range loop
-         Header_Data (I) := Data.Element (I - 1);  -- BV Data indexing is zero-based
-      end loop;
-      Ada.Text_IO.Put_Line ("Header = " & Hex_Dump (Header_Data));
-      Parse_Header (Header_Data, Header);
-      Put (Header);
-      Ada.Text_IO.Put_Line ("Header parsed");
-
-      Checksum := Data.Element (Data.Last_Index);
-      Ada.Text_IO.Put_Line ("Checksum = " & Integer'Image (Integer (Checksum)));
+      Header_Data := Data (1 .. Header_Size);
+      Parse (Header_Data, Header);
+      Checksum := Data (Data'Last);
 
       declare
          Voice_Data : Voice_Data_Type;
          Cartridge_Data : Cartridge_Data_Type;
          Offset : Natural;
       begin
-         Offset := Header_Data_Length;
+         Offset := Header_Size + 1;
          case Header.Format is
             when Voice =>
-               for I in 1 .. Voice_Data_Length loop
-                  Voice_Data (I) := Data.Element (Offset);
-               end loop;
+               Voice_Data := Data (Offset .. Offset + Voice_Data_Length - 1);
                Temp_Payload := (Voice, Header, Checksum, Voice_Data);
             when Cartridge =>
-               Ada.Text_IO.Put_Line (Integer'Image (Data.First_Index) & " to " & Integer'Image (Data.Last_Index));
-               for I in 1 .. Cartridge_Data_Length loop
-                  --Ada.Text_IO.Put_Line ("I = " & Integer'Image (I));
-                  Cartridge_Data (I) := Data.Element (Offset);
-                  Inc (Offset);
-               end loop;
+               Cartridge_Data := Data (Offset .. Offset + Cartridge_Data_Length - 1);
                Temp_Payload := (Cartridge, Header, Checksum, Cartridge_Data);
-               --Ada.Text_IO.Put_Line ("Got cartridge temp payload");
-               --Ada.Text_IO.Put_Line (Hex_Dump (Cartridge_Data));
          end case;
       end;
       Payload := Temp_Payload;
-      Ada.Text_IO.Put_Line ("Parse_Payload: done");
-   end Parse_Payload;
+   end Parse;
 
    -- Computes the checksum byte for voice or cartridge data.
    function Checksum (Data : Byte_Array) return Byte is
@@ -112,7 +98,6 @@ package body DX7.System_Exclusive is
       Ada.Text_IO.Put ("Header: Channel = " & Integer'Image (Integer (Header.Channel)));
       Ada.Text_IO.Put (" Format = ");
       Format_IO.Put (Header.Format);
-      Ada.Text_IO.Put (" Byte count = " & Integer'Image (Header.Byte_Count));
       Ada.Text_IO.New_Line;
    end Put;
 

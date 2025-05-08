@@ -15,49 +15,28 @@ with DX7.System_Exclusive; use DX7.System_Exclusive;
 package body Commands is
    procedure Run_Dump (Name : String) is
       Size : constant Ada.Directories.File_Size := Ada.Directories.Size (Name);
-      Data    : Byte_Array (0 .. Integer (Size) - 1);
+      Data : Byte_Array (1 .. Natural (Size));
       BV : Byte_Vector;
       Manufacturer : Sixten.Manufacturers.Manufacturer_Type;
       Raw_Message : Sixten.Messages.Message_Type;
       Payload : DX7.System_Exclusive.Payload_Type;
-      A_Slice : Byte_Vector;
       Start_Index, End_Index : Natural;
    begin
-      --Put ("Input file: "); Put (Name); New_Line;
-      --Put ("Size (bytes): "); Put (Item => Size'Image); New_Line;
-
-      --Read_File (Name, Data);
-      --BV := DX7.Cartridges.To_Byte_Vector (Data);
-      BV := Sixten.Read_All_Bytes (Name);
-      Sixten.Messages.Parse (BV, Raw_Message);
+      Read_File (Name, Data);
+      Parse (Data, Raw_Message);
       --  Now we should have the System Exclusive message
       --  with type and payload in Raw_Message
 
-      Put_Line ("BEGIN System Exclusive message parsing");
-
-      Start_Index := Raw_Message.Payload.First_Index;
-      End_Index := Raw_Message.Payload.Last_Index;
-      A_Slice := Slice (Raw_Message.Payload, Start_Index, End_Index);
-      --Put_Line ("Payload slice = " & Natural'Image (Start_Index) & " .. " & Natural'Image (End_Index));
-      Parse_Payload (A_Slice, Payload);
-      --Put (Header);
-
-      --Put ("Payload: ");
-      --Put (Sixten.Hex_Dump (A_Slice));
-
-      Put_Line ("END System Exclusive message parsing");
+      Start_Index := Raw_Message.Payload'First;
+      End_Index := Raw_Message.Payload'Last;
+      Parse (Raw_Message.Payload, Payload);
 
       case Payload.Header.Format is
          when Voice =>
             declare
                Voice : Voice_Type;
-               Data : Voice_Data_Type;
             begin
-               for I in Payload.Voice_Data'First .. Payload.Voice_Data'Last loop
-                  Data (I) := Payload.Voice_Data (I);
-               end loop;
-               Parse_Voice (Data, Voice);
-
+               Parse (Payload.Voice_Data, Voice);
                Ada.Text_IO.Put_Line ("Voice name = " & Voice.Name);
             end;
          when Cartridge =>
@@ -65,7 +44,10 @@ package body Commands is
                Cartridge : Cartridge_Type;
             begin
                Put_Line ("BEGIN Cartridge parsing");
-               Parse_Cartridge (Payload.Cartridge_Data, Cartridge);
+               Ada.Text_IO.Put_Line ("Cartridge payload (" & Integer'Image (Payload.Cartridge_Data'Length) & " bytes) = "
+                  & Hex_Dump (Payload.Cartridge_Data));
+
+               Parse (Payload.Cartridge_Data, Cartridge);
                Put_Line ("END Cartridge parsing");
 
                for V of Cartridge.Voices loop
@@ -85,8 +67,8 @@ package body Commands is
       Header  : Header_Type;
       Payload : Payload_Type;
    begin
-      Header := (Sub_Status => 0, Channel => 1, Format => Cartridge, Byte_Count => 4096);
-      Payload := (Cartridge, Header, Checksum => 0,
+      Header := (Sub_Status => Voice_Cartridge, Channel => 1, Format => Cartridge);
+      Payload := (Format => Cartridge, Header => Header, Checksum => 0,
                   Cartridge_Data => (others => 0));
 
       -- Test code to print envelope generator:
@@ -107,7 +89,6 @@ package body Commands is
       declare
          Cartridge          : Cartridge_Type;
          Cartridge_Data     : Cartridge_Data_Type;
-         C_Bytes : Byte_Array (0 .. Cartridge_Data_Length - 1);
       begin
          -- Just fill the cartridge with copies of the "BRASS1" voice
          for I in Voice_Index loop
@@ -119,52 +100,54 @@ package body Commands is
 
          Emit (Cartridge, Cartridge_Data);
          Payload.Cartridge_Data := Cartridge_Data;
-
-         for I in Cartridge_Data'Range loop
-            C_Bytes (I) := Cartridge_Data (I);
-         end loop;
-         Payload.Checksum := Checksum (C_Bytes);
+         Payload.Checksum := Checksum (Cartridge_Data);
       end;
 
-      Message := (Manufacturer_Specific, Emit_Payload (Payload), Sixten.Manufacturers.Yamaha);
-      Sixten.Messages.Emit (Message, Data);
-      Write_File (Name, Data);
+      declare
+         Size : Natural := Header_Size + Cartridge_Data_Length + 1;  -- include checksum
+         Payload_Data : Byte_Array (1 .. Size);
+      begin
+         Emit (Payload, Payload_Data);
+
+         Message := (Kind => Manufacturer_Specific,
+            Payload_Size => Size,
+            Payload => Payload_Data,
+            Manufacturer => Yamaha);
+         Emit (Message, Data);
+         Write_File (Name, Data);
+      end;
    end Run_Cartridge;
 
    procedure Run_Voice (Name : String) is
-      Channel : constant MIDI_Channel_Type := 1;  -- MIDI channel number
       Message : Message_Type;
       Data    : Byte_Vector;
-      Header : Header_Type;
+      Header  : Header_Type;
       Payload : Payload_Type;
-      V_Bytes : Byte_Array (1 .. Voice_Data_Length);
    begin
-      Header := (Sub_Status => 0, Channel => 1, Format => Voice, Byte_Count => 155);
+      Header := (Sub_Status => Voice_Cartridge, Channel => 1, Format => Voice);
 
-      Payload := (Voice, Header,
-                                 Checksum => 0,
-                                 Voice_Data => (others => 0));
+      Payload := (Format => Voice,
+                  Header => Header,
+                  Checksum => 0,
+                  Voice_Data => (others => 0));
 
       Put_Line ("Generating new voice...");
 
+      Emit (Brass1, Payload.Voice_Data);
+      Payload.Checksum := Checksum (Payload.Voice_Data);
+
       declare
-         Voice      : Voice_Type;
-         Voice_Data : Voice_Data_Type;
+         Size : Natural := Header_Size + Voice_Data_Length + 1;  -- include checksum
+         Payload_Data : Byte_Array (1 .. Size);
       begin
-         Voice := Brass1;
-         Emit (Voice, Voice_Data);
-         Payload.Voice_Data := Voice_Data;
-
-         for I in Voice_Data'Range loop
-            V_Bytes (I) := Voice_Data (I);
-         end loop;
-
-         Payload.Checksum := Checksum (V_Bytes);
+         Emit (Payload, Payload_Data);
+         Message := (Kind => Manufacturer_Specific,
+                     Payload_Size => Size,
+                     Payload => Payload_Data,
+                     Manufacturer => Yamaha);
+         Emit (Message, Data);
+         Write_File (Name, Data);
       end;
-
-      Message := (Manufacturer_Specific, Emit_Payload (Payload), Sixten.Manufacturers.Yamaha);
-      Emit (Message, Data);
-      Write_File (Name, Data);
    end Run_Voice;
 
 end Commands;

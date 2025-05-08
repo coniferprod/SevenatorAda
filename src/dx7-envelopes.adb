@@ -46,7 +46,7 @@ package body DX7.Envelopes is
       end if;
    end Put_Offset;
 
-   procedure Parse_Envelope (Data : in Envelope_Data_Type; Result : out Envelope_Type) is
+   procedure Parse (Data : in Envelope_Data_Type; Result : out Envelope_Type) is
       R : Rate_Array;
       L : Level_Array;
       B : Byte;
@@ -70,6 +70,6 @@ package body DX7.Envelopes is
       end loop;
 
       Result := (Rates => R, Levels => L);
-   end Parse_Envelope;
+   end Parse;
 
 end DX7.Envelopes;

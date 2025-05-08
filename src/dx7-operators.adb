@@ -21,11 +21,11 @@ package body DX7.Operators is
    procedure Pack_Scaling (Data : Keyboard_Level_Scaling_Data_Type; Result : out Packed_Keyboard_Level_Scaling_Data_Type) is
    begin
       -- The first three bytes are copied as is
-      Result (0 .. 2) := Data (0 .. 2);
+      Result (1 .. 3) := Data (1 .. 3);
 
       -- The fourth byte combines the left and right curves
       -- 11    0   0   0 |  RC   |   LC  | SCL LEFT CURVE 0-3   SCL RGHT CURVE 0-3
-      Result (3) := Data (3) or (Shift_Left (Data (4), 2));
+      Result (4) := Data (4) or (Shift_Left (Data (5), 2));
    end Pack_Scaling;
 
    procedure Emit (Operator : in Operator_Type; Data : out Operator_Data_Type) is
@@ -42,11 +42,11 @@ package body DX7.Operators is
             & Integer'Image (Envelope_Data_Type'Last));
       end if;
 
-      Data (Offset .. Offset + Envelope_Data_Length) := EG_Data;
+      Data (Offset .. Offset + Envelope_Data_Length - 1) := EG_Data;
       Inc (Offset, Envelope_Data_Length);
 
       Emit (Operator.Keyboard_Level_Scaling, KLS_Data);
-      Data (Offset .. Offset + Keyboard_Level_Scaling_Data_Length) := KLS_Data;
+      Data (Offset .. Offset + Keyboard_Level_Scaling_Data_Length - 1) := KLS_Data;
       Inc (Offset, Keyboard_Level_Scaling_Data_Length);
 
       Data (Offset)     := Byte (Operator.Keyboard_Rate_Scaling);
@@ -96,7 +96,7 @@ package body DX7.Operators is
       return Breakpoint_Type (Data + 21);
    end Get_Breakpoint;
 
-   procedure Parse_Scaling
+   procedure Parse
      (Data : in     Keyboard_Level_Scaling_Data_Type;
       KLS  :    out Keyboard_Level_Scaling_Type)
    is
@@ -122,9 +122,9 @@ package body DX7.Operators is
         (Breakpoint  => Breakpoint_Type (Data (1) + 21),  -- from 0 ... 99
          Left => (Depth => Scaling_Depth_Type (Data (2)), Curve => Left_Curve),
          Right => (Depth => Scaling_Depth_Type (Data (3)), Curve => Right_Curve));
-   end Parse_Scaling;
+   end Parse;
 
-   procedure Parse_Operator
+   procedure Parse
      (Data         : in     Operator_Data_Type; Op : out Operator_Type)
    is
       EG  : Envelope_Type;
@@ -133,27 +133,33 @@ package body DX7.Operators is
       EG_Data : Envelope_Data_Type;
       KLS_Data : Keyboard_Level_Scaling_Data_Type;
    begin
+      Ada.Text_IO.Put_Line ("Operator data = " & Hex_Dump (Data));
+
       EG_Data := Data (1 .. 8);
       Ada.Text_IO.Put_Line ("EG data = " & Hex_Dump (EG_Data));
-      --Ada.Text_IO.Put_Line ("  EG");
-      Parse_Envelope (EG_Data, EG);
+      Parse (EG_Data, EG);
 
       KLS_Data := Data (9 .. 13);
       Ada.Text_IO.Put_Line ("KLS data = " & Hex_Dump (KLS_Data));
-      --Ada.Text_IO.Put_Line ("  KLS");
-      Parse_Scaling (KLS_Data, KLS);
+      Parse (KLS_Data, KLS);
 
       Op :=
-        (EG                            => EG, Keyboard_Level_Scaling => KLS,
+        (EG                            => EG,
+         Keyboard_Level_Scaling => KLS,
          Keyboard_Rate_Scaling         => Scaling_Depth_Type (Data (14)),
          Amplitude_Modulation_Sensitivity => Amplitude_Modulation_Sensitivity_Type (Data (15)),
-         Touch_Sensitivity => Depth_Type (Data (16)), Output_Level => Level_Type (Data (17)),
-         Mode => (if Data(18) = 0 then Fixed else Ratio), Coarse => Coarse_Type (Data (19)),
-         Fine => Fine_Type (Data (20)), Detune => Detune_Type (Data (20)));
-   end Parse_Operator;
+         Touch_Sensitivity => Depth_Type (Data (16)),
+         Output_Level => Level_Type (Data (17)),
+         Mode => (if Data(18) = 0 then Fixed else Ratio),
+         Coarse => Coarse_Type (Data (19)),
+         Fine => Fine_Type (Data (20)),
+         Detune => Detune_Type (Data (21) - 7));
+   end Parse;
 
    procedure Unpack_Operator (Data : in Packed_Operator_Data_Type; Result : out Operator_Data_Type) is
    begin
+      Ada.Text_IO.Put_Line ("packed operator data = " & Hex_Dump (Data));
+
       -- Operator EG rates and levels are unpacked, so just copy them as is.
       -- KLS breakpoint, left depth and right depth are also unpacked.
       Result (1 .. 11) := Data (1 .. 11);
@@ -161,16 +167,16 @@ package body DX7.Operators is
       -- KLS left and right curve are both in byte #11.
       -- Left curve is in bits 0..1, right curve is in bits 2...3.
       Result (12) := Data (12) and 2#00000011#;
-      Result (13) := Data (13) and 2#00001100#;
+      Result (13) := Shift_Right (Data (12) and 2#00001100#, 2);
 
       -- Operator detune and rate scaling are both in byte #12.
       -- Detune is in bits 3...6, RS is in bits 0...2.
       Result (14) := Data (13) and 2#00000111#; -- RS
-      Result (21) := Data (13) and 2#01111000#; -- detune
+      Result (21) := Shift_Right (Data (13) and 2#01111000#, 3); -- detune
 
       -- Key Vel Sens and Amp Mod Sens are both in byte #13.
       -- KVS is in bits 2...4, AMS is in bits 0...1.
-      Result (16) := Data (14) and 2#00011100#;
+      Result (16) := Shift_Right (Data (14) and 2#00011100#, 2);
       Result (15) := Data (14) and 2#00000011#;
 
       -- Operator output level is not packed with anything else.
@@ -180,10 +186,12 @@ package body DX7.Operators is
       Result (18) := Data (16) and 2#00000001#;
 
       -- Freq coarse is in bits 1...5 of byte #15.
-      Result (19) := Data (16) and 2#001111110#;
+      Result (19) := Shift_Right (Data (16) and 2#001111110#, 1);
 
       -- Freq fine is not packed with anything else.
       Result (20) := Data (17);
+
+      Ada.Text_IO.Put_Line ("unpacked operator data = " & Hex_Dump (Result));
    end Unpack_Operator;
 
 end DX7.Operators;

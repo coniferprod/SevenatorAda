@@ -115,11 +115,11 @@ package DX7.Operators is
    -- Converts a SysEx MIDI data byte to a breakpoint.
    function Get_Breakpoint (Data : Byte) return Breakpoint_Type;
 
-   procedure Parse_Scaling
+   procedure Parse
      (Data : in     Keyboard_Level_Scaling_Data_Type;
       KLS  :    out Keyboard_Level_Scaling_Type);
 
-   procedure Parse_Operator
+   procedure Parse
      (Data         : in     Operator_Data_Type; Op : out Operator_Type);
 
    -- Unpacks the packed operator data into normal data for parsing.

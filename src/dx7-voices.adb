@@ -260,6 +260,8 @@ package body DX7.Voices is
 
       Result (138 .. 141) := Data (113 .. 116);  -- LFO
       Byte116 := Byte_To_Byte116_Type (Data (117));
+      Result (142) := (if Byte116.Sync then 1 else 0);
+      Result (143) := LFO_Waveform_Type'Pos (Byte116.Waveform);
       Result (144) := Byte (Byte116.PMS);
 
       Result (145) := Data (118);  --  transpose
@@ -361,7 +363,7 @@ package body DX7.Voices is
       return Name;
    end Random_Voice_Name;
 
-   procedure Parse_Voice (Data : in Voice_Data_Type; Voice : out Voice_Type) is
+   procedure Parse (Data : in Voice_Data_Type; Voice : out Voice_Type) is
       Ops              : Operator_Array;
       Op_Start, Op_End : Natural;
       LFO              : LFO_Type;
@@ -371,21 +373,21 @@ package body DX7.Voices is
             Op_Start : Integer := Integer (I - 1) * Operator_Data_Length + 1;
             Op_End : Integer := Op_Start + Operator_Data_Length - 1;
          begin
-            Parse_Operator (Data (Op_Start .. Op_End), Ops (I));
-            Ada.Text_IO.Put_Line ("OP" & Integer'Image (Integer (I)) &
-               " parsed");
+            Ada.Text_IO.Put_Line ("op data is " & Integer'Image (Op_Start) & " .. " & Integer'Image (Op_End));
+            Parse (Data (Op_Start .. Op_End), Ops (I));
+            Ada.Text_IO.Put_Line ("OP" & Integer'Image (Integer (I)) & " parsed");
          end;
       end loop;
       Voice.Operators := Ops;
 
-      Parse_Envelope (Data (127 .. 134), Voice.Pitch_Envelope);
+      Parse (Data (127 .. 134), Voice.Pitch_Envelope);
       Ada.Text_IO.Put_Line ("PEG parsed");
 
       Voice.Algorithm := Algorithm_Type (Data (135) + 1);
       Voice.Feedback := Depth_Type (Data (136));
       Voice.Oscillator_Sync := (Data (137) = 1);
 
-      Parse_LFO (Data (138 .. 143), LFO);
+      Parse (Data (138 .. 143), LFO);
       Ada.Text_IO.Put_Line ("LFO parsed");
 
       Voice.Pitch_Modulation_Sensitivity := Depth_Type (Data (144));
@@ -410,9 +412,9 @@ package body DX7.Voices is
          end;
       end loop;
       Ada.Text_IO.Put_Line ("Name parsed");
-   end Parse_Voice;
+   end Parse;
 
-   procedure Parse_LFO (Data : in LFO_Data_Type; LFO : out LFO_Type) is
+   procedure Parse (Data : in LFO_Data_Type; LFO : out LFO_Type) is
    begin
       LFO :=
         (Speed => Level_Type (Data (1)), Delay_Time => Level_Type (Data (2)),
@@ -420,6 +422,6 @@ package body DX7.Voices is
          Amplitude_Modulation_Depth => Level_Type (Data (4)),
          Key_Sync  => (Data (5) = 1),
          Waveform  => LFO_Waveform_Type'Val (Data (6)));
-   end Parse_LFO;
+   end Parse;
 
 end DX7.Voices;
