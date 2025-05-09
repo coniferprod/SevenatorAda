@@ -133,7 +133,7 @@ package body DX7.Operators is
       EG_Data : Envelope_Data_Type;
       KLS_Data : Keyboard_Level_Scaling_Data_Type;
    begin
-      Ada.Text_IO.Put_Line ("Operator data = " & Hex_Dump (Data));
+      Ada.Text_IO.Put_Line ("Operator data (" & Integer'Image (Data'Length) & " bytes) = " & Hex_Dump (Data));
 
       EG_Data := Data (1 .. 8);
       Ada.Text_IO.Put_Line ("EG data = " & Hex_Dump (EG_Data));
@@ -153,7 +153,7 @@ package body DX7.Operators is
          Mode => (if Data(18) = 0 then Fixed else Ratio),
          Coarse => Coarse_Type (Data (19)),
          Fine => Fine_Type (Data (20)),
-         Detune => Detune_Type (Data (21) - 7));
+         Detune => Detune_Type (Integer (Data (21)) - 7));
    end Parse;
 
    procedure Unpack_Operator (Data : in Packed_Operator_Data_Type; Result : out Operator_Data_Type) is
