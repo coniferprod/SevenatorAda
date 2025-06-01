@@ -5,7 +5,7 @@ package DX7.Operators is
    type Curve_Style is (Linear, Exponential);
    type Curve_Sign is (Negative, Positive);
 
-   type Scaling_Depth_Type is range 0 .. 99;
+   subtype Scaling_Depth_Type is Integer range 0 .. 99;
 
    type Scaling_Curve_Type is record
       Style    : Curve_Style := Linear;
@@ -53,7 +53,7 @@ package DX7.Operators is
 
    type Operator_Mode is (Ratio, Fixed);
 
-   type Amplitude_Modulation_Sensitivity_Type is range 0 .. 3;
+   subtype Amplitude_Modulation_Sensitivity_Type is Integer range 0 .. 3;
 
    Init_Keyboard_Level_Scaling : constant Keyboard_Level_Scaling_Type :=
       (Breakpoint => 39,
@@ -82,6 +82,7 @@ package DX7.Operators is
    -- They are arranged in a voice as an array.
    type Operator_Index is range 1 .. 6;
    type Operator_Array is array (Operator_Index) of Operator_Type;
+   type Operator_Array_Type is array (Operator_Index) of Operator_Type;
 
    -- There are two variants of operator System Exclusive data.
    -- The normal version is used in individual voices, while the
@@ -122,7 +123,10 @@ package DX7.Operators is
    procedure Parse_Operator
      (Data         : in     Operator_Data_Type; Op : out Operator_Type);
 
+   procedure New_Parse_Operator (Data : in Byte_Array; Result : out Operator_Type);
+   procedure New_Parse_Scaling (Data : in Byte_Array; Result : out Keyboard_Level_Scaling_Type);
+
    -- Unpacks the packed operator data into normal data for parsing.   
-   procedure Unpack_Operator (Data : in Packed_Operator_Data_Type; Result : out Operator_Data_Type);
+   procedure New_Unpack_Operator (Data : in Byte_Array; Result : out Byte_Array);
 
 end DX7.Operators;

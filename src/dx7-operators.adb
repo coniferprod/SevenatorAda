@@ -130,6 +130,46 @@ package body DX7.Operators is
          Right => (Depth => Scaling_Depth_Type (Data (2)), Curve => Right_Curve));
    end Parse_Scaling;
 
+   procedure New_Parse_Scaling (Data : in Byte_Array; Result : out Keyboard_Level_Scaling_Type) is
+      procedure Parse_Curve (Data : Byte; Curve : out Scaling_Curve_Type) is
+         C : Scaling_Curve_Type;
+      begin
+         -- Curve = 0=-LIN, 1=-EXP, 2=+EXP, 3=+LIN
+         Curve := (case Data is
+            when 0 => Linear_Negative_Curve,
+            when 1 => Exponential_Negative_Curve,
+            when 2 => Exponential_Positive_Curve,
+            when 3 => Linear_Positive_Curve,
+            when others => raise Parse_Error);
+      end Parse_Curve;
+
+      Left_Curve : Scaling_Curve_Type;
+      Right_Curve : Scaling_Curve_Type;
+
+      Value : Integer;
+   begin
+      if Data'Length /= Keyboard_Level_Scaling_Data_Length then
+         raise Parse_Error
+            with Make_Length_Exception_Message (Text => "KLS data length mismatch", 
+               Actual => Data'Length, Expected => Keyboard_Level_Scaling_Data_Length, Offset => 0);
+      else
+         Ada.Text_IO.Put_Line ("KLS Data: First = " & Data'First'Image & " Last = " & Data'Last'Image);
+      end if;
+
+      Parse_Curve (Data (3), Left_Curve);
+      Parse_Curve (Data (4), Right_Curve);
+
+      Value := Integer (Data (0) + 21);
+      if Value in Breakpoint_Type then
+         Result.Breakpoint := Breakpoint_Type (Value); -- from 0 ... 99
+      else
+         raise Parse_Error;
+      end if;
+
+      Result.Left := (Depth => Scaling_Depth_Type (Data (1)), Curve => Left_Curve);
+      Result.Right := (Depth => Scaling_Depth_Type (Data (2)), Curve => Right_Curve);
+   end New_Parse_Scaling;
+
    procedure Parse_Operator
      (Data         : in     Operator_Data_Type; Op : out Operator_Type)
    is
@@ -146,41 +186,133 @@ package body DX7.Operators is
          Amplitude_Modulation_Sensitivity => Amplitude_Modulation_Sensitivity_Type (Data (14)),
          Touch_Sensitivity => Depth_Type (Data (15)), Output_Level => Level_Type (Data (16)),
          Mode => (if Data(17) = 0 then Fixed else Ratio), Coarse => Coarse_Type (Data (18)), 
-         Fine => Fine_Type (Data (19)), Detune => Detune_Type (Data (19)));
+         Fine => Fine_Type (Data (19)), Detune => Detune_Type (Data (20)));
    end Parse_Operator;
 
-   procedure Unpack_Operator (Data : in Packed_Operator_Data_Type; Result : out Operator_Data_Type) is
+   procedure New_Parse_Operator (Data : in Byte_Array; Result : out Operator_Type) is
+      Value : Integer;
+      EG_Data : Byte_Array (0 .. Envelope_Data_Length - 1);
+      KLS_Data : Byte_Array (0 .. Keyboard_Level_Scaling_Data_Length - 1);
    begin
+      if Data'Length /= Operator_Data_Length then
+         raise Parse_Error
+            with Make_Length_Exception_Message (Text => "Operator data length mismatch", 
+               Actual => Data'Length, Expected => Operator_Data_Length, Offset => 0);
+      end if;
+
+      EG_Data := Data (0 .. 7);
+      New_Parse_Envelope (EG_Data, Result.EG);
+
+      KLS_Data := Data (8 .. 12);
+      New_Parse_Scaling (KLS_Data, Result.Keyboard_Level_Scaling);
+
+      Value := Integer (Data (13));
+      if Value in Scaling_Depth_Type then
+         Result.Keyboard_Rate_Scaling := Scaling_Depth_Type (Value);
+      else
+         raise Parse_Error;
+      end if;
+
+      Value := Integer (Data (14));
+      if Value in Amplitude_Modulation_Sensitivity_Type then
+         Result.Amplitude_Modulation_Sensitivity := Amplitude_Modulation_Sensitivity_Type (Value);
+      else
+         raise Parse_Error;
+      end if;
+
+      Value := Integer (Data (15));
+      if Value in Depth_Type then
+         Result.Touch_Sensitivity := Depth_Type (Value);
+      else
+         raise Parse_Error;
+      end if;
+
+      Value := Integer (Data (16));
+      if Value in Level_Type then
+         Result.Output_Level := Level_Type (Value);
+      else
+         raise Parse_Error;
+      end if;
+
+      Value := Integer (Data (17));
+      if Value = 1 then
+         Result.Mode := Ratio;
+      elsif Value = 0 then
+         Result.Mode := Fixed;
+      else
+         raise Parse_Error;
+      end if;
+
+      Value := Integer (Data (18));
+      if Value in Coarse_Type then
+         Result.Coarse := Coarse_Type (Value);
+      else
+         raise Parse_Error;
+      end if;
+
+      Value := Integer (Data (19));
+      if Value in Fine_Type then
+         Result.Fine := Fine_Type (Value);
+      else
+         raise Parse_Error;
+      end if;
+
+      Value := Integer (Data (20) - 7);
+      if Value in Detune_Type then
+         Result.Detune := Detune_Type (Value);
+      else
+         raise Parse_Error;
+      end if;
+   end New_Parse_Operator;
+
+   procedure New_Unpack_Operator (Data : in Byte_Array; Result : out Byte_Array) is
+   begin
+      if Data'Length /= Packed_Operator_Data_Length then
+         raise Parse_Error
+            with Make_Length_Exception_Message (Text => "Packed operator data length mismatch", 
+               Actual => Data'Length, Expected => Packed_Operator_Data_Length, Offset => 0);
+      else
+         Ada.Text_IO.Put_Line ("Data: First = " & Data'First'Image & " Last = " & Data'Last'Image);
+      end if;
+
+      if Result'Length /= Operator_Data_Length then
+         raise Parse_Error
+            with Make_Length_Exception_Message (Text => "Operator result buffer length mismatch", 
+               Actual => Result'Length, Expected => Operator_Data_Length, Offset => 0);
+      else
+         Ada.Text_IO.Put_Line ("Result: First = " & Result'First'Image & " Last = " & Result'Last'Image);
+      end if;
+
       -- Operator EG rates and levels are unpacked, so just copy them as is.
       -- KLS breakpoint, left depth and right depth are also unpacked.
-      Result (1 .. 11) := Data (1 .. 11);
+      Result (0 .. 10) := Data (0 .. 10);
 
       -- KLS left and right curve are both in byte #11.
       -- Left curve is in bits 0..1, right curve is in bits 2...3.
-      Result (12) := Data (12) and 2#00000011#;
-      Result (13) := Data (13) and 2#00001100#;
+      Result (11) := Data (11) and 2#00000011#;
+      Result (12) := Data (11) and 2#00001100#;
 
       -- Operator detune and rate scaling are both in byte #12.
       -- Detune is in bits 3...6, RS is in bits 0...2.
-      Result (14) := Data (13) and 2#00000111#; -- RS
-      Result (21) := Data (13) and 2#01111000#; -- detune
+      Result (13) := Data (12) and 2#00000111#; -- RS
+      Result (20) := Data (12) and 2#01111000#; -- detune
 
       -- Key Vel Sens and Amp Mod Sens are both in byte #13.
       -- KVS is in bits 2...4, AMS is in bits 0...1.
-      Result (16) := Data (14) and 2#00011100#;
-      Result (15) := Data (14) and 2#00000011#;
+      Result (15) := Data (13) and 2#00011100#;  -- KVS
+      Result (14) := Data (13) and 2#00000011#;  -- AMS
 
       -- Operator output level is not packed with anything else.
-      Result (17) := Data (15);
+      Result (16) := Data (14);
 
       -- Osc mode (ratio/fixed) is in bit0 of byte #15.
-      Result (18) := Data (16) and 2#00000001#;
+      Result (17) := Data (15) and 2#00000001#;
 
       -- Freq coarse is in bits 1...5 of byte #15.
-      Result (19) := Data (16) and 2#001111110#;
+      Result (18) := Data (15) and 2#001111110#;
 
       -- Freq fine is not packed with anything else.
-      Result (20) := Data (17);
-   end Unpack_Operator;
+      Result (19) := Data (16);
+   end New_Unpack_Operator;
 
 end DX7.Operators;

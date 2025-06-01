@@ -2,13 +2,13 @@
 package DX7.Envelopes is
    -- Define type for level. Also define an array index
    -- for an array of level values, to be used in an envelope.
-   type Level_Type is range 0 .. 99;
-   type Level_Index is range 1 .. 4;
+   subtype Level_Type is Integer range 0 .. 99;
+   subtype Level_Index is Integer range 1 .. 4;
    type Level_Array is array (Level_Index) of Level_Type;
 
    -- Similarly to level, define range, array type and array index.
-   type Rate_Type is range 0 .. 99;
-   type Rate_Index is range 1 .. 4;
+   subtype Rate_Type is Integer range 0 .. 99;
+   subtype Rate_Index is Integer range 1 .. 4;
    type Rate_Array is array (Rate_Index) of Rate_Type;
 
    -- An envelope is represented by rates and levels.
@@ -29,6 +29,7 @@ package DX7.Envelopes is
    function Random_Envelope return Envelope_Type;
 
    procedure Parse_Envelope (Data : in Envelope_Data_Type; Result : out Envelope_Type);
+   procedure New_Parse_Envelope (Data : in Byte_Array; Result : out Envelope_Type);
 
    Init_Envelope : constant Envelope_Type := (others => <>);
    Init_Pitch_Envelope : constant Envelope_Type :=

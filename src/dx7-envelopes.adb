@@ -74,4 +74,35 @@ package body DX7.Envelopes is
       Result := (Rates => R, Levels => L);
    end Parse_Envelope;
 
+   procedure New_Parse_Envelope (Data : in Byte_Array; Result : out Envelope_Type) is
+      B : Byte;
+      Value : Integer;
+   begin
+      for I in Rate_Index loop
+         B := Data (I - 1);
+         Value := Integer (B);
+         if Value in Rate_Type then
+            Result.Rates (I) := Rate_Type (Value);
+         else
+            raise Parse_Error 
+               with Make_Range_Exception_Message (Text => "Error parsing envelope rate", 
+                  Actual => Value, First => Rate_Type'First, Last => Rate_Type'Last, 
+                  Offset => I - 1);
+         end if;
+      end loop;
+
+      for I in Level_Index loop
+         B := Data (I + 4 - 1);
+         Value := Integer (B);
+         if Value in Level_Type then
+            Result.Levels (I) := Level_Type (Value);
+         else
+            raise Parse_Error
+               with Make_Range_Exception_Message (Text => "Error parsing envelope level", 
+                  Actual => Value, First => Level_Type'First, Last => Level_Type'Last, 
+                  Offset => I - 1);
+         end if;
+      end loop;
+   end New_Parse_Envelope;
+
 end DX7.Envelopes;

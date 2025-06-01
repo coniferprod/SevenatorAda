@@ -1,13 +1,15 @@
+with Ada.Text_IO;
+
 package body DX7.Cartridges is
 
-   function To_Byte_Vector (Data : Byte_Array) return Byte_Vector is
-      BV : Byte_Vector;
-   begin
-      for I in Data'Range loop
-         BV.Append (Byte (Data (I)));
-      end loop;
-      return BV;
-   end To_Byte_Vector;
+   --function To_Byte_Vector (Data : Byte_Array) return Byte_Vector is
+   --   BV : Byte_Vector;
+   --begin
+   --   for I in Data'Range loop
+   --      BV.Append (Byte (Data (I)));
+   --   end loop;
+   --   return BV;
+   --end To_Byte_Vector;
 
    procedure Parse_Cartridge (Data : in Cartridge_Data_Type; Cartridge : out Cartridge_Type) is
       Packed_Voice_Data : Packed_Voice_Data_Type;
@@ -23,6 +25,23 @@ package body DX7.Cartridges is
          Offset := Offset + Packed_Voice_Data_Length;
       end loop;
    end Parse_Cartridge;
+
+   procedure New_Parse_Cartridge (Data : in Byte_Array; Result : out Cartridge_Type) is
+      Voice_Data : Byte_Array (0 .. Voice_Data_Length - 1);
+      Voice_First, Voice_Last : Natural;
+   begin
+      if Debugging then
+         Ada.Text_IO.Put_Line ("Parse_Cartridge: data length = " & Data'Length'Image);
+      end if;
+
+      Voice_First := 0;
+      for I in Voice_Index loop
+         Voice_Last := Voice_First + Packed_Voice_Data_Length - 1;
+         New_Unpack_Voice (Data => Data (Voice_First .. Voice_Last), Result => Voice_Data);
+         New_Parse_Voice (Data => Voice_Data, Result => Result.Voices (I));
+         Voice_First := Voice_First + Packed_Voice_Data_Length;
+      end loop;
+   end New_Parse_Cartridge;
 
    -- Gets the cartridge data as bytes for MIDI System Exclusive.
    procedure Emit (Cartridge : in Cartridge_Type; Result : out Cartridge_Data_Type) is

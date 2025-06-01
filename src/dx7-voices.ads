@@ -68,6 +68,9 @@ package DX7.Voices is
    -- Makes a random voice name.
    function Random_Voice_Name return Voice_Name_Type;
 
+   procedure New_Parse_Voice (Data : in Byte_Array; Result : out Voice_Type);
+   procedure New_Unpack_Voice (Data : in Byte_Array; Result : out Byte_Array);
+
    --------------
    --  LFO
    --------------
@@ -77,6 +80,8 @@ package DX7.Voices is
 
    procedure Emit (LFO : in LFO_Type; Result : out LFO_Data_Type);
    procedure Parse_LFO (Data : in LFO_Data_Type; LFO : out LFO_Type);
+
+   procedure New_Parse_LFO (Data : in Byte_Array; Result : out LFO_Type);
 
    Init_Voice : constant Voice_Type :=
       (Operators => (Init_Operator, others => Silent_Init_Operator),

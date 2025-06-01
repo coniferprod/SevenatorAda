@@ -9,12 +9,16 @@ package DX7 is
 
    Parse_Error : exception;
 
-   type Coarse_Type is range 0 .. 31;
-   type Fine_Type is range 0 .. 99;
-   type Detune_Type is range -7 .. 7;
+   subtype Coarse_Type is Integer range 0 .. 31;
+   subtype Fine_Type is Integer range 0 .. 99;
+   subtype Detune_Type is Integer range -7 .. 7;
 
-   type Algorithm_Type is range 1 .. 32;
-   type Depth_Type is range 0 .. 7;
-   type Sensitivity_Type is range 0 .. 3;
+   subtype Algorithm_Type is Integer range 1 .. 32;
+   subtype Depth_Type is Integer range 0 .. 7;
+   subtype Sensitivity_Type is Integer range 0 .. 3;
 
+   function Make_Range_Exception_Message (Text : String; Actual, First, Last : Integer; Offset : Natural) return String;
+   function Make_Length_Exception_Message (Text : String; Actual, Expected : Integer; Offset : Natural) return String;
+
+   Debugging : Boolean := True;
 end DX7;
