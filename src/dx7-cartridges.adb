@@ -1,5 +1,7 @@
 with Ada.Text_IO;
 
+with Ada.Text_IO;
+
 package body DX7.Cartridges is
 
    --function To_Byte_Vector (Data : Byte_Array) return Byte_Vector is
@@ -15,14 +17,20 @@ package body DX7.Cartridges is
       Packed_Voice_Data : Packed_Voice_Data_Type;
       Voice_Data : Voice_Data_Type;
       Voice : Voice_Type;
-      Offset : Natural := 0;
+      Offset : Natural;
    begin
+      --Ada.Text_IO.Put_Line ("Parse_Cartridge: Data = " &
+      --   Natural'Image (Data'First) & " .. " & Natural'Image (Data'Last));
+      Offset := 1;
       for I in Voice_Index loop
+         Ada.Text_IO.Put_Line ("VOICE " & Integer'Image (Integer (I)));
          Packed_Voice_Data := Data (Offset .. Offset + Packed_Voice_Data_Length - 1);
          Unpack_Voice (Data => Packed_Voice_Data, Result => Voice_Data);
-         Parse_Voice (Data => Voice_Data, Voice => Voice);
+         Ada.Text_IO.Put_Line ("voice data (" & Integer'Image (Voice_Data'Length) & " bytes) = " & Hex_Dump (Voice_Data));
+         Parse (Data => Voice_Data, Voice => Voice);
          Cartridge.Voices (I) := Voice;
          Offset := Offset + Packed_Voice_Data_Length;
+         Ada.Text_IO.New_Line;
       end loop;
    end Parse_Cartridge;
 
@@ -48,25 +56,21 @@ package body DX7.Cartridges is
       Data : Cartridge_Data_Type;
       Offset : Natural;
    begin
-      Offset := 0;
+      Offset := 1;
       for I in Voice_Index loop
          declare
             Original : Voice_Data_Type;
             Packed : Packed_Voice_Data_Type;
-            Start_Index : Integer;
-            End_Index : Integer;
+            Start_Index : Natural;
+            End_Index : Natural;
          begin
             Emit (Cartridge.Voices (I), Original);
             Pack_Voice (Original, Packed);
 
             Start_Index := Offset;
-            End_Index := Offset + Packed_Voice_Data_Length - 1;
+            End_Index := Offset + Packed_Voice_Data_Length;
             Result (Start_Index .. End_Index) :=
-               Packed (0 .. Packed_Voice_Data_Length - 1);
-            --for V in Packed'Range loop
-            --   Result (Offset) := Packed (V);
-            --   Offset := Offset + 1;
-            --end loop;
+               Packed (1 .. Packed_Voice_Data_Length);
             Offset := Offset + Packed_Voice_Data_Length;
          end;
       end loop;

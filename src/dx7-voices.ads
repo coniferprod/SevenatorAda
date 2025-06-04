@@ -6,10 +6,10 @@ with DX7.Operators; use DX7.Operators;
 
 package DX7.Voices is
    Voice_Data_Length : constant := 155;
-   subtype Voice_Data_Type is Byte_Array (0 .. Voice_Data_Length - 1);
+   subtype Voice_Data_Type is Byte_Array (1 .. Voice_Data_Length);
 
    Packed_Voice_Data_Length : constant := 128;
-   subtype Packed_Voice_Data_Type is Byte_Array (0 .. Packed_Voice_Data_Length - 1);
+   subtype Packed_Voice_Data_Type is Byte_Array (1 .. Packed_Voice_Data_Length);
 
    Voice_Name_Length : constant := 10;
    subtype Voice_Name_Type is String (1 .. Voice_Name_Length);
@@ -58,7 +58,7 @@ package DX7.Voices is
    type Voice_Array is array (Voice_Index) of Voice_Type;
 
    procedure Emit (Voice : in Voice_Type; Result : out Voice_Data_Type);
-   procedure Parse_Voice (Data : in Voice_Data_Type; Voice : out Voice_Type);
+   procedure Parse (Data : in Voice_Data_Type; Voice : out Voice_Type);
    procedure Pack_Voice (Data : in Voice_Data_Type; Result : out Packed_Voice_Data_Type);
    procedure Unpack_Voice (Data : in Packed_Voice_Data_Type; Result : out Voice_Data_Type);
 
@@ -79,7 +79,7 @@ package DX7.Voices is
    function Random_LFO return LFO_Type;
 
    procedure Emit (LFO : in LFO_Type; Result : out LFO_Data_Type);
-   procedure Parse_LFO (Data : in LFO_Data_Type; LFO : out LFO_Type);
+   procedure Parse (Data : in LFO_Data_Type; LFO : out LFO_Type);
 
    procedure New_Parse_LFO (Data : in Byte_Array; Result : out LFO_Type);
 
@@ -128,7 +128,7 @@ package DX7.Voices is
       EG => (Rates => (77, 36, 41, 71), Levels => (99, 98, 98, 0)),
           Keyboard_Level_Scaling =>
             (Breakpoint  => 48, -- Yamaha note C2
-             Left => (Depth  => 0, Curve => Linear_Positive_Curve), 
+             Left => (Depth  => 0, Curve => Linear_Positive_Curve),
              Right => (Depth => 0, Curve => Exponential_Negative_Curve)),
           Keyboard_Rate_Scaling  => 0,
           Amplitude_Modulation_Sensitivity => 0,

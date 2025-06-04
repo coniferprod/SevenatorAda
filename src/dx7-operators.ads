@@ -43,13 +43,13 @@ package DX7.Operators is
 
    -- MIDI System Exclusive data for Keyboard Level Scaling (normal)
    Keyboard_Level_Scaling_Data_Length : constant := 5;
-   subtype Keyboard_Level_Scaling_Data_Type is 
-      Byte_Array (0 .. Keyboard_Level_Scaling_Data_Length - 1);
+   subtype Keyboard_Level_Scaling_Data_Type is
+      Byte_Array (1 .. Keyboard_Level_Scaling_Data_Length);
 
    -- MIDI System Exclusive data for Keyboard Level Scaling (packed)
    Packed_Keyboard_Level_Scaling_Data_Length : constant := 4;
    subtype Packed_Keyboard_Level_Scaling_Data_Type is
-     Byte_Array (0 .. Packed_Keyboard_Level_Scaling_Data_Length - 1);
+     Byte_Array (1 .. Packed_Keyboard_Level_Scaling_Data_Length);
 
    type Operator_Mode is (Ratio, Fixed);
 
@@ -89,12 +89,12 @@ package DX7.Operators is
    -- packed version is used in cartridges.
 
    Operator_Data_Length : constant := 21;
-   subtype Operator_Data_Type is 
-      Byte_Array (0 .. Operator_Data_Length - 1);
+   subtype Operator_Data_Type is
+      Byte_Array (1 .. Operator_Data_Length);
 
    Packed_Operator_Data_Length : constant := 17;
    subtype Packed_Operator_Data_Type is
-      Byte_Array (0 .. Packed_Operator_Data_Length - 1);
+      Byte_Array (1 .. Packed_Operator_Data_Length);
 
    -- Gets the data for the normal voice version of
    -- the operator for MIDI System Exclusive.
@@ -116,11 +116,11 @@ package DX7.Operators is
    -- Converts a SysEx MIDI data byte to a breakpoint.
    function Get_Breakpoint (Data : Byte) return Breakpoint_Type;
 
-   procedure Parse_Scaling
+   procedure Parse
      (Data : in     Keyboard_Level_Scaling_Data_Type;
       KLS  :    out Keyboard_Level_Scaling_Type);
 
-   procedure Parse_Operator
+   procedure Parse
      (Data         : in     Operator_Data_Type; Op : out Operator_Type);
 
    procedure New_Parse_Operator (Data : in Byte_Array; Result : out Operator_Type);
