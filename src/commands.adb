@@ -36,10 +36,10 @@ package body Commands is
             declare
                Voice : Voice_Type;
             begin
-               for I in Message.Payload.Voice_Data'First .. Message.Payload.Voice_Data'Last loop
-                  Data (I) := Message.Payload.Voice_Data (I);
+               for I in Payload.Voice_Data'First .. Payload.Voice_Data'Last loop
+                  Data (I) := Payload.Voice_Data (I);
                end loop;
-               New_Parse_Voice (Data, Voice);
+               Parse_Voice (Data, Voice);
 
                Ada.Text_IO.Put_Line ("Voice name = " & Voice.Name);
             end;
@@ -47,10 +47,10 @@ package body Commands is
             declare
                Cartridge : Cartridge_Type;
             begin
-               for I in Message.Payload.Cartridge_Data'First .. Message.Payload.Cartridge_Data'Last loop
-                  Data (I) := Message.Payload.Cartridge_Data (I);
+               for I in Payload.Cartridge_Data'First .. Payload.Cartridge_Data'Last loop
+                  Data (I) := Payload.Cartridge_Data (I);
                end loop;
-               New_Parse_Cartridge (Data, Cartridge);
+               Parse_Cartridge (Data, Cartridge);
 
                for V of Cartridge.Voices loop
                   Put_Line (V.Name);

@@ -11,8 +11,7 @@ package DX7.Cartridges is
 
    --function To_Byte_Vector (Data : Byte_Array) return Byte_Vector;
 
-   procedure Parse_Cartridge (Data : in Cartridge_Data_Type; Cartridge : out Cartridge_Type);
-   procedure New_Parse_Cartridge (Data : in Byte_Array; Result : out Cartridge_Type);
+   procedure Parse_Cartridge (Data : in Byte_Array; Result : out Cartridge_Type);
 
    -- Gets the cartridge data as bytes for MIDI System Exclusive.
    procedure Emit (Cartridge : in Cartridge_Type; Result : out Cartridge_Data_Type);

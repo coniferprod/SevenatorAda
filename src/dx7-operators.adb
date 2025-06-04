@@ -96,35 +96,7 @@ package body DX7.Operators is
       return Breakpoint_Type (Data + 21);
    end Get_Breakpoint;
 
-   procedure Parse
-     (Data : in     Keyboard_Level_Scaling_Data_Type;
-      KLS  :    out Keyboard_Level_Scaling_Type)
-   is
-      procedure Parse_Curve (Data : Byte; Curve : out Scaling_Curve_Type) is
-         C : Scaling_Curve_Type;
-      begin
-         -- Curve = 0=-LIN, 1=-EXP, 2=+EXP, 3=+LIN
-         Curve := (case Data is
-            when 0 => Linear_Negative_Curve,
-            when 1 => Exponential_Negative_Curve,
-            when 2 => Exponential_Positive_Curve,
-            when 3 => Linear_Positive_Curve,
-            when others => raise Parse_Error);
-      end Parse_Curve;
-
-      Left_Curve : Scaling_Curve_Type;
-      Right_Curve : Scaling_Curve_Type;
-   begin
-      Parse_Curve (Data (4), Left_Curve);
-      Parse_Curve (Data (5), Right_Curve);
-
-      KLS :=
-        (Breakpoint  => Breakpoint_Type (Data (0) + 21),  -- from 0 ... 99
-         Left => (Depth => Scaling_Depth_Type (Data (1)), Curve => Left_Curve),
-         Right => (Depth => Scaling_Depth_Type (Data (2)), Curve => Right_Curve));
-   end Parse_Scaling;
-
-   procedure New_Parse_Scaling (Data : in Byte_Array; Result : out Keyboard_Level_Scaling_Type) is
+   procedure Parse_Scaling (Data : in Byte_Array; Result : out Keyboard_Level_Scaling_Type) is
       procedure Parse_Curve (Data : Byte; Curve : out Scaling_Curve_Type) is
          C : Scaling_Curve_Type;
       begin
@@ -162,37 +134,9 @@ package body DX7.Operators is
 
       Result.Left := (Depth => Scaling_Depth_Type (Data (1)), Curve => Left_Curve);
       Result.Right := (Depth => Scaling_Depth_Type (Data (2)), Curve => Right_Curve);
-   end New_Parse_Scaling;
+   end Parse_Scaling;
 
-   procedure Parse
-     (Data         : in     Operator_Data_Type; Op : out Operator_Type)
-   is
-      EG  : Envelope_Type;
-      KLS : Keyboard_Level_Scaling_Type;
-      Mode : Operator_Mode;
-      EG_Data : Envelope_Data_Type;
-      KLS_Data : Keyboard_Level_Scaling_Data_Type;
-   begin
-      Ada.Text_IO.Put_Line ("Operator data (" & Integer'Image (Data'Length) & " bytes) = " & Hex_Dump (Data));
-
-      EG_Data := Data (1 .. 8);
-      Ada.Text_IO.Put_Line ("EG data = " & Hex_Dump (EG_Data));
-      Parse (EG_Data, EG);
-
-      KLS_Data := Data (9 .. 13);
-      Ada.Text_IO.Put_Line ("KLS data = " & Hex_Dump (KLS_Data));
-      Parse (KLS_Data, KLS);
-
-      Op :=
-        (EG                            => EG, Keyboard_Level_Scaling => KLS,
-         Keyboard_Rate_Scaling         => Scaling_Depth_Type (Data (13)),
-         Amplitude_Modulation_Sensitivity => Amplitude_Modulation_Sensitivity_Type (Data (14)),
-         Touch_Sensitivity => Depth_Type (Data (15)), Output_Level => Level_Type (Data (16)),
-         Mode => (if Data(17) = 0 then Fixed else Ratio), Coarse => Coarse_Type (Data (18)), 
-         Fine => Fine_Type (Data (19)), Detune => Detune_Type (Data (19)));
-   end Parse_Operator;
-
-   procedure New_Parse_Operator (Data : in Byte_Array; Result : out Operator_Type) is
+   procedure Parse_Operator (Data : in Byte_Array; Result : out Operator_Type) is
       Value : Integer;
       EG_Data : Byte_Array (0 .. Envelope_Data_Length - 1);
       KLS_Data : Byte_Array (0 .. Keyboard_Level_Scaling_Data_Length - 1);
@@ -207,7 +151,7 @@ package body DX7.Operators is
       New_Parse_Envelope (EG_Data, Result.EG);
 
       KLS_Data := Data (8 .. 12);
-      New_Parse_Scaling (KLS_Data, Result.Keyboard_Level_Scaling);
+      Parse_Scaling (KLS_Data, Result.Keyboard_Level_Scaling);
 
       Value := Integer (Data (13));
       if Value in Scaling_Depth_Type then
@@ -266,9 +210,9 @@ package body DX7.Operators is
       else
          raise Parse_Error;
       end if;
-   end New_Parse_Operator;
+   end Parse_Operator;
 
-   procedure New_Unpack_Operator (Data : in Byte_Array; Result : out Byte_Array) is
+   procedure Unpack_Operator (Data : in Byte_Array; Result : out Byte_Array) is
    begin
       -- Operator EG rates and levels are unpacked, so just copy them as is.
       -- KLS breakpoint, left depth and right depth are also unpacked.

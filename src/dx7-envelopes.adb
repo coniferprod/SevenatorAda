@@ -46,32 +46,6 @@ package body DX7.Envelopes is
       end if;
    end Put_Offset;
 
-   procedure Parse (Data : in Envelope_Data_Type; Result : out Envelope_Type) is
-      R : Rate_Array;
-      L : Level_Array;
-      B : Byte;
-      Offset : Natural;
-   begin
-      --Ada.Text_IO.Put_Line ("EG data = " & Integer'Image (Data'First) & ".."
-      --   & Integer'Image (Data'Last));
-
-      Offset := 1;
-      --Put_Offset (Offset, "Rates", Offset);
-      for I in Rate_Index loop
-         B := Data (Integer (I));
-         R (I) := Rate_Type (B);
-         --Ada.Text_IO.Put_Line ("Rate I = " & Integer'Image (Integer (I)) & Integer'Image (Integer (B)));
-      end loop;
-
-      for I in Level_Index loop
-         B := Data (Integer (I + 4));
-         --Ada.Text_IO.Put_Line ("Level I = " & Integer'Image (Integer (I)) & Integer'Image (Integer (B)));
-         L (I) := Level_Type (B);
-      end loop;
-
-      Result := (Rates => R, Levels => L);
-   end Parse;
-
    procedure New_Parse_Envelope (Data : in Byte_Array; Result : out Envelope_Type) is
       B : Byte;
       Value : Integer;

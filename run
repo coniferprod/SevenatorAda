@@ -1,1 +1,1 @@
-gprbuild -Psevenator && bin/$MODE/sevenator "%@"
+gprbuild -Psevenator && bin/$MODE/sevenator "$@"
