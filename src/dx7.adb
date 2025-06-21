@@ -45,4 +45,11 @@ package body DX7 is
       return Sixten.Hex_Dump (To_Byte_Vector (Data));
    end Hex_Dump;
 
+   procedure Put_Byte_Array_Information (A : Byte_Array; Name : String) is
+   begin
+      Ada.Text_IO.Put (Name & ": " & A'Length'Image & " [");
+      Ada.Text_IO.Put (A'First'Image & " .. " & A'Last'Image & "]");
+      Ada.Text_IO.New_Line;
+   end Put_Byte_Array_Information;
+
 end DX7;

@@ -2,8 +2,6 @@ with Ada.Numerics.Discrete_Random;
 with Ada.Text_IO;
 
 package body DX7.Envelopes is
-   Debugging : constant Boolean := True;
-
    -- Make new packages for random rate and level
    package Random_Rates is new Ada.Numerics.Discrete_Random (Rate_Type);
    package Random_Levels is new Ada.Numerics.Discrete_Random (Level_Type);
@@ -11,11 +9,11 @@ package body DX7.Envelopes is
    procedure Emit (Envelope : in Envelope_Type; Data : out Envelope_Data_Type) is
    begin
       for I in Rate_Index loop
-         Data (Integer (I)) := Byte (Envelope.Rates (I));
+         Data (I) := Byte (Envelope.Rates (I));
       end loop;
 
       for I in Level_Index loop
-         Data (Integer (I) + Integer (Rate_Index'Last)) :=
+         Data (I + Rate_Index'Last) :=
            Byte (Envelope.Levels (I));
       end loop;
    end Emit;
@@ -46,12 +44,17 @@ package body DX7.Envelopes is
       end if;
    end Put_Offset;
 
-   procedure New_Parse_Envelope (Data : in Byte_Array; Result : out Envelope_Type) is
+   procedure Parse (Data : in Byte_Array; Result : out Envelope_Type) is
       B : Byte;
       Value : Integer;
    begin
+      if Debugging then
+         Put_Byte_Array_Information (Data, "EG");
+         Ada.Text_IO.Put_Line (Hex_Dump (Data));
+      end if;
+
       for I in Rate_Index loop
-         B := Data (I - 1);
+         B := Data (I);
          Value := Integer (B);
          if Value in Rate_Type then
             Result.Rates (I) := Rate_Type (Value);
@@ -59,12 +62,12 @@ package body DX7.Envelopes is
             raise Parse_Error 
                with Make_Range_Exception_Message (Text => "Error parsing envelope rate", 
                   Actual => Value, First => Rate_Type'First, Last => Rate_Type'Last, 
-                  Offset => I - 1);
+                  Offset => I);
          end if;
       end loop;
 
       for I in Level_Index loop
-         B := Data (I + 4 - 1);
+         B := Data (I + 4);
          Value := Integer (B);
          if Value in Level_Type then
             Result.Levels (I) := Level_Type (Value);
@@ -72,9 +75,9 @@ package body DX7.Envelopes is
             raise Parse_Error
                with Make_Range_Exception_Message (Text => "Error parsing envelope level", 
                   Actual => Value, First => Level_Type'First, Last => Level_Type'Last, 
-                  Offset => I - 1);
+                  Offset => I);
          end if;
       end loop;
-   end New_Parse_Envelope;
+   end Parse;
 
 end DX7.Envelopes;

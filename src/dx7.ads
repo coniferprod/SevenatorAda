@@ -18,7 +18,7 @@ package DX7 is
    function Make_Range_Exception_Message (Text : String; Actual, First, Last : Integer; Offset : Natural) return String;
    function Make_Length_Exception_Message (Text : String; Actual, Expected : Integer; Offset : Natural) return String;
 
-   Debugging : Boolean := True;
+   Debugging : Boolean := False;
    -- Helper function to increment an integer value by the given amount.
    procedure Inc (I : in out Integer; Amount : in Integer := 1);
 
@@ -26,4 +26,5 @@ package DX7 is
    function Hex_Dump (Data : Byte_Array) return String;
    function Slice (BV : Byte_Vector; Start_Index : Natural; End_Index : Natural) return Byte_Vector;
 
+   procedure Put_Byte_Array_Information (A : Byte_Array; Name : String);
 end DX7;

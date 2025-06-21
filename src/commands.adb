@@ -1,5 +1,6 @@
 with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Directories;
+with Ada.Command_Line;
 use type Ada.Directories.File_Size;
 
 with Sixten; use Sixten;
@@ -13,6 +14,44 @@ with DX7.Cartridges; use DX7.Cartridges;
 with DX7.System_Exclusive; use DX7.System_Exclusive;
 
 package body Commands is
+   procedure Run_List (Name : String) is
+      Size : constant Ada.Directories.File_Size := Ada.Directories.Size (Name);
+      Data : Byte_Array (1 .. Natural (Size));
+      Raw_Message : Sixten.Messages.Message_Type;
+      Payload : DX7.System_Exclusive.Payload_Type;
+      Start_Index, End_Index : Natural;
+   begin
+      Read_File (Name, Data);
+      Parse (Data, Raw_Message);
+      --  Now we should have the System Exclusive message
+      --  with type and payload in Raw_Message
+      
+      Parse (Raw_Message.Payload, Payload);
+      --Start_Index := Raw_Message.Payload'First;
+      --End_Index := Raw_Message.Payload'Last;
+      
+      if Payload.Header.Format /= Cartridge then
+         Ada.Text_IO.Put_Line ("Not a cartridge!");
+         Ada.Command_Line.Set_Exit_Status (1);
+         return;
+      end if;
+
+      declare
+         Cartridge : Cartridge_Type;
+      begin
+         Ada.Text_IO.Put_Line ("payload = " & Payload.Cartridge_Data'First'Image 
+            & ".." & Payload.Cartridge_Data'Last'Image);
+         --for I in Payload.Cartridge_Data'First .. Payload.Cartridge_Data'Last loop
+         --   Data (I) := Payload.Cartridge_Data (I);
+         --end loop;
+         Parse (Payload.Cartridge_Data, Cartridge);
+
+         for V of Cartridge.Voices loop
+            Put_Line (V.Name);
+         end loop;
+      end;      
+   end Run_List;
+   
    procedure Run_Dump (Name : String) is
       Size : constant Ada.Directories.File_Size := Ada.Directories.Size (Name);
       Data : Byte_Array (1 .. Natural (Size));
@@ -50,7 +89,7 @@ package body Commands is
                for I in Payload.Cartridge_Data'First .. Payload.Cartridge_Data'Last loop
                   Data (I) := Payload.Cartridge_Data (I);
                end loop;
-               Parse_Cartridge (Data, Cartridge);
+               Parse (Data, Cartridge);
 
                for V of Cartridge.Voices loop
                   Put_Line (V.Name);

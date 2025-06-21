@@ -18,7 +18,6 @@ package body DX7.System_Exclusive is
       end case;
    end Emit;
 
-
    procedure Emit (Payload : in Payload_Type; Result : out Byte_Array) is
       Header_Data : Header_Data_Type;
       Size : Natural;

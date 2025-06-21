@@ -28,7 +28,7 @@ package DX7.Envelopes is
    -- Makes an envelope with random parameters.
    function Random_Envelope return Envelope_Type;
 
-   procedure New_Parse_Envelope (Data : in Byte_Array; Result : out Envelope_Type);
+   procedure Parse (Data : in Byte_Array; Result : out Envelope_Type);
 
    Init_Envelope : constant Envelope_Type := (others => <>);
    Init_Pitch_Envelope : constant Envelope_Type :=

@@ -3,36 +3,33 @@ with Ada.Text_IO;
 with Ada.Text_IO;
 
 package body DX7.Cartridges is
-
-   --function To_Byte_Vector (Data : Byte_Array) return Byte_Vector is
-   --   BV : Byte_Vector;
-   --begin
-   --   for I in Data'Range loop
-   --      BV.Append (Byte (Data (I)));
-   --   end loop;
-   --   return BV;
-   --end To_Byte_Vector;
-
-   procedure Parse_Cartridge (Data : in Byte_Array; Result : out Cartridge_Type) is
-      Voice_Data : Byte_Array (0 .. Voice_Data_Length - 1);
+   procedure Parse (Data : in Byte_Array; Result : out Cartridge_Type) is
+      Packed_Voice_Data : Byte_Array (1 .. Packed_Voice_Data_Length);
+      Voice_Data : Byte_Array (1 .. Voice_Data_Length);
       Voice_First, Voice_Last : Natural;
    begin
       if Debugging then
-         Ada.Text_IO.Put_Line ("Parse_Cartridge: data length = " & Data'Length'Image);
-         Ada.Text_IO.Put_Line ("Data'First = " & Data'First'Image
-            & "  Data'Last = " & Data'Last'Image);
+         Ada.Text_IO.Put_Line ("Parsing cartridge...");   
+         Put_Byte_Array_Information (Data, "Cartridge data");
       end if;
 
       Voice_First := 1;
       for I in Voice_Index loop
          Voice_Last := Voice_First + Packed_Voice_Data_Length - 1;
-         Ada.Text_IO.Put_Line ("Voice_First = " & Voice_First'Image
-            & "  Voice_Last = " & Voice_Last'Image);
-         Unpack_Voice (Data => Data (Voice_First .. Voice_Last), Result => Voice_Data);
+         Packed_Voice_Data := Data (Voice_First .. Voice_Last);
+         if Debugging then
+            Ada.Text_IO.Put_Line ("Parsing voice #" & I'Image);
+            Put_Byte_Array_Information (Packed_Voice_Data, "Packed voice data");
+         end if;
+
+         Unpack_Voice (Data => Packed_Voice_Data, Result => Voice_Data);
+         if Debugging then
+            Put_Byte_Array_Information (Voice_Data, "Unpacked voice data");
+         end if;
          Parse_Voice (Data => Voice_Data, Result => Result.Voices (I));
          Voice_First := Voice_First + Packed_Voice_Data_Length;
       end loop;
-   end Parse_Cartridge;
+   end Parse;
 
    -- Gets the cartridge data as bytes for MIDI System Exclusive.
    procedure Emit (Cartridge : in Cartridge_Type; Result : out Cartridge_Data_Type) is

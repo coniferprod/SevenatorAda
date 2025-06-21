@@ -15,8 +15,6 @@ package body DX7.Voices is
    package Random_Booleans is new Ada.Numerics.Discrete_Random (Boolean);
    package Random_Algorithms is new Ada.Numerics.Discrete_Random (Algorithm_Type);
 
-   Debugging : constant Boolean := True;
-
    procedure Put_Offset (Offset : Natural; Message : String; Data_Offset : Natural) is
    begin
       if Debugging then
@@ -180,10 +178,10 @@ package body DX7.Voices is
       -- The operator data is already in reverse order (OP6 first),
       -- so just take each chunk and pack it.
 
-      --Op_Index := 0;
-      --Offset := Op_Index * Packed_Operator_Data_Length;
       for Op in reverse Operator_Index loop
-         Put_Offset (Offset, "Packed operator", Data_Offset);
+         if Debugging then 
+            Put_Offset (Offset, "Packed operator", Data_Offset);
+         end if;
          Op_Data := Data (Data_Offset .. Data_Offset + Operator_Data_Length);
          Inc (Data_Offset, Operator_Data_Length);
 
@@ -193,18 +191,24 @@ package body DX7.Voices is
       end loop;
 
       -- Copy the PEG as is
-      Put_Offset (Offset, "PEG", Data_Offset);
+      if Debugging then
+         Put_Offset (Offset, "PEG", Data_Offset);
+      end if;
       PEG_Data := Data (Data_Offset .. Data_Offset + Envelope_Data_Length);
       Result (Offset .. Offset + Envelope_Data_Length) := PEG_Data;
       Inc (Offset, Envelope_Data_Length);
       Inc (Data_Offset, Envelope_Data_Length);
 
-      Put_Offset (Offset, "Algorithm", Data_Offset);
+      if Debugging then
+         Put_Offset (Offset, "Algorithm", Data_Offset);
+      end if;
       Result (Offset) := Data (Data_Offset);
       Inc (Offset);
       Inc (Data_Offset);
 
-      Put_Offset (Offset, "FB + osc sync", Data_Offset);
+      if Debugging then
+         Put_Offset (Offset, "FB + osc sync", Data_Offset);
+      end if;
       B := Data (Data_Offset)  -- feedback
          or Shift_Left (Data (Data_Offset + 1), 3);  -- osc sync
       Result (Offset) := B;
@@ -212,7 +216,9 @@ package body DX7.Voices is
       Inc (Data_Offset, 2);  -- note that we took two bytes from original
 
       -- LFO speed, delay, PMD, AMD
-      Put_Offset (Offset, "Four LFO bytes", Data_Offset);
+      if Debugging then
+         Put_Offset (Offset, "Four LFO bytes", Data_Offset);
+      end if;
       Result (Offset .. Offset + 3) := Data (Data_Offset .. Data_Offset + 3);
       Inc (Offset, 4);
       Inc (Data_Offset, 4);
@@ -221,9 +227,11 @@ package body DX7.Voices is
          or Shift_Left (Data (Data_Offset + 1), 1))  -- LFO waveform
          or (Shift_Left (Data (Data_Offset + 2), 4)); -- PMS (voice)
 
-      Ada.Text_IO.Put_Line ("LFO waveform at " & Integer'Image (Data_Offset + 1) & " = "
-         & Integer'Image (Integer (Data (Data_Offset + 1))));
-      Put_Offset (Offset, "Byte 116", Data_Offset);
+      if Debugging then
+         Ada.Text_IO.Put_Line ("LFO waveform at " & Integer'Image (Data_Offset + 1) & " = "
+            & Integer'Image (Integer (Data (Data_Offset + 1))));
+         Put_Offset (Offset, "Byte 116", Data_Offset);
+      end if;
       Byte116 := (Sync => (if Data (Data_Offset) = 1 then True else False),
          Waveform => LFO_Waveform_Type'Val (Data (Data_Offset + 1)),
          PMS => Depth_Type (Data (Data_Offset + 2)));
@@ -232,13 +240,17 @@ package body DX7.Voices is
       Inc (Data_Offset, 3);
 
       -- Adjust -2..+2 to 0...48 for SysEx
-      Put_Offset (Offset, "Transpose", Data_Offset);
+      if Debugging then
+         Put_Offset (Offset, "Transpose", Data_Offset);
+      end if;
       Result (Offset) := Data (Data_Offset);
       Inc (Offset);
       Inc (Data_Offset);
 
       for I in 1 .. Voice_Name_Length loop
-         Put_Offset (Offset, "Character", Data_Offset);
+         if Debugging then
+            Put_Offset (Offset, "Character", Data_Offset);
+         end if;
          Result (Offset) := Data (Data_Offset);
          Inc (Offset);
          Inc (Data_Offset);
@@ -247,54 +259,65 @@ package body DX7.Voices is
 
    procedure Unpack_Voice (Data : in Byte_Array; Result : out Byte_Array) is
       Source_Offset, Destination_Offset : Natural;
-      Packed_Op_Data : Byte_Array (0 .. Packed_Operator_Data_Length - 1);
-      Op_Data : Byte_Array (0 .. Operator_Data_Length - 1);
+      Packed_Op_Data : Byte_Array (1 .. Packed_Operator_Data_Length);
+      Op_Data : Byte_Array (1 .. Operator_Data_Length);
       Byte111 : Byte111_Type;
       Byte116 : Byte116_Type;
    begin
       if Data'Length /= Packed_Voice_Data_Length then
          raise Parse_Error
             with Make_Length_Exception_Message (Text => "Packed voice data length mismatch", 
-               Actual => Data'Length, Expected => Packed_Voice_Data_Length, Offset => 0);
+               Actual => Data'Length, Expected => Packed_Voice_Data_Length, Offset => 1);
       end if;
 
       if Result'Length /= Voice_Data_Length then
          raise Parse_Error
             with Make_Length_Exception_Message (Text => "Voice data output buffer length mismatch", 
-               Actual => Result'Length, Expected => Voice_Data_Length, Offset => 0);
+               Actual => Result'Length, Expected => Voice_Data_Length, Offset => 1);
       end if;
 
-      Source_Offset := 0;
-      Destination_Offset := 0;
+      Source_Offset := 1;
+      Destination_Offset := 1;
       for I in reverse Operator_Index loop
-         Ada.Text_IO.Put_Line ("Op " & I'Image & ", source offset = " & Source_Offset'Image
-            & " destination offset = " & Destination_Offset'Image);
-         Packed_Op_Data := Data (Source_Offset .. Source_Offset + Packed_Operator_Data_Length - 1);
+         if Debugging then
+            Ada.Text_IO.Put_Line ("Operator #" & I'Image);
+            Ada.Text_IO.Put_Line ("Source_Offset = " & Source_Offset'Image);
+            Ada.Text_IO.Put_Line ("Destination_Offset = " & Destination_Offset'Image);
+         end if;
+         Packed_Op_Data (1 .. Packed_Operator_Data_Length) := Data (Source_Offset .. Source_Offset + Packed_Operator_Data_Length - 1);
+         if Debugging then
+            Put_Byte_Array_Information (Packed_Op_Data, "Packed operator data");
+            Ada.Text_IO.Put_Line (Hex_Dump (Packed_Op_Data));
+         end if;
          Unpack_Operator (Packed_Op_Data, Op_Data);
+         if Debugging then
+            Put_Byte_Array_Information (Op_Data, "Unpacked operator data");
+            Ada.Text_IO.Put_Line (Hex_Dump (Op_Data));
+         end if;
          Result (Destination_Offset .. Destination_Offset + Operator_Data_Length - 1) := Op_Data;
          Source_Offset := Source_Offset + Packed_Operator_Data_Length;
          Destination_Offset := Destination_Offset + Operator_Data_Length;
       end loop;
 
-      Result (126 .. 133) := Data (102 .. 109);  -- PEG data
-      Result (134) := Data (110);  -- algorithm
+      Result (127 .. 134) := Data (103 .. 110);  -- PEG data
+      Result (135) := Data (111);  -- algorithm
 
-      Byte111 := Convert (Data (111));
-      Result (135) := Byte (Byte111.Feedback);
-      Result (136) := Byte (Boolean'Pos (Byte111.Oscillator_Sync));
+      Byte111 := Convert (Data (112));
+      Result (136) := Byte (Byte111.Feedback);
+      Result (137) := Byte (Boolean'Pos (Byte111.Oscillator_Sync));
 
-      Result (137) := Data (112);
       Result (138) := Data (113);
       Result (139) := Data (114);
       Result (140) := Data (115);
+      Result (141) := Data (116);
       
-      Byte116 := Convert (Data (116));
-      Result (141) := Byte (Boolean'Pos (Byte116.Sync));
-      Result (142) := Byte (LFO_Waveform_Type'Pos (Byte116.Waveform));
-      Result (143) := Byte (Byte116.PMS);
+      Byte116 := Convert (Data (117));
+      Result (142) := Byte (Boolean'Pos (Byte116.Sync));
+      Result (143) := Byte (LFO_Waveform_Type'Pos (Byte116.Waveform));
+      Result (144) := Byte (Byte116.PMS);
 
-      Result (144) := Data (117);  -- transpose
-      Result (145 .. 154) := Data (118 .. 127);  -- name
+      Result (145) := Data (118);  -- transpose
+      Result (146 .. 155) := Data (119 .. 128);  -- name
    end Unpack_Voice;
 
    function Random_LFO return LFO_Type is
@@ -395,6 +418,9 @@ package body DX7.Voices is
    procedure Parse_Voice (Data : in Byte_Array; Result : out Voice_Type) is
       Op_Start, Op_End : Natural;
       Value : Byte;
+      Op_Data : Byte_Array (1 .. Operator_Data_Length);
+      PEG_Data : Byte_Array (1 .. Envelope_Data_Length);
+      LFO_Data : Byte_Array (1 .. LFO_Data_Length);
    begin
       if Data'Length /= Voice_Data_Length then
          raise Parse_Error
@@ -402,30 +428,44 @@ package body DX7.Voices is
                Actual => Data'Length, Expected => Voice_Data_Length, Offset => 0);
       end if;
 
-      Op_Start := 0;
+      if Debugging then
+         Ada.Text_IO.Put_Line ("Parsing voice...");
+      end if;
+
+      Op_Start := 1;
       for I in reverse Operator_Index loop
          Op_End := Op_Start + Operator_Data_Length - 1;
-         Parse_Operator (Data (Op_Start .. Op_End), Result.Operators (I));
+         Op_Data (1 .. Operator_Data_Length) := Data (Op_Start .. Op_End);
+         if Debugging then
+            Ada.Text_IO.Put_Line ("Parsing operator #" & I'Image);
+            Put_Byte_Array_Information (Op_Data, "Op_Data");
+         end if;
+         Parse_Operator (Op_Data, Result.Operators (I));
          Inc (Op_Start, Operator_Data_Length);
       end loop;
 
-      New_Parse_Envelope (Data (126 .. 133), Result.Pitch_Envelope);
+      PEG_Data := Data (127 .. 134);
+      if Debugging then
+         Ada.Text_IO.Put_Line ("Parsing PEG");
+         Put_Byte_Array_Information (PEG_Data, "PEG_Data");
+      end if;
+      Parse (PEG_Data, Result.Pitch_Envelope);
 
-      Value := Data (134);
+      Value := Data (135);
       if Integer (Value + 1) in Algorithm_Type then
          Result.Algorithm := Algorithm_Type (Value + 1);
       else
          raise Parse_Error;
       end if;
 
-      Value := Data (135);
+      Value := Data (136);
       if Integer (Value) in Depth_Type then
          Result.Feedback := Depth_Type (Value);
       else
          raise Parse_Error;
       end if;
 
-      Value := Data (136);
+      Value := Data (137);
       if Value = 1 then
          Result.Oscillator_Sync := True;
       elsif Value = 0 then
@@ -434,9 +474,14 @@ package body DX7.Voices is
          raise Parse_Error;
       end if;
 
-      Parse_LFO (Data (137 .. 142), Result.LFO);
+      LFO_Data := Data (138 .. 143);
+      if Debugging then
+         Ada.Text_IO.Put_Line ("Parsing LFO");
+         Put_Byte_Array_Information (LFO_Data, "LFO_Data");
+      end if;
+      Parse_LFO (LFO_Data, Result.LFO);
 
-      Value := Data (143);
+      Value := Data (144);
       if Integer (Value) in Depth_Type then
          Result.Pitch_Modulation_Sensitivity := Depth_Type (Value);
       else
@@ -444,7 +489,7 @@ package body DX7.Voices is
       end if;
 
       -- Transpose is 0...48 in the SysEx spec. 0 = -2 octaves, 48 = +2 octaves
-      Value := Data (144);
+      Value := Data (145);
       declare
          Semitones : constant Integer :=
            Integer (Value) - 24; -- bring into range -24...24
@@ -453,7 +498,10 @@ package body DX7.Voices is
       end;
 
       for I in 1 .. Voice_Name_Length loop
-         Result.Name (I) := Character'Val (Data (145 + I - 1));
+         if Debugging then 
+            Ada.Text_IO.Put_Line ("Name " & I'Image);
+         end if;
+         Result.Name (I) := Character'Val (Data (146 + I - 1));
       end loop;
    end Parse_Voice;
 
@@ -467,35 +515,35 @@ package body DX7.Voices is
          raise Parse_Error;
       end if;
 
-      Value := Integer (Data (0));
+      Value := Integer (Data (1));
       if Value in Level_Type then
          Speed := Level_Type (Value);
       else
          raise Parse_Error;
       end if;
 
-      Value := Integer (Data (1));
+      Value := Integer (Data (2));
       if Value in Level_Type then
          Delay_Time := Level_Type (Value);
       else
          raise Parse_Error;
       end if;
       
-      Value := Integer (Data (2));
+      Value := Integer (Data (3));
       if Value in Level_Type then
          PMD := Level_Type (Value);
       else
          raise Parse_Error;
       end if;
 
-      Value := Integer (Data (3));
+      Value := Integer (Data (4));
       if Value in Level_Type then
          AMD := Level_Type (Value);
       else
          raise Parse_Error;
       end if;
 
-      Value := Integer (Data (4));
+      Value := Integer (Data (5));
       if Value = 1 then
          Key_Sync := True;
       elsif Value = 0 then
@@ -504,7 +552,7 @@ package body DX7.Voices is
          raise Parse_Error;      
       end if;
 
-      Value := Integer (Data (5));
+      Value := Integer (Data (6));
       if LFO_Waveform_Type'Val (Value) in LFO_Waveform_Type then
          Waveform := LFO_Waveform_Type'Val (Value);
       else

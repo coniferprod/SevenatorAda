@@ -46,7 +46,6 @@ package DX7.System_Exclusive is
    procedure Emit (Payload : in Payload_Type; Result : out Byte_Array);
 
    procedure Parse (Data : in Byte_Array; Header : out Header_Type);
-   --procedure Parse_Payload (Data : in Byte_Vector; Payload : out Payload_Type);
    procedure Parse (Data : in Byte_Array; Payload : out Payload_Type);
    function Checksum (Data : Byte_Array) return Byte;
 end DX7.System_Exclusive;
