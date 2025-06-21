@@ -1,5 +1,6 @@
 with Sixten; use Sixten;
 with DX7.Voices; use DX7.Voices;
+with DX7.XML; use DX7.XML;
 
 package DX7.Cartridges is
    type Cartridge_Type is record
@@ -14,4 +15,5 @@ package DX7.Cartridges is
    -- Gets the cartridge data as bytes for MIDI System Exclusive.
    procedure Emit (Cartridge : in Cartridge_Type; Result : out Cartridge_Data_Type);
 
+   procedure To_XML (Cartridge: in Cartridge_Type; Result : out DX7.XML.Document_Type);
 end DX7.Cartridges;

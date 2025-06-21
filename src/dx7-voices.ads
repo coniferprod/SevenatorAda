@@ -14,7 +14,7 @@ package DX7.Voices is
    Voice_Name_Length : constant := 10;
    subtype Voice_Name_Type is String (1 .. Voice_Name_Length);
 
-   type Transpose_Type is range -2 .. 2;  -- -2/+2 octaves
+   subtype Transpose_Type is Integer range -2 .. 2;  -- -2/+2 octaves
 
    -- Enumeration type for LFO waveforms
    type LFO_Waveform_Type is

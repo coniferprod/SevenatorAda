@@ -2,6 +2,7 @@ with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Directories;
 with Ada.Command_Line;
 use type Ada.Directories.File_Size;
+with Ada.Strings.Unbounded;
 
 with Sixten; use Sixten;
 with Sixten.Manufacturers; use Sixten.Manufacturers;
@@ -12,6 +13,7 @@ with DX7.Envelopes;  use DX7.Envelopes;
 with DX7.Voices;     use DX7.Voices;
 with DX7.Cartridges; use DX7.Cartridges;
 with DX7.System_Exclusive; use DX7.System_Exclusive;
+with DX7.XML; use DX7.XML;
 
 package body Commands is
    procedure Run_List (Name : String) is
@@ -190,5 +192,43 @@ package body Commands is
          Write_File (Name, Data);
       end;
    end Run_Voice;
+
+   procedure Run_To_XML (Name : String) is
+      Size : constant Ada.Directories.File_Size := Ada.Directories.Size (Name);
+      Data : Byte_Array (1 .. Natural (Size));
+      Raw_Message : Sixten.Messages.Message_Type;
+      Payload : DX7.System_Exclusive.Payload_Type;
+      Start_Index, End_Index : Natural;
+   begin
+      Read_File (Name, Data);
+      Parse (Data, Raw_Message);
+      --  Now we should have the System Exclusive message
+      --  with type and payload in Raw_Message
+      
+      Parse (Raw_Message.Payload, Payload);
+      --Start_Index := Raw_Message.Payload'First;
+      --End_Index := Raw_Message.Payload'Last;
+      
+      if Payload.Header.Format /= Cartridge then
+         Ada.Text_IO.Put_Line ("Not a cartridge!");
+         Ada.Command_Line.Set_Exit_Status (1);
+         return;
+      end if;
+
+      declare
+         Cartridge : Cartridge_Type;
+         Document : DX7.XML.Document_Type;
+      begin
+         Ada.Text_IO.Put_Line ("payload = " & Payload.Cartridge_Data'First'Image 
+            & ".." & Payload.Cartridge_Data'Last'Image);
+         Parse (Payload.Cartridge_Data, Cartridge);
+
+         To_XML (Cartridge, Document);
+         for Line of Document loop
+            Put_Line (Ada.Strings.Unbounded.To_String (Line));
+         end loop;
+      end;      
+
+   end Run_To_XML;
 
 end Commands;

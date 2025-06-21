@@ -14,6 +14,7 @@ begin
       Put_Line ("  dump = show contents of DX7 file <filename>");
       Put_Line ("  cartridge = make new cartridge with random voices and write to <filename>");
       Put_Line ("  voice = make new random voice and write to <filename>");
+      Put_Line ("  to_xml = convert cartridge in <filename> to XML format");
       return;
    end if;
 
@@ -30,6 +31,8 @@ begin
             Commands.Run_Cartridge (File_Name);
          when Commands.Voice =>
             Commands.Run_Voice (File_Name);
+         when Commands.To_XML =>
+            Commands.Run_To_XML (File_Name);
       end case;
    end;
 end Sevenator;
