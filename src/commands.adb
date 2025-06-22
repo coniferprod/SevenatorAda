@@ -219,8 +219,6 @@ package body Commands is
          Cartridge : Cartridge_Type;
          Document : DX7.XML.Document_Type;
       begin
-         Ada.Text_IO.Put_Line ("payload = " & Payload.Cartridge_Data'First'Image 
-            & ".." & Payload.Cartridge_Data'Last'Image);
          Parse (Payload.Cartridge_Data, Cartridge);
 
          To_XML (Cartridge, Document);

@@ -1,24 +1,14 @@
 with Ada.Integer_Text_IO;
 with Ada.Characters.Handling;
+with Ada.Strings.Fixed;
 
 with DX7;
 with DX7.Operators; use DX7.Operators;
 
 package body DX7.XML is
-
-   function Indent return String is
-      Result : String (1 .. (Indent_Level * Indent_Space_Count));
-   begin
-      for I in Result'First .. Result'Last loop
-         Result (I) := ' ';
-      end loop;
-      return Result;
-   end Indent;
-
    function Element (Name : String; Attributes : Attributes_Type; Is_Empty : Boolean := False) return Unbounded_String is
       Result : Unbounded_String;
    begin
-      Append (Result, +Indent);
       Append (Result, +"<");
       Append (Result, +Name);
       Append (Result, +" ");
@@ -43,18 +33,17 @@ package body DX7.XML is
       return Result;
    end Element;
 
+   -- Converts the Integer value to a string and trims any spaces around the result.
    function To_String (Value : Integer) return String is
-      Result : String (1 .. Value'Image'Length);
-   begin
-      Ada.Integer_Text_IO.Put (To => Result, Item => Value);
-      return Result;
-   end To_String;
+      (Ada.Strings.Fixed.Trim (Integer'Image (Value), Ada.Strings.Both));
 
+   -- Converts the Boolean value to a lowercase string.
    function To_String (Value : Boolean) return String is
    begin
       return Ada.Characters.Handling.To_Lower (Value'Image);
    end To_String;
 
+   -- Converts the LFO waveform value to a string with lowercase and dashes.
    function To_String (Value : DX7.Voices.LFO_Waveform_Type) return String is
       Name : String := DX7.Voices.LFO_Waveform_Type'Image (Value);
    begin
@@ -77,6 +66,7 @@ package body DX7.XML is
       return "fixed";
    end To_String;
 
+   -- Converts the scaling curve type to a string +LIN, -LIN, +EXP, -EXP.
    function To_String (Value : DX7.Operators.Scaling_Curve_Type) return String is
       Result : String (1 .. 4);
    begin

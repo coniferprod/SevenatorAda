@@ -31,3 +31,7 @@ makes it a lot easier to emit normal and packed voices (and their normal and
 packed components). Each type in the data model will not be able to emit their
 data as an array (or even a vector), and at this time that capability is not
 even needed. So this should simplify the program considerably.
+
+## XML notes
+
+To pretty-print XML, use `xmllint --format file.xml`.

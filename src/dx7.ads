@@ -19,6 +19,7 @@ package DX7 is
    function Make_Length_Exception_Message (Text : String; Actual, Expected : Integer; Offset : Natural) return String;
 
    Debugging : Boolean := False;
+   
    -- Helper function to increment an integer value by the given amount.
    procedure Inc (I : in out Integer; Amount : in Integer := 1);
 

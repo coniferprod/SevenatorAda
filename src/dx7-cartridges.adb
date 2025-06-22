@@ -58,6 +58,32 @@ package body DX7.Cartridges is
    end Emit;
 
    procedure To_XML (Cartridge: in Cartridge_Type; Result : out DX7.XML.Document_Type) is
+
+      function EG_XML (EG : DX7.Envelopes.Envelope_Type) return Unbounded_String is
+         Rates_Element, Levels_Element, Result : Unbounded_String;
+      begin
+         Append (Rates_Element, +"<rates>");
+         for Index in DX7.Envelopes.Rate_Index loop
+            Append (Rates_Element, DX7.XML.To_String (EG.Rates (Index)));
+            if Index /= DX7.Envelopes.Rate_Index'Last then
+               Append (Rates_Element, +" ");
+            end if;
+         end loop;
+         Append (Rates_Element, +"</rates>");
+         Append (Result, Rates_Element);
+
+         Append (Levels_Element, +"<levels>");
+         for Index in DX7.Envelopes.Level_Index loop
+            Append (Levels_Element, DX7.XML.To_String (EG.Levels (Index)));
+            if Index /= DX7.Envelopes.Level_Index'Last then
+               Append (Levels_Element, +" ");
+            end if;
+         end loop;
+         Append (Levels_Element, +"</levels>");
+         Append (Result, Levels_Element);
+         return Result;
+      end EG_XML;
+
    begin
       Result.Append (+"<?xml version=""1.0"" encoding=""UTF-8"" standalone=""no""?>");
       Result.Append (+"<cartridge>");
@@ -73,39 +99,11 @@ package body DX7.Cartridges is
             Attributes.Include ("oscillatorSync", DX7.XML.To_String (Voice.Oscillator_Sync));
             Attributes.Include ("pitchModulationSensitivity", DX7.XML.To_String (Voice.Pitch_Modulation_Sensitivity));
             Attributes.Include ("transpose", DX7.XML.To_String (Voice.Transpose));
-            DX7.XML.Indent_Level := DX7.XML.Indent_Level + 1;
             Result.Append (Element ("voice", Attributes));
          end;
 
-         DX7.XML.Indent_Level := DX7.XML.Indent_Level - 1;
-
          Result.Append (+"<peg>");
-         declare
-            Rates_Element : Unbounded_String;
-         begin
-            DX7.XML.Indent_Level := DX7.XML.Indent_Level + 1;
-            Append (Rates_Element, +"<rates>");
-            for Rate in DX7.Envelopes.Rate_Index loop
-               Append (Rates_Element, Voice.Pitch_Envelope.Rates (Rate)'Image);
-            end loop;
-            Append (Rates_Element, +"</rates>");
-            Result.Append (Rates_Element);
-            DX7.XML.Indent_Level := DX7.XML.Indent_Level - 1;
-         end;
-
-         declare
-            Levels_Element : Unbounded_String;
-         begin
-            DX7.XML.Indent_Level := DX7.XML.Indent_Level + 1;
-            Append (Levels_Element, +"<levels>");
-            for Level in DX7.Envelopes.Level_Index loop
-               Append (Levels_Element, Voice.Pitch_Envelope.Levels (Level)'Image);
-            end loop;
-            Append (Levels_Element, +"</levels>");
-            Result.Append (Levels_Element);
-            DX7.XML.Indent_Level := DX7.XML.Indent_Level - 1;
-         end;
-
+         Result.Append (EG_XML (Voice.Pitch_Envelope));
          Result.Append (+"</peg>");
 
          declare
@@ -137,28 +135,7 @@ package body DX7.Cartridges is
                Result.Append (Element ("operator", Attributes));
 
                Result.Append (+"<eg>");
-               declare
-                  Rates_Element : Unbounded_String;
-               begin
-                  Append (Rates_Element, +"<rates>");
-                  for Rate in DX7.Envelopes.Rate_Index loop
-                     Append (Rates_Element, Op.EG.Rates (Rate)'Image);
-                  end loop;
-                  Append (Rates_Element, +"</rates>");
-                  Result.Append (Rates_Element);
-               end;
-
-               declare
-                  Levels_Element : Unbounded_String;
-               begin
-                  Append (Levels_Element, +"<levels>");
-                  for Level in DX7.Envelopes.Level_Index loop
-                     Append (Levels_Element, Op.EG.Levels (Level)'Image);
-                  end loop;
-                  Append (Levels_Element, +"</levels>");
-                  Result.Append (Levels_Element);
-               end;
-
+               Result.Append (EG_XML (Op.EG));
                Result.Append (+"</eg>");
 
                declare
