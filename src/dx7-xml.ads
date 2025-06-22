@@ -4,6 +4,10 @@ with Ada.Containers.Vectors;
 with Ada.Containers.Indefinite_Hashed_Maps;
 with Ada.Strings.Hash;
 
+with DX7;
+with DX7.Voices;
+with DX7.Operators;
+
 package DX7.XML is
 
    pragma Elaborate_Body;
@@ -25,9 +29,15 @@ package DX7.XML is
 
    function To_String (Value : Integer) return String;
    function To_String (Value : Boolean) return String;
+   function To_String (Value : DX7.Voices.LFO_Waveform_Type) return String;
+   function To_String (Value : DX7.Operators.Operator_Mode) return String;
+   function To_String (Value : DX7.Operators.Scaling_Curve_Type) return String;
 
-   function Element (Name : String; Attributes : Attributes_Type) return Unbounded_String;
+   function Element (Name : String; Attributes : Attributes_Type; Is_Empty : Boolean := False) return Unbounded_String;
    function Element (Name : String; Attributes : Attributes_Type; Content : Unbounded_String) return Unbounded_String;
+
+   Indent_Level : Natural := 0;
+   Indent_Space_Count : Positive := 4;
 
    -- The number of lines in a document representing a cartridge:
    -- 1 XML prolog

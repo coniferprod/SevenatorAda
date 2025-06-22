@@ -73,38 +73,117 @@ package body DX7.Cartridges is
             Attributes.Include ("oscillatorSync", DX7.XML.To_String (Voice.Oscillator_Sync));
             Attributes.Include ("pitchModulationSensitivity", DX7.XML.To_String (Voice.Pitch_Modulation_Sensitivity));
             Attributes.Include ("transpose", DX7.XML.To_String (Voice.Transpose));
+            DX7.XML.Indent_Level := DX7.XML.Indent_Level + 1;
             Result.Append (Element ("voice", Attributes));
          end;
+
+         DX7.XML.Indent_Level := DX7.XML.Indent_Level - 1;
 
          Result.Append (+"<peg>");
          declare
             Rates_Element : Unbounded_String;
          begin
+            DX7.XML.Indent_Level := DX7.XML.Indent_Level + 1;
             Append (Rates_Element, +"<rates>");
             for Rate in DX7.Envelopes.Rate_Index loop
                Append (Rates_Element, Voice.Pitch_Envelope.Rates (Rate)'Image);
             end loop;
             Append (Rates_Element, +"</rates>");
             Result.Append (Rates_Element);
+            DX7.XML.Indent_Level := DX7.XML.Indent_Level - 1;
          end;
 
          declare
             Levels_Element : Unbounded_String;
          begin
+            DX7.XML.Indent_Level := DX7.XML.Indent_Level + 1;
             Append (Levels_Element, +"<levels>");
             for Level in DX7.Envelopes.Level_Index loop
                Append (Levels_Element, Voice.Pitch_Envelope.Levels (Level)'Image);
             end loop;
-            Append (Levels_Element, +"</level>");
+            Append (Levels_Element, +"</levels>");
             Result.Append (Levels_Element);
+            DX7.XML.Indent_Level := DX7.XML.Indent_Level - 1;
          end;
 
-         Result.Append (+"</peg");
+         Result.Append (+"</peg>");
+
+         declare
+            Attributes : Attributes_Type;
+         begin
+            Attributes.Include ("amd", DX7.XML.To_String (Voice.LFO.Amplitude_Modulation_Depth));
+            Attributes.Include ("delay", DX7.XML.To_String (Voice.LFO.Delay_Time));
+            Attributes.Include ("pmd", DX7.XML.To_String (Voice.LFO.Pitch_Modulation_Depth));
+            Attributes.Include ("speed", DX7.XML.To_String (Voice.LFO.Speed));
+            Attributes.Include ("sync", DX7.XML.To_String (Voice.LFO.Key_Sync));
+            Attributes.Include ("wave", DX7.XML.To_String (Voice.LFO.Waveform));
+            Result.Append (Element ("lfo", Attributes, Is_Empty => True));
+         end;
 
          Result.Append (+"<operators>");
          for Op of Voice.Operators loop
-            Result.Append (+"<operator>");
+            declare
+               Attributes : Attributes_Type;
+            begin
+               Attributes.Include ("amplitudeModulationSensitivity", DX7.XML.To_String (Op.Amplitude_Modulation_Sensitivity));
+               Attributes.Include ("coarse", DX7.XML.To_String (Op.Coarse));
+               Attributes.Include ("fine", DX7.XML.To_String (Op.Fine));
+               Attributes.Include ("detune", DX7.XML.To_String (Op.Detune));
+               Attributes.Include ("keyVelocitySensitivity", DX7.XML.To_String (Op.Touch_Sensitivity));
+               Attributes.Include ("keyboardRateScaling", DX7.XML.To_String (Op.Keyboard_Rate_Scaling));
+               Attributes.Include ("level", DX7.XML.To_String (Op.Output_Level));
+               Attributes.Include ("mode", DX7.XML.To_String (Op.Mode));
 
+               Result.Append (Element ("operator", Attributes));
+
+               Result.Append (+"<eg>");
+               declare
+                  Rates_Element : Unbounded_String;
+               begin
+                  Append (Rates_Element, +"<rates>");
+                  for Rate in DX7.Envelopes.Rate_Index loop
+                     Append (Rates_Element, Op.EG.Rates (Rate)'Image);
+                  end loop;
+                  Append (Rates_Element, +"</rates>");
+                  Result.Append (Rates_Element);
+               end;
+
+               declare
+                  Levels_Element : Unbounded_String;
+               begin
+                  Append (Levels_Element, +"<levels>");
+                  for Level in DX7.Envelopes.Level_Index loop
+                     Append (Levels_Element, Op.EG.Levels (Level)'Image);
+                  end loop;
+                  Append (Levels_Element, +"</levels>");
+                  Result.Append (Levels_Element);
+               end;
+
+               Result.Append (+"</eg>");
+
+               declare
+                  Attributes : Attributes_Type;
+                  KLS_Content : Unbounded_String;
+               begin
+                  Attributes.Include ("breakpoint", DX7.XML.To_String (Op.Keyboard_Level_Scaling.Breakpoint));
+
+                  declare
+                     Depth_Attributes : Attributes_Type;
+                     Curve_Attributes : Attributes_Type;
+                  begin
+                     Depth_Attributes.Include ("left", DX7.XML.To_String (Op.Keyboard_Level_Scaling.Left.Depth));
+                     Depth_Attributes.Include ("right", DX7.XML.To_String (Op.Keyboard_Level_Scaling.Right.Depth));
+                     Append (KLS_Content, Element ("depth", Depth_Attributes, Is_Empty => True));
+
+                     Curve_Attributes.Include ("left", DX7.XML.To_String (Op.Keyboard_Level_Scaling.Left.Curve));
+                     Curve_Attributes.Include ("right", DX7.XML.To_String (Op.Keyboard_Level_Scaling.Left.Curve));
+                     Append (KLS_Content, Element ("curve", Curve_Attributes, Is_Empty => True));
+                  end;
+
+                  Result.Append (Element ("keyboardLevelScaling", Attributes, KLS_Content));
+               end;
+               Result.Append (+"</keyboardLevelScaling>");
+            end;
             Result.Append (+"</operator>");
          end loop;
          Result.Append (+"</operators>");
