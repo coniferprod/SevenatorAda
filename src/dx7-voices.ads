@@ -14,7 +14,8 @@ package DX7.Voices is
    Voice_Name_Length : constant := 10;
    subtype Voice_Name_Type is String (1 .. Voice_Name_Length);
 
-   subtype Transpose_Type is Integer range -2 .. 2;  -- -2/+2 octaves
+   -- Transpose is -24...+24 semitones (-2...+2 octaves)
+   subtype Transpose_Type is Integer range -24 .. 24;
 
    -- Enumeration type for LFO waveforms
    type LFO_Waveform_Type is
@@ -50,7 +51,7 @@ package DX7.Voices is
       Oscillator_Sync        : Boolean        := True;
       LFO                    : LFO_Type := Init_LFO;
       Pitch_Modulation_Sensitivity : Depth_Type := 0;
-      Transpose              : Transpose_Type := 0;  -- specified in octaves
+      Transpose              : Transpose_Type := 0;
       Name                   : Voice_Name_Type := "INIT VOICE";
    end record;
 

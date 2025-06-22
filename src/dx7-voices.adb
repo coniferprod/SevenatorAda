@@ -80,8 +80,8 @@ package body DX7.Voices is
       Data (Offset) := Byte (Voice.Pitch_Modulation_Sensitivity);
       Offset        := Offset + 1;
 
-      -- Adjust -2..+2 to 0...48 for SysEx
-      Data (Offset) := Byte ((Voice.Transpose + 2) * 12);
+      -- Adjust -24..+24 to 0...48 for SysEx
+      Data (Offset) := Byte (Voice.Transpose + 24);
       Offset        := Offset + 1;
 
       for I in 1 .. Voice_Name_Length loop
@@ -239,7 +239,6 @@ package body DX7.Voices is
       Inc (Offset, 1);
       Inc (Data_Offset, 3);
 
-      -- Adjust -2..+2 to 0...48 for SysEx
       if Debugging then
          Put_Offset (Offset, "Transpose", Data_Offset);
       end if;
@@ -355,7 +354,7 @@ package body DX7.Voices is
       Voice.Feedback        := Random_Depths.Random (Depth_Gen);
       Voice.Oscillator_Sync := Random_Booleans.Random (Sync_Gen);
       Voice.LFO             := Random_LFO;
-      Voice.Transpose       := 0; -- TODO: randomize
+      Voice.Transpose       := 0; -- TODO: maybe randomize
       Voice.Name            := "Random    ";
 
       return Voice;
@@ -488,14 +487,12 @@ package body DX7.Voices is
          raise Parse_Error;
       end if;
 
-      -- Transpose is 0...48 in the SysEx spec. 0 = -2 octaves, 48 = +2 octaves
-      Value := Data (145);
-      declare
-         Semitones : constant Integer :=
-           Integer (Value) - 24; -- bring into range -24...24
-      begin
-         Result.Transpose := Transpose_Type (Semitones / 12);
-      end;
+      -- Transpose is 0...48 in the SysEx spec. 
+      -- 0 = -24 semitones, 48 = +24 semitones (-2...+2 octaves)
+      Value := Data (145) - 24;
+      if Integer (Value) in Transpose_Type then
+         Result.Transpose := Transpose_Type (Value);
+      end if;
 
       for I in 1 .. Voice_Name_Length loop
          if Debugging then 
